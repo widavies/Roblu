@@ -4,7 +4,7 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent">
     <android.support.v7.widget.Toolbar
-        android:id="@+id/support_toolbar"
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/primary"
@@ -49,4 +49,12 @@
             android:hint="FRC Team number"
             android:inputType="text"/>
     </android.support.design.widget.TextInputLayout>
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:padding="10dp"/>
+
 </LinearLayout>

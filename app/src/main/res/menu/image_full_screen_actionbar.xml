@@ -7,6 +7,12 @@
         app:showAsAction="ifRoom"
         android:title="Delete image" />
     <item
+        android:id="@+id/edit"
+        android:icon="@drawable/edit_large"
+        app:showAsAction="ifRoom"
+        android:title="Edit image" />
+
+    <item
         android:id="@+id/save_to_device"
         android:icon="@drawable/save"
         app:showAsAction="ifRoom"

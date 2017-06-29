@@ -43,8 +43,8 @@ import java.util.Map;
 
 public class CreateEventPicker extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
-    private final String items[] = { "Create event", "Import from TheBlueAlliance.com", "Import from backup file", "View Roblu Cloud Event"};
-    private final String sub_items[] = {"Create the event manually.", "Import the event from an online database.\nRecommended", "Import the event and all information from a previously exported backup file.","View event from Roblu Cloud if it's available"};
+    private final String items[] = { "Create event", "Import from TheBlueAlliance.com", "Import from backup file"};
+    private final String sub_items[] = {"Create the event manually.", "Import the event from an online database.\nRecommended", "Import the event and all information from a previously exported backup file."};
 
     private long tempEventID;
     private Event tempEvent;

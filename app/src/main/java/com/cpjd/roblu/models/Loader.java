@@ -283,7 +283,7 @@ public class Loader extends IO {
         return ID;
     }
 
-    private void saveImage(Bitmap bitmap, long eventID, long imageID) {
+    public void saveImage(Bitmap bitmap, long eventID, long imageID) {
 
         // First, verify that we have the correct directory
         File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);

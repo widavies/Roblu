@@ -36,7 +36,6 @@ import com.cpjd.main.TBA;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.activities.AdvSettings;
 import com.cpjd.roblu.activities.SetupActivity;
-import com.cpjd.roblu.cloud.sync.InitPacker;
 import com.cpjd.roblu.cloud.ui.Mailbox;
 import com.cpjd.roblu.events.CreateEventPicker;
 import com.cpjd.roblu.events.EventSettings;
@@ -437,6 +436,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             rb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(i2 == 4) {
+                        FILTER = 4;
+                        new LoadTeams(false, String.valueOf(settings.getTeamNumber())).execute();
+                        lastFilter = FILTER;
+                        d.dismiss();
+                        return;
+                    }
+
                     if(i2 == 3) {
                         FILTER = CUSTOM;
                         Intent intent = new Intent(TeamsView.this, CustomSort.class);
@@ -465,8 +472,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
     private void createTeam() {
         if(event == null) return;
-
-        new InitPacker(getApplicationContext(), 0).execute();
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LinearLayout layout = new LinearLayout(this);

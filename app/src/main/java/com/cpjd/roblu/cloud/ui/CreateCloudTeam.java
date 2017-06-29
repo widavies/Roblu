@@ -32,6 +32,10 @@ public class CreateCloudTeam extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        TextView money = (TextView) findViewById(R.id.textView1);
+        money.setText(new Loader(getApplicationContext()).loadSettings().getAdminEmail()+" will be used for purchasing Roblu. Note, the owner of the address can be changed later, but the" +
+                " charging account cannot be changed without deactivating your team.");
+
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         new UIHandler(this, toolbar).update();

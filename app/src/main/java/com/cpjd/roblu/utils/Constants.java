@@ -57,6 +57,7 @@ public abstract class Constants {
     public static final int CLOUD_SIGN_IN = 31;
     public static final int VIEW_EVENT_CONFIRMED = 32;
     public static final int CLOUD_TEAM_CREATED = 33;
+    public static final int IMAGE_EDITED = 34;
 
     // Calendar
     static final String[] daysOfWeek = {

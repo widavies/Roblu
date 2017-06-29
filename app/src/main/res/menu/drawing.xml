@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/undo"
+        android:icon="@drawable/replay"
+        app:showAsAction="always"
+		android:title="Undo" />
+    <item
+        android:id="@+id/mode"
+        android:icon="@drawable/edit_large"
+        app:showAsAction="always"
+        android:title="Mode" />
+    <item
+        android:id="@+id/confirm"
+        android:icon="@drawable/confirm"
+        app:showAsAction="always"
+        android:title="Save" />
+
+</menu>

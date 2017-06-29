@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/pen"
+        android:title="Pen"/>
+    <item
+        android:id="@+id/line"
+        android:title="Line"/>
+    <item
+        android:id="@+id/rectangle"
+        android:title="Rectangle"/>
+    <item
+        android:id="@+id/circle"
+        android:title="Circle"/>
+    <item
+        android:id="@+id/ellipse"
+        android:title="Ellipse"/>
+    <item
+        android:id="@+id/quad"
+        android:title="Quad"/>
+    <item
+        android:id="@+id/stroke"
+        android:title="Line width"/>
+    <item
+        android:id="@+id/color"
+        android:title="Line color"/>
+
+
+</menu>

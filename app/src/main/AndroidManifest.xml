@@ -134,14 +134,14 @@
         </activity>
         <activity android:name=".ui.UICustomizer">
         </activity>
-        <activity android:name=".cloud.ui.management.CloudControls"
-                  android:label="Cloud Controls"/>
-        <activity android:name=".cloud.ui.ui.Mailbox"
+        <activity android:name=".cloud.ui.Mailbox"
                   android:label="Mailbox"/>
         <activity android:name=".events.ViewEvent"
                   android:label="View Events"/>
         <activity android:name=".cloud.ui.CreateCloudTeam"
                   android:label="Create Cloud Team"/>
+        <activity android:name =".forms.images.Drawing"
+                  android:label="Drawing"/>
     </application>
 
 </manifest>

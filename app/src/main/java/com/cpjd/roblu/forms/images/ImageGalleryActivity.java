@@ -53,6 +53,8 @@ import pub.devrel.easypermissions.EasyPermissions;
  limitations under the License.
 
  Modifications were made to this file.
+
+ @since 3.5.0
  */
 public class ImageGalleryActivity extends AppCompatActivity implements ImageGalleryAdapter.OnImageClickListener, ImageGalleryAdapter.ImageThumbnailLoader, View.OnClickListener {
 
@@ -76,8 +78,6 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     private int tabID;
 
     private RelativeLayout layout;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,6 +211,11 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == Constants.IMAGE_EDITED) {
+            imageGalleryAdapter.addImage((File)data.getExtras().getSerializable("file"));
+            imageGalleryAdapter.notifyDataSetChanged();
+            return;
+        }
         if (requestCode == Constants.CAMERA_REQUEST && resultCode == FragmentActivity.RESULT_OK) {
             // fetch file from storage
             Bitmap bitmap = BitmapFactory.decodeFile(pic.getPath());

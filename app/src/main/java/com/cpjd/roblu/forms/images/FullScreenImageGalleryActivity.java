@@ -49,6 +49,8 @@ import pub.devrel.easypermissions.EasyPermissions;
 
  -Modificiations include the ability to save the current image to device and delete the image. Various comments and methods were rearranged.
 
+ @since 3.5.0
+
  */
 public class FullScreenImageGalleryActivity extends AppCompatActivity implements FullScreenImageGalleryAdapter.FullScreenImageLoader {
 
@@ -138,9 +140,32 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(resultCode == Constants.IMAGE_EDITED) {
+           Bundle b = data.getExtras();
+            Intent result = new Intent();
+            result.putExtras(b);
+            setResult(Constants.IMAGE_EDITED, result);
+            finish();
+        }
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             finish();
+            return true;
+        }
+        else if(item.getItemId() == com.cpjd.roblu.R.id.edit) {
+            Intent intent = new Intent(this, Drawing.class);
+            intent.putExtra("file", images.get(position));
+            intent.putExtra("eventID", eventID);
+            intent.putExtra("tabID", tab);
+            intent.putExtra("ID", galleryID);
+            intent.putExtra("team", team);
+            startActivityForResult(intent, Constants.GENERAL);
             return true;
         }
         else if(item.getItemId() == com.cpjd.roblu.R.id.save_to_device) {

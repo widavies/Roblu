@@ -30,6 +30,8 @@ import java.util.ArrayList;
  limitations under the License.
 
  Modifications were made to this file.
+
+ @since 3.5.0
  */
 public class ImageGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
