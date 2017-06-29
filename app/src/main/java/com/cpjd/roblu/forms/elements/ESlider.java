@@ -1,5 +1,15 @@
 package com.cpjd.roblu.forms.elements;
 
+
+import lombok.Data;
+
+/**
+ * Supports one value on a horizontal slider, with a max. Can be N/A
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
+@Data
 public class ESlider extends Element{
 
     private int max;
@@ -9,22 +19,6 @@ public class ESlider extends Element{
         super(title);
         this.max = max;
         this.current = current;
-    }
-
-    public void setMax(int max) {
-        this.max = max;
-    }
-
-    public void setCurrent(int current) {
-        this.current = current;
-    }
-
-    public int getMax() {
-        return max;
-    }
-
-    public int getCurrent() {
-        return current;
     }
 
     public String getSubtitle() {

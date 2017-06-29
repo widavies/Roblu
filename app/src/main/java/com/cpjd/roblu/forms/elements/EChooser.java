@@ -2,6 +2,15 @@ package com.cpjd.roblu.forms.elements;
 
 import java.util.ArrayList;
 
+import lombok.Data;
+
+/**
+ * Allows the selection of one item from a list of item from spinner card.
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
+@Data
 public class EChooser extends Element {
 
     private ArrayList<String> values;
@@ -11,23 +20,6 @@ public class EChooser extends Element {
         super(title);
         this.values = values;
         this.selected = selected;
-    }
-
-    public ArrayList<String> getValues() {
-        return values;
-    }
-
-    public int getSelected() {
-        return selected;
-    }
-
-
-    public void setSelected(int selected) {
-        this.selected = selected;
-    }
-
-    public void setValues(ArrayList<String> values) {
-        this.values = values;
     }
 
     public String getSubtitle() {

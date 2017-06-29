@@ -24,7 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.cloud.sync.CreateCloudTeam;
+import com.cpjd.roblu.cloud.ui.CreateCloudTeam;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
@@ -124,7 +124,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if(preference.getKey().equals("sync_service")) {
+            if(preference.getKey().equals("display_code")) {
                 Text.showTeamCode(getActivity(), "234x99d");
                 return true;
             }
@@ -137,7 +137,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     Auth.GoogleSignInApi.signOut(apiClient).setResultCallback(new ResultCallback<Status>() {
                         @Override
                         public void onResult(@NonNull Status status) {
-
+                            toggleCloudControls(!status.isSuccess());
                             if(status.isSuccess()) Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", true, 0);
                             else Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
                         }

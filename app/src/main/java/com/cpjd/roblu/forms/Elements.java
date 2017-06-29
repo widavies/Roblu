@@ -55,7 +55,14 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// Returns cards for the elements
+/**
+ * This is the most janky class in the entire project, fear not (it works).
+ *
+ * Elements produces, programmatically, form cards that can be edited and interacted with. They match the color scheme defined by RUI too!
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
 public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullScreenImageGalleryAdapter.FullScreenImageLoader {
 
     private final Activity activity;
@@ -80,12 +87,13 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         width = size.x / 2;
     }
 
-    public CardView getBoolean(final int ID, final String name, final boolean b) {
+    public CardView getBoolean(final int ID, final String name, final int value, final boolean usingNA) {
         listener.nameInited(name);
 
         RadioGroup group = new RadioGroup(activity);
         AppCompatRadioButton yes = new AppCompatRadioButton(activity);
         AppCompatRadioButton no = new AppCompatRadioButton(activity);
+        AppCompatRadioButton na = new AppCompatRadioButton(activity);
 
         ColorStateList colorStateList = new ColorStateList(
                 new int[][] {
@@ -99,22 +107,31 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         );
         yes.setSupportButtonTintList(colorStateList);
         no.setSupportButtonTintList(colorStateList);
-
+        na.setSupportButtonTintList(colorStateList);
         group.setId(Text.generateViewId());
         yes.setId(Text.generateViewId());
         no.setId(Text.generateViewId());
+        na.setId(Text.generateViewId());
         yes.setText(R.string.yes);
         no.setText(R.string.no);
+        na.setText("N/A");
 
-        if(b) yes.setChecked(true);
-        else no.setChecked(true);
+        if(value == 1) yes.setChecked(true);
+        else if(value == 0) no.setChecked(true);
+        else na.setChecked(true);
 
         group.addView(yes);
         group.addView(no);
+        if(usingNA) group.addView(na);
 
         group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(RadioGroup radioGroup, int i) {listener.booleanUpdated(ID, ((RadioButton)radioGroup.getChildAt(0)).isChecked());}
+            public void onCheckedChanged(RadioGroup radioGroup, int i) {
+                int value = -1;
+                if(((RadioButton)radioGroup.getChildAt(0)).isChecked()) value = 1;
+                else if(((RadioButton)radioGroup.getChildAt(1)).isChecked()) value = 0;
+                listener.booleanUpdated(ID, value);
+            }
         });
 
         TextView title = new TextView(activity);
@@ -140,7 +157,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getCounter(final int ID, final String name, final int initMin, final int initMax, final int initIncrement, final int value) {
+    public CardView getCounter(final int ID, final String name, final int initMin, final int initMax, final int initIncrement, final int value, final boolean notObserved) {
         listener.nameInited(name);
 
         min = initMin;
@@ -181,12 +198,18 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         number.setTextColor(rui.getText());
         number.setId(Text.generateViewId());
         number.setText(String.valueOf(value));
+        if(notObserved) number.setText("N/A");
         number.setLayoutParams(params);
         number.setPadding(Text.DPToPX(activity, 20), number.getPaddingTop(), Text.DPToPX(activity, 20), number.getPaddingBottom());
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if(number.getText().toString().equals("N/A")) {
+                    number.setText(String.valueOf(value));
+                    return;
+                }
+
                 int value = Integer.parseInt(number.getText().toString());
                 if(modifyMode) {
                     value += increment;
@@ -233,7 +256,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getSlider(final int ID, final String name, final int initMax, final int value) {
+    public CardView getSlider(final int ID, final String name, final int initMax, final int value, final boolean notObserved) {
         listener.nameInited(name);
         max = initMax;
 
@@ -265,6 +288,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         current.setTextColor(rui.getText());
         current.setId(Text.generateViewId());
         current.setText(String.valueOf(value));
+        if(notObserved) current.setText("N/A");
         current.setTextColor(Color.WHITE);
         minv.setText(String.valueOf(0));
         max.setText(String.valueOf(initMax));
@@ -427,7 +451,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getStopwatch(final int ID, final String name, final double time) {
+    public CardView getStopwatch(final int ID, final String name, final double time, final boolean notObserved) {
         listener.nameInited(name);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -471,6 +495,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         timer.setTextSize(25);
         timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Text.DPToPX(activity, 15), timer.getPaddingBottom());
         timer.setText(time+"s");
+        if(notObserved) timer.setText("N/A");
         timer.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, button.getId());
@@ -504,7 +529,8 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                             activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    t = Double.parseDouble(timer.getText().toString().replace("s", ""));
+                                    if(timer.getText().equals("N/A")) t = 0;
+                                    else t = Double.parseDouble(timer.getText().toString().replace("s", ""));
                                     t+=0.1;
                                     timer.setText(String.valueOf(Text.round(t, 1))+"s");
 
@@ -655,6 +681,28 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         layout.addView(textView);
         layout.addView(tip);
         layout.addView(open);
+        return getCard(layout);
+    }
+
+    public CardView getEditHistory(ArrayList<String> edits) {
+        RelativeLayout layout = new RelativeLayout(activity);
+        TextView textView = new TextView(activity);
+        textView.setText("Edit history");
+        textView.setTextColor(rui.getText());
+        textView.setId(Text.generateViewId());
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, textView.getId());
+        TextView et = new TextView(activity);
+        et.setId(Text.generateViewId());
+        et.setTextColor(rui.getText());
+        et.setText(Text.concatenateArraylist(edits));
+        et.setSingleLine(false);
+        et.setEnabled(false);
+        et.setFocusableInTouchMode(false);
+        et.setLayoutParams(params);
+
+        layout.addView(textView); layout.addView(et);
         return getCard(layout);
     }
 

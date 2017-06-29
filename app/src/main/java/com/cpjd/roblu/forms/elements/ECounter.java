@@ -1,5 +1,14 @@
 package com.cpjd.roblu.forms.elements;
 
+import lombok.Data;
+
+/**
+ * Stores a numeric value. Supports a min, max, increment, and default value. Can be N/A
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
+@Data
 public class ECounter extends Element {
 
     private int min;
@@ -13,38 +22,6 @@ public class ECounter extends Element {
         this.max = max;
         this.increment = increment;
         this.current = current;
-    }
-
-    public void setMin(int min) {
-        this.min = min;
-    }
-
-    public void setMax(int max) {
-        this.max = max;
-    }
-
-    public void setIncrement(int increment) {
-        this.increment = increment;
-    }
-
-    public void setCurrent(int current) {
-        this.current = current;
-    }
-
-    public int getMin() {
-        return min;
-    }
-
-    public int getMax() {
-        return max;
-    }
-
-    public int getIncrement() {
-        return increment;
-    }
-
-    public int getCurrent() {
-        return current;
     }
 
     public String getSubtitle() {

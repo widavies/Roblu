@@ -62,6 +62,7 @@ public class Match extends Fragment implements ElementsListener {
 
         load();
 
+
         return view;
     }
 
@@ -81,17 +82,17 @@ public class Match extends Fragment implements ElementsListener {
                         else
                             layout.addView(els.getSTextfield(e.getID(), e.getTitle(), String.valueOf(team.getNumber()), true));
                     } else if (e instanceof EBoolean)
-                        layout.addView(els.getBoolean(e.getID(), e.getTitle(), ((EBoolean) e).getValue()));
+                        layout.addView(els.getBoolean(e.getID(), e.getTitle(), ((EBoolean) e).getValue(), ((EBoolean)e).isUsingNA()));
                     else if (e instanceof ECounter)
-                        layout.addView(els.getCounter(e.getID(), e.getTitle(), ((ECounter) e).getMin(), ((ECounter) e).getMax(), ((ECounter) e).getIncrement(), ((ECounter) e).getCurrent()));
+                        layout.addView(els.getCounter(e.getID(), e.getTitle(), ((ECounter) e).getMin(), ((ECounter) e).getMax(), ((ECounter) e).getIncrement(), ((ECounter) e).getCurrent(), !e.isModified()));
                     else if (e instanceof ESlider)
-                        layout.addView(els.getSlider(e.getID(), e.getTitle(), ((ESlider) e).getMax(), ((ESlider) e).getCurrent()));
+                        layout.addView(els.getSlider(e.getID(), e.getTitle(), ((ESlider) e).getMax(), ((ESlider) e).getCurrent(), !e.isModified()));
                     else if (e instanceof EChooser)
                         layout.addView(els.getChooser(e.getID(), e.getTitle(), ((EChooser) e).getValues(), ((EChooser) e).getSelected()));
                     else if (e instanceof ECheckbox)
                         layout.addView(els.getCheckbox(e.getID(), e.getTitle(), ((ECheckbox) e).getValues(), ((ECheckbox) e).getChecked()));
                     else if (e instanceof EStopwatch) {
-                        layout.addView(els.getStopwatch(e.getID(), e.getTitle(), Text.round(((EStopwatch) e).getTime(), 1)));
+                        layout.addView(els.getStopwatch(e.getID(), e.getTitle(), Text.round(((EStopwatch) e).getTime(), 1), !e.isModified()));
                     } else if (e instanceof ETextfield)
                         layout.addView(els.getTextfield(e.getID(), e.getTitle(), ((ETextfield) e).getText()));
                     else if(e instanceof EGallery) layout.addView(els.getGallery(e.getID(), e.getTitle(), ((EGallery) e).getImagePaths(view.getContext(), event), false, event, team, position));
@@ -99,6 +100,8 @@ public class Match extends Fragment implements ElementsListener {
                 }
             }
         }
+        // Add edits card
+        if(event.isCloudEnabled()) if(team.getTabs().get(position) != null) layout.addView(els.getEditHistory(team.getTabs().get(position).getEdits()));
     }
 
     public void setTeam(RTeam team) {
@@ -109,8 +112,8 @@ public class Match extends Fragment implements ElementsListener {
     public void nameInited(String name) {}
 
     @Override
-    public void booleanUpdated(int ID, boolean b) {
-        team.updateBoolean(position, ID, b);
+    public void booleanUpdated(int ID, int value) {
+        team.updateBoolean(position, ID, value);
         save();
 
     }

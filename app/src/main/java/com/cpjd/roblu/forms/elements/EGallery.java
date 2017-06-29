@@ -9,6 +9,17 @@ import com.cpjd.roblu.models.REvent;
 import java.io.File;
 import java.util.ArrayList;
 
+import lombok.Data;
+
+/**
+ * EGallery supports an array of images. Note, the gallery only stores the IDs, the IDs reference
+ * images stored on the file system. Images have to be packaged before being uploaded to anything.
+ *
+ * @since 3.4.0
+ * @author Will Davies
+ */
+
+@Data
 public class EGallery extends Element {
 
     private ArrayList<Long> imageIDs;
@@ -21,11 +32,6 @@ public class EGallery extends Element {
         if(imageIDs == null) imageIDs = new ArrayList<>();
         imageIDs.add(ID);
     }
-    public void setImageIDs(ArrayList<Long> imageIDs) {
-        this.imageIDs = imageIDs;
-    }
-
-
     public ArrayList<Long> getImageIDs() {
         if(imageIDs == null) imageIDs = new ArrayList<>();
         return imageIDs;
@@ -45,7 +51,6 @@ public class EGallery extends Element {
                 break;
             }
         }
-        System.out.println("removed ID: "+ID+" new size: "+imageIDs.size());
     }
 
 

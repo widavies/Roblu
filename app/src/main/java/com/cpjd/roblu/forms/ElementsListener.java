@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public interface ElementsListener extends Serializable {
 
     void nameInited(String name);
-    void booleanUpdated(int ID, boolean b);
+    void booleanUpdated(int ID, int value);
     void counterUpdated(int ID, int value);
     void sliderUpdated(int ID, int value);
     void chooserUpdated(int ID, int selected);

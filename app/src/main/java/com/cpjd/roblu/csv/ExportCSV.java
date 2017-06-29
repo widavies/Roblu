@@ -306,7 +306,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
                         // Process value for element
                         String value = "";
                         if(e instanceof EBoolean) {
-                            if(((EBoolean) e).getValue()) value = "Y";
+                            if(((EBoolean) e).getValue() == 1) value = "Y";
                             else value = "N";
                         }
                         else if(e instanceof ECheckbox) {
@@ -409,7 +409,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
                     // Process value for element
                     String value = "";
                     if(e instanceof EBoolean) {
-                        if(((EBoolean) e).getValue()) value = "Y";
+                        if(((EBoolean) e).getValue() == 1) value = "Y";
                         else value = "N";
                     }
                     else if(e instanceof ECheckbox) {
@@ -495,7 +495,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
                     // Process value for element
                     String value = "";
                     if(e instanceof EBoolean) {
-                        if(((EBoolean) e).getValue()) value = "T";
+                        if(((EBoolean) e).getValue() == 1) value = "T";
                         else value = "F";
                     }
                     else if(e instanceof ECheckbox) {

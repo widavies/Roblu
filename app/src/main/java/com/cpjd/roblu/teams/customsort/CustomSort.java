@@ -8,8 +8,6 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.forms.elements.ECheckbox;
-import com.cpjd.roblu.forms.elements.EChooser;
 import com.cpjd.roblu.forms.elements.ESTextfield;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RForm;
@@ -36,15 +34,8 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
         RForm form = new Loader(getApplicationContext()).loadForm(getIntent().getLongExtra("eventID", 0));
 
         for(int i = 0; i < form.getPit().size(); i++) {
-            if(form.getPit().get(i) instanceof EChooser || form.getPit().get(i) instanceof ECheckbox || form.getPit().get(i) instanceof ESTextfield) {
+            if(form.getPit().get(i) instanceof ESTextfield) {
                 form.getPit().remove(form.getPit().get(i));
-                i = 0;
-            }
-        }
-
-        for(int i = 0; i < form.getMatch().size(); i++) {
-            if(form.getMatch().get(i) instanceof EChooser || form.getMatch().get(i) instanceof ECheckbox) {
-                form.getMatch().remove(form.getMatch().get(i));
                 i = 0;
             }
         }

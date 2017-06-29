@@ -136,11 +136,11 @@
         </activity>
         <activity android:name=".cloud.ui.management.CloudControls"
                   android:label="Cloud Controls"/>
-        <activity android:name=".cloud.ui.assignments.Mailbox"
+        <activity android:name=".cloud.ui.ui.Mailbox"
                   android:label="Mailbox"/>
         <activity android:name=".events.ViewEvent"
                   android:label="View Events"/>
-        <activity android:name=".cloud.sync.CreateCloudTeam"
+        <activity android:name=".cloud.ui.CreateCloudTeam"
                   android:label="Create Cloud Team"/>
     </application>
 

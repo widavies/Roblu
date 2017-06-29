@@ -57,7 +57,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Roblu cannot be distributed for a price or to people outside of your local robotics team.
  *******************************************************/
 
-// util library idk why it's called text but it's easy to type
+/**
+ * Utility library for odds and ends functions.
+ *
+ * @since 1.0.0
+ * @author Will Davies
+ */
 public class Text {
 
     private static int width;
@@ -132,6 +137,13 @@ public class Text {
         }
     }
 
+    public static String concatenateArraylist(ArrayList<String> data) {
+        if(data == null || data.size() == 0) return "";
+        String temp = "";
+        for(String s : data) temp += s +"\n";
+        return temp;
+    }
+
     public static int getWidth() {
         return width;
     }
@@ -140,7 +152,6 @@ public class Text {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
     }
-
 
     public static void showSnackbar(View layout, Context context, String text, boolean error, int primary) {
         Snackbar s = Snackbar.make(layout, text, Snackbar.LENGTH_LONG);
@@ -280,12 +291,6 @@ public class Text {
 
 	}
 
-	public static String convertTimeOnly() {
-        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a", Locale.getDefault());
-        Date result = new Date(System.currentTimeMillis());
-        return sdf.format(result);
-    }
-
 	public static void loadAd(AdView adView) {
         AdRequest adRequest = new AdRequest.Builder().build();
         adView.loadAd(adRequest);
@@ -383,7 +388,6 @@ public class Text {
         AlertDialog dialog = builder.create();
         if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getDialogDirection();
         dialog.show();
-        dialog.dismiss();
     }
 
 }

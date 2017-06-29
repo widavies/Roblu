@@ -136,6 +136,9 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
             ArrayList<Element> pit = new ArrayList<>();
             pit.add(name);
             pit.add(number);
+
+
+
             form = new RForm(pit, new ArrayList<Element>());
         }
 

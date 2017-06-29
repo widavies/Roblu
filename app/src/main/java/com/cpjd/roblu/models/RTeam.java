@@ -398,6 +398,31 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     /**
+     * Removes all the tab except the PIT and PREDICTIONS tabs
+     */
+    public void removeAllTabsButPIT() {
+        if(tabs == null || tabs.size() == 0) return;
+
+        RTab pit = tabs.get(0);
+        RTab predictions = tabs.get(1);
+        tabs.clear();
+        tabs.add(pit);
+        tabs.add(predictions);
+    }
+
+    /**
+     * Removes all the tabs expected the tab at the specified position
+     * @param position position of the tab to keep
+     */
+    public void removeAllTabsBut(int position) {
+        if(tabs == null || tabs.size() == 0) return;
+
+        RTab tab = tabs.get(position);
+        tabs.clear();
+        tabs.add(tab);
+    }
+
+    /**
      * Returns the number of matches this team is in
      * @return
      */
@@ -419,11 +444,11 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
 
-    public void updateBoolean(int index, int ID, boolean b) {
+    public void updateBoolean(int index, int ID, int value) {
         for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
             if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((EBoolean) tabs.get(index).getElements().get(j)).setValue(b);
-                tabs.get(index).getElements().get(j).setModified(true);
+                ((EBoolean) tabs.get(index).getElements().get(j)).setValue(value);
+                tabs.get(index).getElements().get(j).setModified(!(ID == -1));
                 updateEdit();
                 break;
             }

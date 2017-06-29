@@ -1,5 +1,12 @@
 package com.cpjd.roblu.forms.elements;
 
+/**
+ * This card is just a helper tool for the custom sort utility, allows the user to pick an element
+ *
+ * @since 3.5.0
+ * @author Will Daviews
+ */
+
 public class ESort extends Element {
     private final String subtitle;
 

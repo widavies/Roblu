@@ -74,6 +74,7 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
     private double timeValue = 0.0;
     private int selected = 0;
     private RUI rui;
+    private int booleanCurrent = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -477,11 +478,11 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
         switch(position) {
             case BOOLEAN:
                 if(e != null) {
-                    boolean value =((EBoolean)e).getValue();
-                    checked.add(value);
-                    tl.addView(elements.getBoolean(-1, e.getTitle(), value));
+                    int value =((EBoolean)e).getValue();
+                    booleanCurrent = value;
+                    tl.addView(elements.getBoolean(-1, e.getTitle(), value, !e.isModified()));
                 }
-                else tl.addView(elements.getBoolean(-1, "Boolean", false));
+                else tl.addView(elements.getBoolean(-1, "Boolean", -1, true));
                 addBasic();
                 break;
             case COUNTER:
@@ -490,18 +491,18 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
                     max = ((ECounter)e).getMax();
                     increment = ((ECounter)e).getIncrement();
                     currentValue = ((ECounter)e).getCurrent();
-                    tl.addView(elements.getCounter(-1, e.getTitle(), min, max, increment, currentValue));
+                    tl.addView(elements.getCounter(-1, e.getTitle(), min, max, increment, currentValue, !e.isModified()));
                 }
-                else tl.addView(elements.getCounter(-1, "Counter", 0, 100, 1, 0));
+                else tl.addView(elements.getCounter(-1, "Counter", 0, 100, 1, 0, false));
                 addCounter();
                 break;
             case SLIDER:
                 if(e != null) {
                     max = ((ESlider)e).getMax();
                     currentValue = ((ESlider)e).getCurrent();
-                    tl.addView(elements.getSlider(-1, e.getTitle(), max, currentValue));
+                    tl.addView(elements.getSlider(-1, e.getTitle(), max, currentValue, !e.isModified()));
                 }
-                else tl.addView(elements.getSlider(-1, "Slider", 100, 0));
+                else tl.addView(elements.getSlider(-1, "Slider", 100, 0, false));
                 addSlider();
                 break;
             case CHOOSER:
@@ -525,9 +526,9 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
             case STOPWATCH:
                 if(e != null) {
                     timeValue = ((EStopwatch)e).getTime();
-                    tl.addView(elements.getStopwatch(-1, e.getTitle(), timeValue));
+                    tl.addView(elements.getStopwatch(-1, e.getTitle(), timeValue, !e.isModified()));
                 }
-                else tl.addView(elements.getStopwatch(-1, "Stopwatch", 0.0));
+                else tl.addView(elements.getStopwatch(-1, "Stopwatch", 0.0, false));
                 addBasic();
                 break;
             case TEXTFIELD:
@@ -582,7 +583,7 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
         Element e = null;
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
-        if(type == BOOLEAN) e = new EBoolean(title, checked.get(0));
+        if(type == BOOLEAN) e = new EBoolean(title, booleanCurrent);
         else if(type == SLIDER) e = new ESlider(title, max, currentValue);
         else if(type == COUNTER) e = new ECounter(title, min, max, increment, currentValue);
         else if(type == CHOOSER) e = new EChooser(title,  values, selected);
@@ -667,9 +668,8 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
     }
 
     @Override
-    public void booleanUpdated(int ID, boolean b) {
-        checked.clear();
-        checked.add(b);
+    public void booleanUpdated(int ID, int b) {
+        booleanCurrent = b;
     }
 
     @Override

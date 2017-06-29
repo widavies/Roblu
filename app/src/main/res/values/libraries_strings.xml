@@ -63,4 +63,10 @@
     <string name="library_image_licenseId">apache_2_0</string>
     <string name="library_image_libraryWebsite">https://github.com/lawloretienne/ImageGallery</string>
 
+    <string name="define_lombok"></string>
+    <string name="library_lombok_author">Reinier Zwitserloot</string>
+    <string name="library_lombok_libraryName">Lombok</string>
+    <string name="library_lombok_libraryDescription">Very spicy additions to the Java programming language.</string>
+    <string name="library_lombok_licenseId">MIT</string>
+    <string name="library_lombok_libraryWebsite">https://projectlombok.org/</string>
 </resources>

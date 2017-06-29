@@ -22,6 +22,7 @@ public class RTab implements Serializable, Comparable<RTab> {
      */
     private String title;
     private ArrayList<Element> elements;
+    private ArrayList<String> edits;
     private final boolean redAlliance;
     private boolean won;
 

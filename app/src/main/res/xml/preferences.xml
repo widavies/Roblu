@@ -21,20 +21,10 @@
             android:title="My team number"
             android:key="team_number"
             android:summary="Your team's FRC number" />
-        <com.cpjd.roblu.ui.MyEditPreference
-            android:defaultValue="100"
-            android:selectAllOnFocus="true"
-            android:singleLine="true"
-            android:inputType="number"
-            android:title="Image quality"
-            android:key="image_quality"
-            android:summary="Sets the quality of pictures that are taken with Roblu. 100 is best quality, but takes more space. 0 is worst quality, but takes less space and transfers
-faster when syncing data" />
         <com.cpjd.roblu.ui.MyPreference
             android:title="UI Customizer"
             android:key="customizer"
             android:summary="Change colors, animations, icons, layouts, and more"/>
-
     </com.cpjd.roblu.ui.MyPreferenceCategory>
 
     <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Roblu Cloud">
@@ -54,17 +44,6 @@ faster when syncing data" />
             android:title="Delete team"
             android:key="delete_team"
             android:summary="Delete your Roblu Cloud team"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
-
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Roblu Premium">
-        <com.cpjd.roblu.ui.MyPreference
-            android:title="Purchase Roblu Premium"
-            android:key="premium"
-            android:summary="Cost: $1. Benefits: No ads, UI customizer, sync multiple events on Roblu Cloud, access to machine learning analytics"/>
-        <com.cpjd.roblu.ui.MyPreference
-            android:title="Join team"
-            android:key="join"
-            android:summary="Join a Roblu Cloud team"/>
     </com.cpjd.roblu.ui.MyPreferenceCategory>
 
     <com.cpjd.roblu.ui.MyPreferenceCategory android:title="About">

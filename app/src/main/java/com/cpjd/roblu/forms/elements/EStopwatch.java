@@ -1,5 +1,15 @@
 package com.cpjd.roblu.forms.elements;
 
+/**
+ * A stopwatch that supports a decimal time value. Supports N/A
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
+
+import lombok.Data;
+
+@Data
 public class EStopwatch extends Element {
 
     private double time;

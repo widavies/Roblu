@@ -72,7 +72,7 @@ class PForms {
         match.add(new ECounter("High shots", 0, 10000, 1, 0));
         match.add(new ECounter("Gears lifted", 0, 10000, 1, 0));
         match.add(new EChooser("Autonomous?",defaultChoices,3));
-        match.add(new EBoolean("Teleoperated?", false));
+        match.add(new EBoolean("Teleoperated?", -1));
         match.add(new ECheckbox("Position", pos, defaultValues));
         match.add(new ECheckbox("Items", items, defaultValues2));
         match.add(new EStopwatch("Climb time", 0));

@@ -1,6 +1,14 @@
 package com.cpjd.roblu.forms.elements;
 
-// one line only, can be set to number input
+import lombok.Data;
+
+/**
+ * A more restrictive field, ONLY used for team number and team name in PIT.
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
+@Data
 public class ESTextfield extends Element {
 
     private final boolean numberOnly;
@@ -9,10 +17,6 @@ public class ESTextfield extends Element {
         super(title);
         this.numberOnly = numberOnly;
         setModified(true);
-    }
-
-    public boolean isNumberOnly() {
-        return numberOnly;
     }
 
     public String getSubtitle() {

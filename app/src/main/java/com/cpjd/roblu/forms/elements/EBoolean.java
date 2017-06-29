@@ -4,20 +4,27 @@ import java.io.Serializable;
 
 import lombok.Data;
 
+/**
+ * Stores either a true or false value. Has the option for a not observed value as well.
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
 @Data
 public class EBoolean extends Element implements Serializable {
 
-    private boolean value;
+    private int value;
+    private boolean usingNA;
 
-    public EBoolean(String title, boolean value) {
+    public EBoolean(String title, int value) {
         super(title);
         this.value = value;
-    }
-    public boolean getValue() {
-        return value;
+        this.usingNA = value == -1;
     }
     public String getSubtitle() {
-        return "Type: Boolean\nDefault value: "+value;
+        String temp = "false";
+        if(value == 1) temp = "true";
+        return "Type: Boolean\nDefault value: "+temp;
     }
 
 }

@@ -2,6 +2,15 @@ package com.cpjd.roblu.forms.elements;
 
 import java.util.ArrayList;
 
+import lombok.Data;
+
+/**
+ * Supports an array of checkboxes, each can either be true or false.
+ *
+ * @since 3.2.0
+ * @author Will Davies
+ */
+@Data
 public class ECheckbox extends Element {
 
     private ArrayList<String> values;
@@ -10,22 +19,6 @@ public class ECheckbox extends Element {
     public ECheckbox(String title, ArrayList<String> values, ArrayList<Boolean> checked) {
         super(title);
         this.values = values;
-        this.checked = checked;
-    }
-
-    public ArrayList<String> getValues() {
-        return values;
-    }
-
-    public void setValues(ArrayList<String> values) {
-        this.values = values;
-    }
-
-    public ArrayList<Boolean> getChecked() {
-        return checked;
-    }
-
-    public void setChecked(ArrayList<Boolean> checked) {
         this.checked = checked;
     }
 
