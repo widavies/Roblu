@@ -140,7 +140,8 @@
                   android:label="Mailbox"/>
         <activity android:name=".events.ViewEvent"
                   android:label="View Events"/>
-
+        <activity android:name=".cloud.sync.CreateCloudTeam"
+                  android:label="Create Cloud Team"/>
     </application>
 
 </manifest>

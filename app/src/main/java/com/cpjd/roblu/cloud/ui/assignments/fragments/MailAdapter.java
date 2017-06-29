@@ -7,33 +7,35 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 public class MailAdapter extends FragmentPagerAdapter {
 
-    public MailAdapter(FragmentManager fm) {
+    private long eventID;
+
+    public MailAdapter(FragmentManager fm, long eventID) {
         super(fm);
+        this.eventID = eventID;
     }
     @Override
     public Fragment getItem(int i) {
+        Bundle bundle = new Bundle();
+        bundle.putLong("eventID", 0);
         if(i == 0) {
-            AssignmentsFragment inbox = new AssignmentsFragment();
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("inbox", true);
+            ConflictsFragment conflicts = new ConflictsFragment();
+            conflicts.setArguments(bundle);
+            return conflicts;
+        } else {
+            InboxFragment inbox = new InboxFragment();
             inbox.setArguments(bundle);
             return inbox;
         }
-        else {
-            AssignmentsFragment outbox = new AssignmentsFragment();
-            Bundle bundle = new Bundle();
-            bundle.putSerializable("inbox", false);
-            outbox.setArguments(bundle);
-            return outbox;
-        }
     }
+
     @Override
     public int getCount() {
-        return 2    ;
+        return 2;
     }
+
     @Override
     public CharSequence getPageTitle(int position) {
-        if(position == 0) return "Inbox";
-        else return "Outbox";
+        if(position == 0) return "Merge conflicts";
+        else return "Inbox";
     }
 }

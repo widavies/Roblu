@@ -24,6 +24,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.cloud.sync.CreateCloudTeam;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
@@ -109,16 +110,36 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("customizer").setOnPreferenceClickListener(this);
             findPreference("premium").setOnPreferenceClickListener(this);
             findPreference("sync_service").setOnPreferenceClickListener(this);
+            findPreference("display_code").setOnPreferenceClickListener(this);
+
+            toggleCloudControls(settings.isSignedIn());
+
+        }
+
+        private void toggleCloudControls(boolean b) {
+            findPreference("create_cloud_team").setEnabled(b);
+            findPreference("display_code").setEnabled(b);
+            findPreference("delete_team").setEnabled(b);
         }
 
         @Override
         public boolean onPreferenceClick(Preference preference) {
             if(preference.getKey().equals("sync_service")) {
+                Text.showTeamCode(getActivity(), "234x99d");
+                return true;
+            }
+            else if(preference.getKey().equals("create_cloud_team")) {
+                startActivity(new Intent(getActivity(), CreateCloudTeam.class));
+                return true;
+            }
+            else if(preference.getKey().equals("sync_service")) {
                 if(new Loader(getActivity()).loadSettings().isSignedIn()) { // it will be the opposite because we are in the process of switching
                     Auth.GoogleSignInApi.signOut(apiClient).setResultCallback(new ResultCallback<Status>() {
                         @Override
                         public void onResult(@NonNull Status status) {
 
+                            if(status.isSuccess()) Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", true, 0);
+                            else Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
                         }
                     });
                     updateUI(false);
@@ -174,6 +195,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
         }
         private void handleSignInResult(GoogleSignInResult result) {
             if (result.isSuccess()) {
+                toggleCloudControls(true);
                 // Signed in successfully, show authenticated UI.
                 GoogleSignInAccount acct = result.getSignInAccount();
                 updateUI(true);

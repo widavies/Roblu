@@ -42,6 +42,18 @@ faster when syncing data" />
             android:title="Sign-in to Roblu Cloud"
             android:key="sync_service"
             android:summary="Sign-in to to Roblu Cloud to enable Roblu Cloud's team syncing services"/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Create Cloud Team"
+            android:key="create_cloud_team"
+            android:summary="Create a Roblu Cloud team"/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Display team code"
+            android:key="display_code"
+            android:summary="Show the team code so teammates can join the team"/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Delete team"
+            android:key="delete_team"
+            android:summary="Delete your Roblu Cloud team"/>
     </com.cpjd.roblu.ui.MyPreferenceCategory>
 
     <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Roblu Premium">

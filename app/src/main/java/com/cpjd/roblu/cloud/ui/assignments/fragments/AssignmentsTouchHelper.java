@@ -12,19 +12,28 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RUI;
 
+/**
+ * Manages interface of checkout cards. This class can be used in one of two ways:
+ *
+ * 1) Conflicts mode, swipe left to confirm, right to discard
+ * 2) Inbox mode, everything disabled
+ *
+ * @since 3.5.9
+ * @author Will Davies
+ */
 class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
-    private final AssignmentsAdaper mElementsAdapter;
+    private final CheckoutAdapter mElementsAdapter;
 
     // Helpers
     private final Drawable xMark, editMark;
     private final int xMarkMargin;
     private RUI rui;
-    private boolean inbox;
+    private int mode;
 
-    AssignmentsTouchHelper(AssignmentsAdaper elementsAdapter, boolean inbox) {
+    AssignmentsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mElementsAdapter = elementsAdapter;
-        this.inbox = inbox;
+        this.mode = mode;
 
         rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
 
@@ -42,17 +51,19 @@ class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
-        if(inbox) {
-        } else {
-
+        if(mode == CheckoutAdapter.CONFLICTS) {
+            if(direction == ItemTouchHelper.LEFT) {
+                // Merge the checkout
+            } else {
+                // Discard the checkout
+            }
         }
     }
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
-        int swipeFlags = ItemTouchHelper.LEFT;
-        if(inbox) swipeFlags = ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
-
+        int swipeFlags = 0;
+        if(mode == CheckoutAdapter.CONFLICTS) swipeFlags = ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT;
         return makeMovementFlags(0, swipeFlags);
     }
 

@@ -36,7 +36,7 @@ public class Mailbox extends AppCompatActivity {
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        adapter = new MailAdapter(getSupportFragmentManager());
+        adapter = new MailAdapter(getSupportFragmentManager(), getIntent().getLongExtra("eventID", 0));
         pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
         pager.setCurrentItem(0);

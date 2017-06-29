@@ -49,6 +49,11 @@ public class RSettings implements Serializable {
     private boolean isSignedIn;
 
     /**
+     * The owner's email address. Very important
+     */
+    private String adminEmail;
+
+    /**
      * Sets the default values for the RSettings class
      */
     public RSettings() {

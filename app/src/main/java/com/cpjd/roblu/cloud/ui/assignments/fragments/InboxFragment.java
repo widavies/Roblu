@@ -12,11 +12,15 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.RCheckout;
 
-public class AssignmentsFragment extends Fragment {
+import java.util.ArrayList;
+
+public class InboxFragment extends Fragment {
 
     private RecyclerView rv;
-    private AssignmentsAdaper adapter;
+    private CheckoutAdapter adapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -29,13 +33,19 @@ public class AssignmentsFragment extends Fragment {
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
-        adapter = new AssignmentsAdaper(view.getContext(), bundle.getBoolean("outbox"));
+        adapter = new CheckoutAdapter(view.getContext(), bundle.getLong("eventID"), CheckoutAdapter.INBOX);
         rv.setAdapter(adapter);
 
-
-        ItemTouchHelper.Callback callback = new AssignmentsTouchHelper(adapter, bundle.getBoolean("inbox"));
+        ItemTouchHelper.Callback callback = new AssignmentsTouchHelper(adapter, CheckoutAdapter.INBOX);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
+
+
+        ArrayList<RCheckout> checkouts = new ArrayList<>();
+        for(int i = 0; i < 5; i++) {
+            checkouts.add(new RCheckout(0, new Loader(getContext()).loadTeam(0, i), "Will Davies", System.currentTimeMillis()));
+        }
+        adapter.setElements(checkouts);
 
         return view;
     }

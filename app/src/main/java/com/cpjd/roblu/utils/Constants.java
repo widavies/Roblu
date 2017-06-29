@@ -22,8 +22,7 @@ public abstract class Constants {
     public static final int SETTINGS = 5;
     public static final int HEADER = 6;
     public static final int TUTORIALS = 7;
-    public static final int CLOUD_CONTROLS = 8;
-    public static final int MAILBOX = 9;
+    public static final int MAILBOX = 8;
 
     // Intent request and result codes
     public static final int GENERAL = 1; // when the request code doesn't matter
@@ -57,6 +56,7 @@ public abstract class Constants {
     public static final int PREMIUM_PURCHASED = 30;
     public static final int CLOUD_SIGN_IN = 31;
     public static final int VIEW_EVENT_CONFIRMED = 32;
+    public static final int CLOUD_TEAM_CREATED = 33;
 
     // Calendar
     static final String[] daysOfWeek = {

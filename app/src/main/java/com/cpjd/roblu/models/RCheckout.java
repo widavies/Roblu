@@ -40,18 +40,34 @@ public class RCheckout implements Serializable {
     private RTeam team;
 
     /**
-     * The Google email address of the user who has checked out this class, but not
-     * completed it yet. This is used if another user would like to override the checkout.
-     * When the user confirms and uploads the checkout, this variable should
-     * be reset to null.
+     * These variables are filled out ONLY when receiving a checkout.
      *
-     * How overriding works:
-     * -User taps "show hidden checkouts", and checkouts this event & confirms the override.
-     *  When uploading, the most recently edited checked out assignment will be merged.
-     *  The person who overrided this does NOT need this variable converted to there name.
      */
-    private String checkedOutTo;
+    private String completedBy;
+    private long completedTime;
 
+    /**
+     * The time that this checkout was merged into the master repo.
+     */
+    private long mergedTime;
+
+    /**
+     * Constructor to use for packaging a checkout
+     */
+    public RCheckout(long eventID, RTeam team) {
+        this.eventID = eventID;
+        this.team = team;
+    }
+
+    /**
+     * Constructor for de-packaging a checkout
+     */
+    public RCheckout(long eventID, RTeam team, String completedBy, long completedTime) {
+        this.eventID = eventID;
+        this.team = team;
+        this.completedBy = completedBy;
+        this.completedTime = completedTime;
+    }
 
     /**
      * Converts the instance of this class into a string that can be

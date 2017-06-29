@@ -37,7 +37,6 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.activities.AdvSettings;
 import com.cpjd.roblu.activities.SetupActivity;
 import com.cpjd.roblu.cloud.ui.assignments.Mailbox;
-import com.cpjd.roblu.cloud.ui.management.CloudControls;
 import com.cpjd.roblu.events.CreateEventPicker;
 import com.cpjd.roblu.events.EventSettings;
 import com.cpjd.roblu.forms.EditForm;
@@ -59,7 +58,6 @@ import com.cpjd.roblu.tutorials.Tutorial;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
-import com.google.android.gms.ads.AdView;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
@@ -91,8 +89,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private RUI rui;
     private FloatingActionButton fab;
     private Toolbar toolbar;
-    private Menu menu;
-
     // Teams & Adapters
     private LinkedList<RTeam> teams; // should be an up to date copy of all teams
     private LinkedList<RTeam> activeTeams; // can be manipulated, adjusted, etc. this is the one that is displayed
@@ -136,11 +132,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setRui(rui);
             new Loader(getApplicationContext()).saveSettings(settings);
         }
-        if(settings.isPremium()) setContentView(R.layout.activity_teams_view);
-        else {
-            setContentView(R.layout.activity_teams_view_premium);
-            Text.loadAd((AdView)findViewById(R.id.adView));
-        }
+        setContentView(R.layout.activity_teams_view);
         layout = (RelativeLayout) findViewById(R.id.main_layout);
         bar = (ProgressBar) findViewById(R.id.progress_bar);
         bar.setVisibility(View.GONE);
@@ -269,7 +261,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         items.add(new com.cpjd.roblu.utils.DividerDrawerItem(rui.getText()));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.EDIT_MASTER_FORM).withName("Edit master form").withIcon(master));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.TUTORIALS).withName("Tutorials").withIcon(tutorials));
-        items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.CLOUD_CONTROLS).withName("Cloud controls").withIcon(cloud));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SETTINGS).withName("Settings").withIcon(options));
 
         drawer = new DrawerBuilder().withActivity(this).withToolbar(toolbar).withDrawerItems(items).withSelectedItem(-1)
@@ -302,7 +293,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                                             Intent intent = new Intent(TeamsView.this, EventSettings.class);
                                             intent.putExtra("event", events.get(i));
                                             startActivityForResult(intent, Constants.GENERAL);
+                                            drawer.setSelectionAtPosition(-1);
                                             drawer.closeDrawer();
+                                            break;
                                         }
                                     }
                                 }
@@ -313,16 +306,17 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                                     drawer.setSelectionAtPosition(-1);
                                     drawer.closeDrawer();
                                 }
-                                else if(drawerItem.getIdentifier() == Constants.CLOUD_CONTROLS) {
-                                    Intent start = new Intent(TeamsView.this, CloudControls.class);
-                                    startActivityForResult(start, Constants.CLOUD_CONTROLS);
-                                    drawer.setSelectionAtPosition(-1);
-                                    drawer.closeDrawer();
-                                }
                                 else if(drawerItem.getIdentifier() == Constants.MAILBOX) {
-                                    startActivity(new Intent(TeamsView.this, Mailbox.class));
-                                    drawer.setSelectionAtPosition(-1);
-                                    drawer.closeDrawer();
+                                    for(int i = 0; i < events.size(); i++) {
+                                        if(events.get(i).getID() == (Long)drawerItem.getTag()) {
+                                            Intent intent = new Intent(TeamsView.this, Mailbox.class);
+                                            intent.putExtra("eventID", events.get(i).getID());
+                                            startActivityForResult(intent, Constants.GENERAL);
+                                            drawer.setSelectionAtPosition(-1);
+                                            drawer.closeDrawer();
+                                            break;
+                                        }
+                                    }
                                 }
                                 return true;
                             }
@@ -879,7 +873,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        this.menu = menu;
         getMenuInflater().inflate(R.menu.teams_view_actionbar, menu);
         new UIHandler(this, menu).updateMenu();
         return true;

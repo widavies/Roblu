@@ -1,8 +1,12 @@
 package com.cpjd.roblu.utils;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -18,6 +22,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.forms.elements.EBoolean;
@@ -327,6 +332,58 @@ public class Text {
         return string.contains(query);
     }
 
+    public static void showTeamCode(final Context context, final String teamCode) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
+        builder.setTitle("Your team code is: ");
+        builder.setMessage(teamCode);
+
+        builder.setPositiveButton("COPY", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+                ClipData clip = ClipData.newPlainText("Roblu team code", teamCode);
+                clipboard.setPrimaryClip(clip);
+                dialog.dismiss();
+                Toast.makeText(context, "Team code copied", Toast.LENGTH_LONG).show();
+            }
+        });
+        builder.setNegativeButton("Regenerate", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                confirmRegenerate(context);
+            }
+        });
+        AlertDialog dialog = builder.create();
+        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getDialogDirection();
+        dialog.show();
+    }
+
+    private static void confirmRegenerate(final Context context) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+
+        builder.setTitle("Warning");
+        builder.setMessage("If you regenerate your team code, all of your team members must rejoin this team.");
+
+        builder.setPositiveButton("Regenerate", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String teamCode = "generateCode()";
+                showTeamCode(context, teamCode);
+                dialog.dismiss();
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog dialog = builder.create();
+        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getDialogDirection();
+        dialog.show();
+        dialog.dismiss();
+    }
 
 }

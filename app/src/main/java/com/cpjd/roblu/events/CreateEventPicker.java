@@ -44,9 +44,7 @@ import java.util.Map;
 public class CreateEventPicker extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private final String items[] = { "Create event", "Import from TheBlueAlliance.com", "Import from backup file", "View Roblu Cloud Event"};
-
-    private final String sub_items[] = {"Create the event manually.", "Import the event from an online database.\nRecommended", "Import the event and all information from a previously exported backup file.","View event from Roblu Cloud if it's available"
-    };
+    private final String sub_items[] = {"Create the event manually.", "Import the event from an online database.\nRecommended", "Import the event and all information from a previously exported backup file.","View event from Roblu Cloud if it's available"};
 
     private long tempEventID;
     private Event tempEvent;
@@ -89,13 +87,12 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
                 TextView text1 = (TextView) view.findViewById(android.R.id.text1);
                 text1.setTextColor(rui.getText());
                 text1 = (TextView) view.findViewById(android.R.id.text2);
-                text1.setText(rui.getText());
+                text1.setTextColor(rui.getText());
                 return view;
             }
         };
         sharingView.setAdapter(adapter);
         sharingView.setOnItemClickListener(this);
-
 
         if(!settings.isPremium()) Text.loadAd((AdView)findViewById(R.id.adView));
 
