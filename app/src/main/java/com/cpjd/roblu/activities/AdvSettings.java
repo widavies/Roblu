@@ -108,7 +108,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("privacy").setOnPreferenceClickListener(this);
             findPreference("git").setOnPreferenceClickListener(this);
             findPreference("customizer").setOnPreferenceClickListener(this);
-            findPreference("premium").setOnPreferenceClickListener(this);
             findPreference("sync_service").setOnPreferenceClickListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
 

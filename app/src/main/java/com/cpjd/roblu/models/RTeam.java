@@ -398,6 +398,18 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     /**
+     * Gets the number of elements with the specified ID that are modified,
+     * used for statistics
+     * @param ID the element's ID
+     * @return the number of elements with the specified ID that have been modified
+     */
+    public int numModified(int ID) {
+        int temp = 0;
+        for(int i = 2; i < tabs.size(); i++) for(Element e : tabs.get(i).getElements()) if(e.getID() == ID && e.isModified()) temp++;
+        return temp;
+    }
+
+    /**
      * Removes all the tab except the PIT and PREDICTIONS tabs
      */
     public void removeAllTabsButPIT() {

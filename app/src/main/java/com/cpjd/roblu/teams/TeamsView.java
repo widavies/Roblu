@@ -704,7 +704,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                             }
                             if(tab == 0) {
                                 teams.get(i).setSearchTip2("Boolean: "+teamElement.getTitle()+" is true in "+(int)teams.get(i).getRelevance()+" / "+(teams.get(i).getTabs().size() - 2)+" matches");
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("Raw data: ");
+                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
                                 if(((EBoolean) teamElement).getValue() == 1) {
                                     if(j != teams.get(i).getTabs().size() - 1)teams.get(i).addToSearchTip3("T, ");
                                     else teams.get(i).addToSearchTip3("T");
@@ -732,11 +732,12 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                             teams.get(i).addRelevance(((ECounter) teamElement).getCurrent());
                             // let's also process an average
                             if(tab == 0) {
-                                if(teamElement.isModified()) teams.get(i).addAverage(((double)((ECounter) teamElement).getCurrent()) / ((double)teams.get(i).getTabs().size() - 2));
-                                if(((ECounter) teamElement).getCurrent() < teams.get(i).getMin()) teams.get(i).setMin(((ECounter) teamElement).getCurrent());
-                                if(((ECounter) teamElement).getCurrent() > teams.get(i).getMax()) teams.get(i).setMax(((ECounter) teamElement).getCurrent());
+                                if(teamElement.isModified()) teams.get(i).addAverage(((double)((ECounter) teamElement).getCurrent()) / ((double)teams.get(i).numModified(teamElement.getID())));
+                                if(j == 2) teams.get(i).setMin(((ECounter) teamElement).getCurrent());
+                                if(((ECounter) teamElement).getCurrent() < teams.get(i).getMin() && teamElement.isModified()) teams.get(i).setMin(((ECounter) teamElement).getCurrent());
+                                if(((ECounter) teamElement).getCurrent() > teams.get(i).getMax() && teamElement.isModified()) teams.get(i).setMax(((ECounter) teamElement).getCurrent());
 
-                                teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+" Min: "+teams.get(i).getMin() + " Max: "+teams.get(i).getMax());
+                                teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+" Min: "+teams.get(i).getMin() + " Max: "+teams.get(i).getMax()+" ");
                                 if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("Raw data: ");
                                 if(j != teams.get(i).getTabs().size() - 1) {
                                     if(teamElement.isModified()) teams.get(i).addToSearchTip3(((ECounter) teamElement).getCurrent()+", ");
@@ -761,9 +762,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                             teams.get(i).addRelevance(((ESlider) teamElement).getCurrent());
                             // let's also process an average
                             if(tab == 0) {
-                                teams.get(i).addAverage(((double)((ESlider) teamElement).getCurrent()) / ((double)teams.get(i).getTabs().size() - 2));
-                                if(((ESlider) teamElement).getCurrent() < teams.get(i).getMin()) teams.get(i).setMin(((ESlider) teamElement).getCurrent());
-                                if(((ESlider) teamElement).getCurrent() > teams.get(i).getMax()) teams.get(i).setMax(((ESlider) teamElement).getCurrent());
+                                teams.get(i).addAverage(((double)((ESlider) teamElement).getCurrent()) / ((double)teams.get(i).numModified(teamElement.getID())));
+                                if(j == 2) teams.get(i).setMin(((ESlider) teamElement).getCurrent());
+                                if(((ESlider) teamElement).getCurrent() < teams.get(i).getMin() && teamElement.isModified()) teams.get(i).setMin(((ESlider) teamElement).getCurrent());
+                                if(((ESlider) teamElement).getCurrent() > teams.get(i).getMax() && teamElement.isModified()) teams.get(i).setMax(((ESlider) teamElement).getCurrent());
 
                                 teams.get(i).setSearchTip2("Slider: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+" Min: "+teams.get(i).getMin() + " Max: "+teams.get(i).getMax());
                                 if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("Raw data: ");
@@ -790,12 +792,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                             teams.get(i).addRelevance(((EStopwatch) teamElement).getTime());
                             // let's also process an average
                             if(tab == 0) {
-                                teams.get(i).addAverage((((((EStopwatch) teamElement).getTime()) / ((double)teams.get(i).getTabs().size() - 2))));
-                                if(((EStopwatch) teamElement).getTime() < teams.get(i).getMinDouble()) teams.get(i).setMinDouble(((EStopwatch) teamElement).getTime());
-                                if(((EStopwatch) teamElement).getTime() > teams.get(i).getMaxDouble()) teams.get(i).setMaxDouble(((EStopwatch) teamElement).getTime());
+                                teams.get(i).addAverage((((((EStopwatch) teamElement).getTime()) / ((double)teams.get(i).numModified(teamElement.getID())))));
+                                if(j == 2) teams.get(i).setMinDouble(((EStopwatch) teamElement).getTime());
+                                if(((EStopwatch) teamElement).getTime() < teams.get(i).getMinDouble() && teamElement.isModified()) teams.get(i).setMinDouble(((EStopwatch) teamElement).getTime());
+                                if(((EStopwatch) teamElement).getTime() > teams.get(i).getMaxDouble() && teamElement.isModified()) teams.get(i).setMaxDouble(((EStopwatch) teamElement).getTime());
 
                                 teams.get(i).setSearchTip2("Stopwatch: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+"s Min: "+teams.get(i).getMinDouble() + "s Max: "+teams.get(i).getMaxDouble()+"s");
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("Raw data: ");
+                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
                                 if(j != teams.get(i).getTabs().size() - 1) {
                                     if(teamElement.isModified()) teams.get(i).addToSearchTip3(((EStopwatch) teamElement).getTime()+"s, ");
                                     else teams.get(i).addToSearchTip3("N/A, ");
@@ -833,40 +836,40 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                                 teams.get(i).setSearchTip2("Gallery: " + teamElement.getTitle() + " contains a total of " + (int)teams.get(i).getRelevance() + " images in pit");
                         }
                         else if(teamElement instanceof ECheckbox) {
-                            FILTER = NUMERICAL;
                             if(tab == 1 || tab == 2) { // (T,F,T,F),(T,F,S)
                                 if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) {
-                                    if(tab == 2) teams.get(i).setSearchTip3("Raw data (PIT): ");
-                                    else teams.get(i).setSearchTip3("Raw data (Predictions): ");
+                                    if(tab == 2) teams.get(i).setSearchTip3("\nRaw data (PIT): ");
+                                    else teams.get(i).setSearchTip3("\nRaw data (Predictions): ");
                                 }
                                 for(int k = 0; k < ((ECheckbox) teamElement).getChecked().size(); k++) {
+                                    teams.get(i).addRelevance(1);
                                     String ind = "F";
                                     if(((ECheckbox) teamElement).getChecked().get(k)) ind = "T";
                                     if(k == 0) teams.get(i).addToSearchTip3("("+ind+",");
                                     else if(k == ((ECheckbox) teamElement).getChecked().size() - 1) teams.get(i).addToSearchTip3(ind+")");
                                     else teams.get(i).addToSearchTip3(ind+",");
                                 }
-                            } else { // TAB 2
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) {
-                                    if(tab == 0) teams.get(i).setSearchTip3("Raw data: ");
-                                    else teams.get(i).setSearchTip3("Raw data: ");
-                                }
+                            } else { // TAB 0
+                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
                                 for(int k = 0; k < ((ECheckbox) teamElement).getChecked().size(); k++) {
+                                    teams.get(i).addRelevance(1);
                                     String ind = "F";
                                     if(((ECheckbox) teamElement).getChecked().get(k)) ind = "T";
                                     if(k == 0) teams.get(i).addToSearchTip3("("+ind+",");
                                     else if(k == ((ECheckbox) teamElement).getChecked().size() - 1) teams.get(i).addToSearchTip3(ind+")");
                                     else teams.get(i).addToSearchTip3(ind+",");
                                 }
-                                if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3(",");
+                                if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3(", ");
                             }
                         } else if(teamElement instanceof EChooser) {
                             FILTER = NUMERICAL;
                             if(tab == 0) {
+                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
+
                                 if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3(((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+", ");
                                 else teams.get(i).addToSearchTip3(((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected()));
                             } else {
-                                if(tab == 0) teams.get(i).setSearchTip2("EChooser: "+teamElement.getTitle()+" has value "+((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+"s in predictions");
+                                if(tab == 1) teams.get(i).setSearchTip2("EChooser: "+teamElement.getTitle()+" has value "+((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+"s in predictions");
                                 else teams.get(i).setSearchTip2("EChooser: "+teamElement.getTitle()+" has value "+((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+"s in pit");
                             }
                         }
@@ -874,6 +877,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 }
                 Collections.sort(teams);
                 Collections.reverse(teams);
+                FILTER = CUSTOM;
                 lastFilter = CUSTOM;
                 return teams;
 
