@@ -110,6 +110,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("customizer").setOnPreferenceClickListener(this);
             findPreference("sync_service").setOnPreferenceClickListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
+            findPreference("create_cloud_team").setOnPreferenceClickListener(this);
 
             toggleCloudControls(settings.isSignedIn());
 

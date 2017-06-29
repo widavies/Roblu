@@ -253,7 +253,7 @@ public class Text {
         return t;
     }
 
-	public static boolean launchEventPicker(Context context,final EventSelectListener listener) {
+	public static boolean launchEventPicker(Context context, final EventSelectListener listener) {
         final Dialog d = new Dialog(context);
         d.setTitle("Pick event:");
         d.setContentView(R.layout.event_import_dialog);
