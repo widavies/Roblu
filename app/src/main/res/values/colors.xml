@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="accent">#FFCA28</color>
+    <color name="background">#303030</color>
+    <color name="red">#D32F2F</color>
+    <color name="darkRed">#B71C1C</color>
+    <color name="card">#444444</color>
+
+    <color name="material_drawer_primary">@color/colorPrimary</color>
+    <color name="material_drawer_primary_dark">@color/colorPrimaryDark</color>
+    <color name="material_drawer_accent">@color/colorAccent</color>
+    <color name="material_drawer_background">@color/background</color>
+    <color name="material_drawer_primary_text">#FFFFFF</color>
+    <color name="material_drawer_selected">@color/colorPrimary</color>
+    <color name="material_drawer_selected_text">#FFFFFF</color>
+    <color name="material_drawer_header_selection_text">#FFFFFF</color>
+    <color name="material_drawer_secondary_text">#FFFFFF</color>
+    <color name="material_drawer_hint_text">#FFFFFF</color>
+    <color name="material_drawer_divider">#FFFFFF</color>
+
+    <color name="textColorPrimary">#FFFFFF</color>
+    <color name="colorAccent">#c8e8ff</color>
+</resources>

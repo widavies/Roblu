@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent" >
+    <TextView
+        android:id="@+id/spinner_tip"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="Event:"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+    <Spinner
+        android:id="@+id/type"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/spinner_tip"
+        android:layout_toRightOf="@+id/spinner_tip"
+        android:layout_toEndOf="@+id/spinner_tip"
+        android:layout_marginLeft="11dp"
+        android:layout_marginStart="11dp"/>
+    <Button
+        android:id="@+id/button7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Import form from event"
+        android:layout_below="@+id/type"
+        android:layout_alignLeft="@+id/spinner_tip"
+        android:layout_alignStart="@+id/spinner_tip"
+        android:layout_marginTop="12dp"/>
+</RelativeLayout>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /*******************************************************
+  ~  * Copyright (C) 2016 Will Davies wdavies973@gmail.com
+  ~  *
+  ~  * This file is part of Roblu
+  ~  *
+  ~  * Roblu cannot be distributed for a price or to people outside of your local robotics team.
+  ~  *******************************************************/
+  -->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Application settings">
+        <com.cpjd.roblu.ui.MyEditPreference
+            android:defaultValue="0"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:inputType="number"
+            android:title="My team number"
+            android:key="team_number"
+            android:summary="Your team's FRC number" />
+        <com.cpjd.roblu.ui.MyEditPreference
+            android:defaultValue="100"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:inputType="number"
+            android:title="Image quality"
+            android:key="image_quality"
+            android:summary="Sets the quality of pictures that are taken with Roblu. 100 is best quality, but takes more space. 0 is worst quality, but takes less space and transfers
+faster when syncing data" />
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="UI Customizer"
+            android:key="customizer"
+            android:summary="Change colors, animations, icons, layouts, and more"/>
+
+    </com.cpjd.roblu.ui.MyPreferenceCategory>
+
+    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Roblu Cloud">
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Sign-in to Roblu Cloud"
+            android:key="sync_service"
+            android:summary="Sign-in to to Roblu Cloud to enable Roblu Cloud's team syncing services"/>
+    </com.cpjd.roblu.ui.MyPreferenceCategory>
+
+    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Roblu Premium">
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Purchase Roblu Premium"
+            android:key="premium"
+            android:summary="Cost: $1. Benefits: No ads, UI customizer, sync multiple events on Roblu Cloud, access to machine learning analytics"/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Join team"
+            android:key="join"
+            android:summary="Join a Roblu Cloud team"/>
+    </com.cpjd.roblu.ui.MyPreferenceCategory>
+
+    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="About">
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="About"
+            android:key="about"
+            android:summary="External library information"/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Privacy and terms"
+            android:key="privacy"
+            android:summary="View troubleshooting, console commands, how Roblu handles your data, and the terms of use."/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="Roblu is open source"
+            android:key="git"
+            android:summary="View project on Github"/>
+    </com.cpjd.roblu.ui.MyPreferenceCategory>
+</PreferenceScreen>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.cpjd.roblu"
+          android:versionCode="35"
+          android:versionName="3.5.8">
+
+    <uses-sdk
+        android:minSdkVersion="16"
+        android:targetSdkVersion="25" />
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false"/>
+
+
+    <application
+        android:name="android.support.multidex.MultiDexApplication"
+        android:allowBackup="true"
+        android:icon="@drawable/launcher"
+        android:label= "Roblu Master"
+        android:theme="@style/AppTheme">
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.cpjd.roblu"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths"/>
+        </provider>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version"/>
+
+        <activity
+            android:name=".events.CreateEvent"
+            android:label="@string/title_activity_create_event_view"
+            android:parentActivityName=".events.CreateEventPicker"
+            android:windowSoftInputMode="adjustPan">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cpjd.roblu.events.CreateEventPicker"/>
+        </activity>
+        <activity
+            android:name=".teams.customsort.CustomSort"
+            android:label="">
+        </activity>
+        <activity
+            android:name=".forms.EditForm"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_create_form"
+            android:parentActivityName=".events.CreateEvent">
+        </activity>
+        <activity
+            android:name=".teams.TeamsView"
+            android:launchMode="singleTop"
+            android:configChanges="orientation|screenSize"
+            android:label="Roblu Master">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER"/>
+
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".teams.TeamViewer"
+            android:label="@string/title_activity_team_viewer">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cpjd.roblu.teams.TeamsView"/>
+        </activity>
+        <activity
+            android:name=".forms.images.ImageGalleryActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label=""/>
+        <activity
+            android:name=".forms.images.FullScreenImageGalleryActivity"
+            android:configChanges="orientation|keyboardHidden|screenSize"
+            android:label=""/>
+        <activity
+            android:name=".activities.SetupActivity"
+            android:label="Setup"
+            android:screenOrientation="portrait"/>
+        <activity
+            android:name=".activities.About"
+            android:label="about">
+        </activity>
+        <activity
+            android:name=".activities.AdvSettings"
+            android:label="Settings"
+            android:parentActivityName=".activities.AdvSettings">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cpjd.roblu.activities.AdvSettings"/>
+        </activity>
+        <activity
+            android:name=".forms.Predefined"
+            android:label="@string/title_activity_predefined"
+            android:parentActivityName=".events.CreateEvent">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.cpjd.roblu.events.CreateEvent"/>
+        </activity>
+        <activity
+            android:name=".events.EventSettings"
+            android:label="@string/title_activity_predefined">
+        </activity>
+        <activity
+            android:name=".events.CreateEventPicker"
+            android:label="@string/title_activity_create_event_picker">
+        </activity>
+        <activity
+            android:name=".tba.APIEventSelect"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_apievent_select">
+        </activity>
+        <activity
+            android:name=".forms.AddElement"
+            android:configChanges="orientation|screenSize"
+            android:label="@string/title_activity_add_element">
+        </activity>
+        <activity
+            android:name=".tutorials.Tutorial"
+            android:label="@string/title_activity_tutorial">
+        </activity>
+        <activity android:name=".ui.UICustomizer">
+        </activity>
+        <activity android:name=".cloud.ui.management.CloudControls"
+                  android:label="Cloud Controls"/>
+        <activity android:name=".cloud.ui.assignments.Mailbox"
+                  android:label="Mailbox"/>
+        <activity android:name=".events.ViewEvent"
+                  android:label="View Events"/>
+
+    </application>
+
+</manifest>

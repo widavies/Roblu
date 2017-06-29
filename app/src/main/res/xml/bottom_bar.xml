@@ -1,0 +1,10 @@
+<tabs>
+    <tab
+        id="@+id/tab_pit"
+        icon="@drawable/pit"
+        title="PIT Form" />
+    <tab
+        id="@+id/tab_match"
+        icon="@drawable/match"
+        title="Match form" />
+</tabs>

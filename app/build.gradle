@@ -1,0 +1,113 @@
+apply plugin: 'com.android.application'
+
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.3.3'
+        classpath 'com.google.gms:google-services:3.0.0'
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+}
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion "25.0.3"
+    defaultConfig {
+        applicationId "com.cpjd.roblu"
+        minSdkVersion 16
+        targetSdkVersion 25
+        versionCode 30
+        versionName "3.5.9"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        javaCompileOptions {
+            annotationProcessorOptions {
+                includeCompileClasspath = true
+            }
+        }
+        multiDexEnabled true
+    }
+    configurations.all {
+        resolutionStrategy.force 'com.google.code.findbugs:jsr305:1.3.9'
+    }
+    signingConfigs {
+        release {
+            storeFile file("C:/App-keystores/RobluKeystoreRelease.jks")
+            storePassword ANDROID_STORE_PASSWORD
+            keyAlias "Roblu"
+            keyPassword ANDROID_KEY_PASSWORD
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+    }
+    packagingOptions {
+        pickFirst 'META-INF/DEPENDENCIES.txt'
+        pickFirst 'META-INF/LICENSE.txt'
+        pickFirst 'META-INF/NOTICE.txt'
+        pickFirst 'META-INF/NOTICE'
+        pickFirst 'META-INF/LICENSE'
+        pickFirst 'META-INF/DEPENDENCIES'
+        pickFirst 'META-INF/notice.txt'
+        pickFirst 'META-INF/license.txt'
+        pickFirst 'META-INF/dependencies.txt'
+        pickFirst 'META-INF/LGPL2.1'
+    }
+
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    testCompile 'junit:junit:4.12'
+    compile files('libs/json-simple-1.1.1.jar')
+    compile files('libs/TBA-API.jar')
+    compile files('libs/poi-3.12-android-a.jar', 'libs/poi-ooxml-schemas-3.12-20150511-a.jar')
+    compile 'com.google.code.gson:gson:2.8.1'
+    compile('com.mikepenz:aboutlibraries:5.9.5@aar') { transitive = true }
+
+    compile('com.mikepenz:materialdrawer:5.9.0@aar') {
+        transitive = true
+    }
+    compile 'com.roughike:bottom-bar:2.1.1'
+    compile 'com.google.android.gms:play-services-ads:10.2.6'
+    compile 'com.google.android.gms:play-services-auth:10.2.6'
+    compile 'com.android.support:preference-v7:25.3.1'
+    compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support:cardview-v7:25.3.1'
+    compile 'com.android.support:recyclerview-v7:25.3.1'
+    compile 'com.android.support:design:25.3.1'
+    compile 'com.miguelcatalan:materialsearchview:1.4.0'
+    compile 'pub.devrel:easypermissions:0.2.1'
+    compile 'com.github.lawloretienne:imagegallery:0.1.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
+    compile 'com.google.guava:guava:22.0-android'
+    compile 'com.jrummyapps:colorpicker:2.1.6'
+    compile "org.projectlombok:lombok:1.16.16"
+    compile 'javax.annotation:jsr250-api:1.0'
+}
+
+apply plugin: 'com.google.gms.google-services'

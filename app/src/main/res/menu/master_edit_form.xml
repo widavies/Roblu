@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/import_from_event"
+        android:icon="@drawable/download"
+        app:showAsAction="ifRoom"
+        android:title="Import from event" />
+    <item
+        android:id="@+id/add_element"
+        android:icon="@drawable/confirm"
+        app:showAsAction="ifRoom"
+		android:title="Add element" />
+
+</menu>

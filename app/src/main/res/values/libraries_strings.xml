@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="define_TBAAPI"></string>
+    <string name="library_TBAAPI_author">Will Davies</string>
+    <string name="library_TBAAPI_libraryName">TBA-API</string>
+    <string name="library_TBAAPI_libraryDescription">TBA-API is a versatile API used for pulling data from TheBlueAlliance.com.</string>
+    <string name="library_TBAAPI_libraryWebsite">http://www.github.com/wdavies973/tba-api</string>
+    <string name="library_TBAAPI_isOpenSource">true</string>
+
+    <string name="define_apache"></string>
+    <string name="library_apache_author">Apache Software Foundation</string>
+    <string name="library_apache_libraryName">Apache POI</string>
+    <string name="library_apache_libraryDescription">Java API for Microsoft Documents. Used to generate .xlsx files. Copyright (c) 2002&#8211;2017.</string>
+    <string name="library_apache_licenseId">apache_2_0</string>
+    <string name="library_apache_libraryWebsite">https://poi.apache.org/</string>
+
+    <string name="define_json"></string>
+    <string name="library_json_author">Yidong Fang and Chris Nokleberg</string>
+    <string name="library_json_libraryName">JSON-Simple</string>
+    <string name="library_json_libraryDescription">Simple JSON processing library using in TBA&#8211;API. Copyright &#169; 2006&#8211;2009.</string>
+    <string name="library_json_licenseId">apache_2_0</string>
+    <string name="library_json_libraryWebsite">https://code.google.com/archive/p/json-simple/</string>
+
+    <string name="define_spark"></string>
+    <string name="library_spark_author">Robinhood</string>
+    <string name="library_spark_libraryName">Spark</string>
+    <string name="library_spark_libraryDescription">An API for displaying simple Android sparkline chart views. Copyright &#169; 2016 Robinhood Markets, Inc. </string>
+    <string name="library_spark_licenseId">apache_2_0</string>
+    <string name="library_spark_libraryWebsite">https://github.com/robinhood/spark/</string>
+
+    <string name="define_bb"></string>
+    <string name="library_bb_author">Iiro Krankka</string>
+    <string name="library_bb_libraryName">BottomBar</string>
+    <string name="library_bb_libraryDescription">A custom view component that mimics the new Material Design Bottom Navigation pattern. Copyright (c) 2016.</string>
+    <string name="library_bb_licenseId">apache_2_0</string>
+    <string name="library_bb_libraryWebsite">https://github.com/roughike/BottomBar</string>
+
+    <string name="define_easy"></string>
+    <string name="library_easy_author">Google</string>
+    <string name="library_easy_libraryName">EasyPermissions</string>
+    <string name="library_easy_libraryDescription">Simplify Android M system permissions.</string>
+    <string name="library_easy_licenseId">apache_2_0</string>
+    <string name="library_easy_libraryWebsite">https://github.com/googlesamples/easypermissions/</string>
+
+    <string name="define_search"></string>
+    <string name="library_search_author">Miguel Catalan</string>
+    <string name="library_search_libraryName">Material Search View</string>
+    <string name="library_search_libraryDescription">Library to implement SearchView in a Material Design Approach.</string>
+    <string name="library_search_licenseId">apache_2_0</string>
+    <string name="library_search_libraryWebsite">https://github.com/MiguelCatalan/MaterialSearchView</string>
+
+    <string name="define_color"></string>
+    <string name="library_color_author">Jared Rummler</string>
+    <string name="library_color_libraryName">ColorPicker</string>
+    <string name="library_color_libraryDescription">A highly customizable color picker for Android.</string>
+    <string name="library_color_licenseId">apache_2_0</string>
+    <string name="library_color_libraryWebsite">https://github.com/jaredrummler/ColorPicker</string>
+
+    <string name="define_image"></string>
+    <string name="library_image_author">Etienne Lawlor</string>
+    <string name="library_image_libraryName">ImageGallery</string>
+    <string name="library_image_libraryDescription">A material design gallery used to host an array of images. This library was modified.</string>
+    <string name="library_image_licenseId">apache_2_0</string>
+    <string name="library_image_libraryWebsite">https://github.com/lawloretienne/ImageGallery</string>
+
+</resources>

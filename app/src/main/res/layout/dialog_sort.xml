@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="300dp"
+              android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/sort_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:layout_margin="20dp"
+        android:text="Filter type:"/>
+    <RadioGroup
+        android:id="@+id/filter_group"
+        android:layout_width="match_parent"
+        android:layout_marginLeft="20dp"
+        android:layout_marginBottom="10dp"
+        android:layout_height="wrap_content">
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/numerical"
+            android:layout_width="match_parent"
+            android:layout_marginBottom="10dp"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Numerical"/>
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/alphabetical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Alphabetical"/>
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/last_edited"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Last edited"/>
+        <android.support.v7.widget.AppCompatRadioButton
+            android:id="@+id/custom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="15dp"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="Custom"/>
+    </RadioGroup>
+
+</LinearLayout>

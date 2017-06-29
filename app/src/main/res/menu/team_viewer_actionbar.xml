@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/match_settings"
+        android:icon="@drawable/settings_circle"
+        app:showAsAction="ifRoom"
+        android:title="Match settings"/>
+    <item
+        android:id="@+id/add_match"
+        android:icon="@drawable/create"
+        app:showAsAction="ifRoom"
+        android:title="Add match"/>
+
+
+</menu>

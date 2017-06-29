@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:tools="http://schemas.android.com/tools"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      tools:context="com.cpjd.roblu.Analytics">
+
+    <item
+        android:id="@+id/api_manual"
+        android:icon="@drawable/create"
+        app:showAsAction="always"
+        android:title="Manually add event"/>
+
+</menu>
