@@ -188,7 +188,7 @@ public class EventSettings extends AppCompatActivity {
                     }
                 });
                 AlertDialog dialog = builder.create();
-                if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
                 dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
                 dialog.show();
                 dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
@@ -225,7 +225,7 @@ public class EventSettings extends AppCompatActivity {
                     });
                     AlertDialog dialog = builder.create();
                     if (dialog.getWindow() != null)
-                        dialog.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                        dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
                     dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
                     dialog.show();
                     dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
@@ -282,7 +282,7 @@ public class EventSettings extends AppCompatActivity {
                     });
                     AlertDialog dialog = builder.create();
                     if (dialog.getWindow() != null)
-                        dialog.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                        dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
                     dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
                     dialog.show();
                     dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
@@ -309,7 +309,7 @@ public class EventSettings extends AppCompatActivity {
                     });
                     AlertDialog dialog = builder.create();
                     if (dialog.getWindow() != null)
-                        dialog.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                        dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
                     dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
                     dialog.show();
                     dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
