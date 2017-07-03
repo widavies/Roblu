@@ -329,7 +329,7 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
                         }
                         boolean isRed = result == com.cpjd.main.Constants.CONTAINS_TEAM_RED;
 
-                        t.addTab(Text.createNew(form.getMatch()), name, isRed, e.matches[j].isOnWinningAlliance(t.getNumber()), e.matches[j].time);
+                        t.addTab(Text.createNew(form.getMatch()), name, isRed, e.matches[j].isOnWinningAlliance(t.getNumber()), e.matches[j].time * 1000);
                         l.saveTeam(t, eventID);
                     }
                 }

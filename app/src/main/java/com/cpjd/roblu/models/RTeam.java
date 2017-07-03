@@ -149,6 +149,11 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         return team;
     }
 
+    public void addTab(RTab tab) {
+        if(this.tabs == null) this.tabs = new ArrayList<>();
+        this.tabs.add(tab);
+    }
+
     /**
      * Loads the correct element from the specified tab and with the specified ID
      * @param tab the tab to get the element from

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.cloud.ui.CheckoutListener;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTeam;
@@ -34,6 +35,7 @@ import lombok.Getter;
 public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Getter
     private final Context context;
+    private CheckoutListener listener;
     private RUI rui;
     private long eventID;
 
@@ -51,6 +53,14 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.rui = new Loader(getContext()).loadSettings().getRui();
     }
 
+    public CheckoutAdapter(Context context, long eventID, int mode, CheckoutListener listener){
+        this.context = context;
+        this.mode = mode;
+        this.eventID = eventID;
+        this.listener = listener;
+        this.rui = new Loader(getContext()).loadSettings().getRui();
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.teams_item, parent, false);
@@ -59,7 +69,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if(listener != null) listener.checkoutClicked(v);
             }
         });
         return holder;
@@ -113,7 +123,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
 
             if(mode == MYMATCHES) {
                 title.setText(checkout.getTeam().getTabs().get(0).getTitle());
-                number.setText("#"+checkout.getTeam().getNumber());
+                number.setText("");
                 String alliance = "blue alliance";
                 if(checkout.getTeam().getTabs().get(0).isRedAlliance()) alliance = "red alliance";
                 subtitle.setText("Match scheduled for "+Text.convertTime(checkout.getTeam().getTabs().get(0).getTime())+"\nYou are on the "+alliance+"\nTeammates: "+Text.concantenteTeams(checkout.getTeam().getTabs().get(0).getTeammates())
