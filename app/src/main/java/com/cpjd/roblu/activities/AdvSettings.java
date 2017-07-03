@@ -113,6 +113,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("create_cloud_team").setOnPreferenceClickListener(this);
 
             toggleCloudControls(settings.isSignedIn());
+            updateUI(settings.isSignedIn());
 
         }
 
@@ -198,6 +199,8 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 toggleCloudControls(true);
                 // Signed in successfully, show authenticated UI.
                 GoogleSignInAccount acct = result.getSignInAccount();
+                settings.setAdminEmail(acct.getEmail());
+                settings.setAdminDisplayName(acct.getDisplayName());
                 updateUI(true);
             } else {
                 // Signed out, show unauthenticated UI.

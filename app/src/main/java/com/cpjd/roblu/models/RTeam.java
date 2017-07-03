@@ -188,8 +188,8 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         // Check for null team (pit)
         if (this.tabs == null) {
             this.tabs = new ArrayList<>();
-            addTab(Text.createNew(form.getPit()), "PIT", false, false);
-            addTab(Text.createNew(form.getMatch()), "PREDICTIONS", false, false);
+            addTab(Text.createNew(form.getPit()), "PIT", false, false, 0);
+            addTab(Text.createNew(form.getMatch()), "PREDICTIONS", false, false, 0);
             return;
         }
 
@@ -298,6 +298,20 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                 }
             }
         }
+
+        // set item positions
+        if(tabs == null || tabs.size() == 0) return;
+        formb = form.getPit();
+        for(int i = 0 ; i < tabs.size(); i++) {
+            if(i == 1) formb = form.getMatch();
+            for(int j = 0; j < tabs.get(i).getElements().size(); j++) {
+                for(int k = 0; k < formb.size(); k++) {
+                    if(formb.get(k).getID() == tabs.get(i).getElements().get(j).getID()) {
+                        tabs.get(i).getElements().get(j).setPosition(k);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -325,8 +339,8 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * @param won whether the user has won this match
      * @return the position of the new tab within the array
      */
-    public int addTab(ArrayList<Element> elements, String title, boolean isRedAlliance, boolean won) {
-        tabs.add(new RTab(elements, title, isRedAlliance, won));
+    public int addTab(ArrayList<Element> elements, String title, boolean isRedAlliance, boolean won, long time) {
+        tabs.add(new RTab(elements, title, isRedAlliance, won, time));
         Collections.sort(tabs);
         for(int i = 0; i < tabs.size(); i++) if(tabs.get(i).getTitle().equals(title)) return i;
         return 1;

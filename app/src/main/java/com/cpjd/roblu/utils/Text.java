@@ -38,6 +38,7 @@ import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RTeam;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 
@@ -252,7 +253,16 @@ public class Text {
         if(t != null) t.setID(e.getID());
         return t;
     }
+    public static String concantenteTeams(ArrayList<RTeam> teams) {
+        if(teams == null || teams.size() == 0) return "";
 
+        String temp = "";
+        for(int i = 0; i < teams.size(); i++) {
+            if(i != teams.size() - 1) temp += "#"+teams.get(i).getNumber()+", ";
+            else temp += "#"+teams.get(i).getNumber();
+        }
+        return temp;
+    }
 	public static boolean launchEventPicker(Context context, final EventSelectListener listener) {
         final Dialog d = new Dialog(context);
         d.setTitle("Pick event:");
@@ -277,7 +287,7 @@ public class Text {
                 d.dismiss();
             }
         });
-        if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+        if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
         d.show();
         return true;
     }
@@ -361,7 +371,7 @@ public class Text {
             }
         });
         AlertDialog dialog = builder.create();
-        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getDialogDirection();
+        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
         dialog.show();
     }
 

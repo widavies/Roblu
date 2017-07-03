@@ -17,6 +17,8 @@ import lombok.Data;
 @Data
 public class RCheckout implements Serializable {
 
+    private long ID;
+
     /**
      * More of a backend variable, but essentially, Roblu supports multiple events,
      * so we have to know the correct event to add this checkout to when it's received
@@ -50,6 +52,7 @@ public class RCheckout implements Serializable {
      * The time that this checkout was merged into the master repo.
      */
     private long mergedTime;
+    private String conflictType;
 
     /**
      * Constructor to use for packaging a checkout

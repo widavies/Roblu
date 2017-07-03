@@ -142,6 +142,8 @@
                   android:label="Create Cloud Team"/>
         <activity android:name =".forms.images.Drawing"
                   android:label="Drawing"/>
+        <activity android:name=".activities.MyMatches"
+                  android:label="My matches"/>
     </application>
 
 </manifest>

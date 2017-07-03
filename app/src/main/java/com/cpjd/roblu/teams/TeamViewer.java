@@ -275,7 +275,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                         }
                     });
                     AlertDialog dialog = builder.create();
-                    if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                    if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
                     dialog.show();
                     dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
                     dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());

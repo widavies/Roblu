@@ -44,7 +44,7 @@ public class ConflictsFragment extends Fragment {
         for(int i = 0; i < 5; i++) {
             checkouts.add(new RCheckout(0, new Loader(getContext()).loadTeam(0, i), "Will Davies", System.currentTimeMillis()));
         }
-        adapter.setElements(checkouts);
+        adapter.setCheckouts(checkouts);
 
         return view;
     }

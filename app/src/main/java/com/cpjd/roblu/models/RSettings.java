@@ -52,6 +52,9 @@ public class RSettings implements Serializable {
      * The owner's email address. Very important
      */
     private String adminEmail;
+    private String adminDisplayName;
+
+    private String purchaseEmail;
 
     /**
      * Sets the default values for the RSettings class

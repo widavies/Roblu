@@ -111,7 +111,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     }
 
     public int createMatch(String name, boolean isRed) {
-        int position = team.addTab(Text.createNew(form.getMatch()), name, isRed, false);
+        int position = team.addTab(Text.createNew(form.getMatch()), name, isRed, false, 0);
         team.updateEdit();
         new SaveThread(context, event.getID(), team);
 

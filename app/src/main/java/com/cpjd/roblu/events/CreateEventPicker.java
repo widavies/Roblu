@@ -280,7 +280,7 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
         AlertDialog dialog = builder.create();
         dialog.setCancelable(false);
         dialog.setCanceledOnTouchOutside(false);
-        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
         dialog.show();
     }
 
@@ -329,7 +329,7 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
                         }
                         boolean isRed = result == com.cpjd.main.Constants.CONTAINS_TEAM_RED;
 
-                        t.addTab(Text.createNew(form.getMatch()), name, isRed, e.matches[j].isOnWinningAlliance(t.getNumber()));
+                        t.addTab(Text.createNew(form.getMatch()), name, isRed, e.matches[j].isOnWinningAlliance(t.getNumber()), e.matches[j].time);
                         l.saveTeam(t, eventID);
                     }
                 }

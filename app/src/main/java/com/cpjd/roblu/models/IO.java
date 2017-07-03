@@ -26,8 +26,11 @@ class IO {
             if(!result2) System.out.println("events directory could not be created");
             File requests = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"requests");
             requests.mkdir();
-            File assigns = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"assigns");
-            assigns.mkdir();
+            File mycheckouts = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"checkoutsconflicts");
+            mycheckouts.mkdir();
+
+            File checkouts = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"checkouts");
+            checkouts.mkdir();
         }
 
 

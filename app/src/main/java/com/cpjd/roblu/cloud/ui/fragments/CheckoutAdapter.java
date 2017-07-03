@@ -41,6 +41,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private ArrayList<RCheckout> checkouts;
     public static final int CONFLICTS = 1;
     public static final int INBOX = 2;
+    public static final int MYMATCHES = 3;
     private int mode;
 
     public CheckoutAdapter(Context context, long eventID, int mode){
@@ -71,10 +72,10 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         myHolder.bindMovie(checkouts.get(position));
     }
 
-    public void setElements(ArrayList<RCheckout> assignments) {
+    public void setCheckouts(ArrayList<RCheckout> checkouts) {
         if(this.checkouts == null) this.checkouts = new ArrayList<>();
-        if(assignments == null || assignments.size() == 0) return;
-        this.checkouts.addAll(assignments);
+        if(checkouts == null || checkouts.size() == 0) return;
+        this.checkouts.addAll(checkouts);
         notifyDataSetChanged();
     }
 
@@ -106,6 +107,20 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         private void bindMovie(RCheckout checkout) {
+            title.setTextColor(rui.getText());
+            number.setTextColor(rui.getText());
+            subtitle.setTextColor(rui.getText());
+
+            if(mode == MYMATCHES) {
+                title.setText(checkout.getTeam().getTabs().get(0).getTitle());
+                number.setText("#"+checkout.getTeam().getNumber());
+                String alliance = "blue alliance";
+                if(checkout.getTeam().getTabs().get(0).isRedAlliance()) alliance = "red alliance";
+                subtitle.setText("Match scheduled for "+Text.convertTime(checkout.getTeam().getTabs().get(0).getTime())+"\nYou are on the "+alliance+"\nTeammates: "+Text.concantenteTeams(checkout.getTeam().getTabs().get(0).getTeammates())
+                        +"\nOpponents: "+Text.concantenteTeams(checkout.getTeam().getTabs().get(0).getOpponents()));
+                return;
+            }
+
             if(mode == CONFLICTS) {
                 RTeam team = new Loader(getContext()).loadTeam(eventID, checkout.getTeam().getID());
                 subtitle.setText("Completed by "+checkout.getCompletedBy()+"\nMerge conflict: \nCheckout last edit: "+ Text.convertTime(checkout.getCompletedTime())+"\nLocal last edit: "+Text.convertTime(team.getLastEdit())
@@ -115,9 +130,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
             title.setText(checkout.getTeam().getName());
             number.setText("#"+checkout.getTeam().getNumber());
-            title.setTextColor(rui.getText());
-            number.setTextColor(rui.getText());
-            subtitle.setTextColor(rui.getText());
+
         }
     }
 

@@ -44,13 +44,6 @@
             android:layout_marginBottom="15dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Custom"/>
-        <android.support.v7.widget.AppCompatRadioButton
-            android:id="@+id/team"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="15dp"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="My team"/>
     </RadioGroup>
 
 </LinearLayout>

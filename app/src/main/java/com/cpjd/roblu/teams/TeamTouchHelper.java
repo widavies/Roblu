@@ -49,7 +49,7 @@ class TeamTouchHelper extends ItemTouchHelper.SimpleCallback {
             final RTeam team = mElementsAdapter.getTeam(viewHolder.getAdapterPosition());
 
             builder.setTitle("Are you sure?");
-            builder.setMessage("Are you sure you want to delete team: " + team.getName() + "?");
+            builder.setMessage("Are you sure you want to delete team " + team.getName() + "?");
 
             builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                 @Override

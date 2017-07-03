@@ -400,4 +400,68 @@ public class Loader extends IO {
         } catch(Exception e) { return null; }
         return path;
     }
+
+    /**
+     * CHECKOUT CONFLICTS
+     */
+    public void saveCheckoutConflict(RCheckout checkout) {
+        serializeObject(checkout, PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkout.getID()+".ser");
+    }
+
+    public RCheckout loadCheckoutConflict(long checkoutID) {
+        return (RCheckout) deserializeObject(PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkoutID+".ser");
+    }
+
+    public RCheckout[] loadCheckoutConflicts() {
+        File[] files = getChildFiles(PREFIX+File.separator+"checkoutsconflicts"+File.separator);
+        if(files == null || files.length == 0) return null;
+        RCheckout[] checkouts = new RCheckout[files.length];
+        for(int i = 0; i < checkouts.length; i++) {
+            checkouts[i] = loadCheckoutConflict(Integer.parseInt(files[i].getName().replace(".ser", "")));
+        }
+        return checkouts;
+    }
+
+    public long getNewCheckoutConflictID() {
+        File[] files = getChildFiles(PREFIX+ File.separator+"checkoutsconflicts"+File.separator);
+        if(files == null || files.length == 0) return 0;
+        long topID = 0;
+        for(File f : files) {
+            long newID = Long.parseLong(f.getName().replaceAll(".ser", ""));
+            if(newID > topID) topID = newID;
+        }
+        return topID + 1;
+    }
+
+    /**
+     * MERGED CHECKOUTS
+     */
+    public void saveCheckout(RCheckout checkout) {
+        serializeObject(checkout, PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser");
+    }
+
+    public RCheckout loadCheckout(long checkoutID) {
+        return (RCheckout) deserializeObject(PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser");
+    }
+
+    public RCheckout[] loadCheckouts() {
+        File[] files = getChildFiles(PREFIX+File.separator+"checkouts"+File.separator);
+        if(files == null || files.length == 0) return null;
+        RCheckout[] checkouts = new RCheckout[files.length];
+        for(int i = 0; i < checkouts.length; i++) {
+            checkouts[i] = loadCheckout(Integer.parseInt(files[i].getName().replace(".ser", "")));
+        }
+        return checkouts;
+    }
+
+    public long getNewCheckoutID() {
+        File[] files = getChildFiles(PREFIX+ File.separator+"checkouts"+File.separator);
+        if(files == null || files.length == 0) return 0;
+        long topID = 0;
+        for(File f : files) {
+            long newID = Long.parseLong(f.getName().replaceAll(".ser", ""));
+            if(newID > topID) topID = newID;
+        }
+        return topID + 1;
+    }
 }

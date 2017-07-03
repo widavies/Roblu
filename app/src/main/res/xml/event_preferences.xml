@@ -26,16 +26,6 @@
             android:title="Sync event with Roblu Cloud"
             android:key="sync"
             android:summary="Enable or disable Roblu Cloud support for this event" />
-        <com.cpjd.roblu.ui.MyCheckPreference
-            android:defaultValue="true"
-            android:title="Make available for viewing"
-            android:key="view"
-            android:summary="Makes this event available to other scouters to view only through Roblu Cloud. Note: this will use more data." />
-        <com.cpjd.roblu.ui.MyEditPreference
-            android:defaultValue="true"
-            android:title="Update interval"
-            android:key="update"
-            android:summary="The time, in minutes, to reupload the event to scouters for viewing. Recommended time 5 minutes." />
 
 
     </com.cpjd.roblu.ui.MyPreferenceCategory>

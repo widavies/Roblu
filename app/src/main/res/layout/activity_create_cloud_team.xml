@@ -15,7 +15,7 @@
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Choose wisely! These cannot be changed later."
+        android:text="Choose wisely! This cannot be changed later."
         android:padding="10dp"/>
 
     <android.support.design.widget.TextInputLayout
@@ -31,22 +31,6 @@
             android:layout_alignParentTop="true"
             android:layout_centerHorizontal="true"
             android:hint="FRC Team name"
-            android:inputType="text"/>
-    </android.support.design.widget.TextInputLayout>
-    <android.support.design.widget.TextInputLayout
-        android:id="@+id/number_wrapper"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/name_wrapper"
-        android:padding="5dp">
-        <android.support.v7.widget.AppCompatEditText
-            android:id="@+id/editText2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
-            android:layout_below="@+id/editText1"
-            android:hint="FRC Team number"
             android:inputType="text"/>
     </android.support.design.widget.TextInputLayout>
 

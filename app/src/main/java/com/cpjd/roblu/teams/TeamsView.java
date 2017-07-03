@@ -35,6 +35,7 @@ import android.widget.TextView;
 import com.cpjd.main.TBA;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.activities.AdvSettings;
+import com.cpjd.roblu.activities.MyMatches;
 import com.cpjd.roblu.activities.SetupActivity;
 import com.cpjd.roblu.cloud.ui.Mailbox;
 import com.cpjd.roblu.events.CreateEventPicker;
@@ -82,7 +83,7 @@ import java.util.LinkedList;
  * Roblu cannot be distributed for a price or to people outside of your local robotics team.
  *******************************************************/
 
-public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsItemClickListener {
+public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsItemClickListener, View.OnLongClickListener {
 
     // UI
     private Drawer drawer;
@@ -150,6 +151,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         searchView.setHint("Name, number, or match");
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(this);
+        fab.setOnLongClickListener(this);
         rv = (RecyclerView) findViewById(R.id.teams_recycler);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
@@ -436,14 +438,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             rb.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(i2 == 4) {
-                        FILTER = 4;
-                        new LoadTeams(false, String.valueOf(settings.getTeamNumber())).execute();
-                        lastFilter = FILTER;
-                        d.dismiss();
-                        return;
-                    }
-
                     if(i2 == 3) {
                         FILTER = CUSTOM;
                         Intent intent = new Intent(TeamsView.this, CustomSort.class);
@@ -465,7 +459,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
         if(d.getWindow() != null) {
             d.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
-            d.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+            d.getWindow().getAttributes().windowAnimations = rui.getAnimation();
         }
         d.show();
     }
@@ -524,7 +518,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         AlertDialog dialog = builder.create();
         dialog.setCustomTitle(view);
        if(dialog.getWindow() != null) {
-           dialog.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+           dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
        }
         dialog.show();
@@ -582,6 +576,18 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             startActivity(intent);
         }
 
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+        if(v.getId() == R.id.fab) {
+            if(event == null) return false;
+            Intent intent = new Intent(this, MyMatches.class);
+            intent.putExtra("eventID", event.getID());
+            startActivity(intent);
+            return true;
+        }
+        return false;
     }
 
     /*

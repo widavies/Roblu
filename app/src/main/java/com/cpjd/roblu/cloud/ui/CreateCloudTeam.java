@@ -34,7 +34,8 @@ public class CreateCloudTeam extends AppCompatActivity {
 
         TextView money = (TextView) findViewById(R.id.textView1);
         money.setText(new Loader(getApplicationContext()).loadSettings().getAdminEmail()+" will be used for purchasing Roblu. Note, the owner of the address can be changed later, but the" +
-                " charging account cannot be changed without deactivating your team.");
+                " charging account cannot be changed without deactivating your Roblu Cloud team. If you would like to use a different account for purchasing Roblu, please sign out in Roblu" +
+                " settings and sign in with the desired account.");
 
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
@@ -63,7 +64,6 @@ public class CreateCloudTeam extends AppCompatActivity {
              */
 
             String name = ((TextView)findViewById(R.id.editText1)).getText().toString();
-            String number = ((TextView)findViewById(R.id.editText2)).getText().toString();
             String ownerEmail = new Loader(getApplicationContext()).loadSettings().getAdminEmail();
 
             Intent result = new Intent();

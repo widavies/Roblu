@@ -21,7 +21,7 @@ import com.cpjd.roblu.models.RUI;
  * @since 3.5.9
  * @author Will Davies
  */
-class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
+public class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final CheckoutAdapter mElementsAdapter;
 
     // Helpers
@@ -30,7 +30,7 @@ class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
     private RUI rui;
     private int mode;
 
-    AssignmentsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
+    public AssignmentsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mElementsAdapter = elementsAdapter;
         this.mode = mode;
