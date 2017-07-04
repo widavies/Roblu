@@ -39,7 +39,6 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     private RUI rui;
     private long eventID;
 
-    @Getter
     private ArrayList<RCheckout> checkouts;
     public static final int CONFLICTS = 1;
     public static final int INBOX = 2;
@@ -75,6 +74,10 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return holder;
     }
 
+    public RCheckout getCheckout(int position) {
+        if(checkouts == null || checkouts.size() == 0) return null;
+        return checkouts.get(position);
+    }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
@@ -134,7 +137,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if(mode == CONFLICTS) {
                 RTeam team = new Loader(getContext()).loadTeam(eventID, checkout.getTeam().getID());
                 String subtitleText = "";
-                subtitleText += "Completed by "+checkout.getCompletedBy()+"\nMerge conflict:"+checkout.getConflictType()+"\nCheckout last edit: "+ Text.convertTime(checkout.getCompletedTime());
+                subtitleText += "Completed by "+checkout.getCompletedBy()+"\nMerge conflict: "+checkout.getConflictType()+"\nCheckout last edit: "+ Text.convertTime(checkout.getCompletedTime());
                 if(checkout.getConflictType().equals("Local copy already edited")) subtitleText += "\nLocal last edit: "+Text.convertTime(team.getLastEdit());
                 subtitleText += "\nTap to view";
                 subtitle.setText(subtitleText);

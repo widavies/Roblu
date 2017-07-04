@@ -16,7 +16,7 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.cloud.ui.CheckoutListener;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RTab;
+import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.TeamViewer;
 
@@ -49,7 +49,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
 
         ArrayList<RCheckout> checkouts = new ArrayList<>();
         for(int i = 0; i < 5; i++) {
-            RCheckout checkout = new RCheckout(0, new Loader(getContext()).loadTeam(0, i), "Will Davies", System.currentTimeMillis());
+            RCheckout checkout = new RCheckout(0, new Loader(getActivity()).loadTeam(0, i), "Will Davies", System.currentTimeMillis());
             if(i == 1 || i == 3) checkout.setConflictType("Local copy already edited");
             else checkout.setConflictType("Not found in local repository");
             checkouts.add(checkout);
@@ -61,34 +61,27 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
 
     @Override
     public void checkoutClicked(View v) {
-        // First, let's load a local copy for comparing purposes
-        RCheckout checkout = adapter.getCheckouts().get(rv.getChildAdapterPosition(v));
+        RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
+        RForm form = new Loader(getActivity()).loadForm(eventID);
         if(checkout.getConflictType().equals("Local copy already edited")) {
-            RTeam conflict = adapter.getCheckouts().get(rv.getChildAdapterPosition(v)).getTeam();
+            RTeam conflict = checkout.getTeam().duplicate();
+            conflict.verify(form);
 
-            RTeam[] teams = new Loader(getActivity()).getTeams(eventID);
-            RTeam localCopy = null;
-            for(RTeam team : teams) {
-                if(team.getID() == conflict.getID()) {
-                    localCopy = team;
-                }
-            }
+            RTeam localCopy = new Loader(getActivity()).loadTeam(eventID, conflict.getID());
+            localCopy.verify(form);
 
-            // Create a temporary team that contains the tabs to compare
-            RTeam temp = new RTeam("Resolving conflict", conflict.getNumber(), conflict.getID());
-            for(RTab tab : conflict.getTabs()) {
-                tab.setTitle(tab.getTitle());
-                temp.addTab(tab);
-                for(RTab tab1 : localCopy.getTabs()) {
-                    if(tab.getTitle().equalsIgnoreCase(tab1.getTitle())) {
-                        temp.addTab(tab1);
+            RTeam temp = new RTeam("Resolving", checkout.getTeam().getNumber(), checkout.getTeam().getID());
+            for(int i = 0; i < conflict.getTabs().size(); i++) {
+                for(int j = 0; j < localCopy.getTabs().size(); j++) {
+                    if(conflict.getTabs().get(i).getTitle().equalsIgnoreCase(localCopy.getTabs().get(j).getTitle())) {
+                        temp.addTab(localCopy.getTabs().get(j).duplicate());
+                        break;
                     }
                 }
+                temp.addTab(conflict.getTabs().get(i).duplicate());
             }
 
-            for(int i = 0; i < temp.getTabs().size(); i++) {
-                if(i % 2 == 0) temp.getTabs().get(i).setTitle(temp.getTabs().get(i).getTitle()+" (local)");
-            }
+            for(int i = 0; i < temp.getTabs().size(); i++) if(i % 2 == 0) temp.getTabs().get(i).setTitle(temp.getTabs().get(i).getTitle()+" (local)");
 
             Intent intent = new Intent(getActivity(), TeamViewer.class);
             intent.putExtra("event", new Loader(getActivity()).getEvent(eventID));
@@ -102,8 +95,5 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
             intent.putExtra("readOnly", true);
             startActivity(intent);
         }
-
-
-
     }
 }

@@ -25,7 +25,6 @@ import com.cpjd.roblu.forms.elements.ETextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
-import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.TeamViewer;
 import com.cpjd.roblu.utils.Text;
@@ -38,13 +37,13 @@ public class Match extends Fragment implements ElementsListener {
 
     private REvent event;
     private RTeam team;
-    private RForm form;
 
     private Elements els;
 
     private View view;
 
     private LinearLayoutCompat layout;
+    private boolean readOnly;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -55,9 +54,8 @@ public class Match extends Fragment implements ElementsListener {
         Bundle bundle = this.getArguments();
         team = (RTeam) bundle.getSerializable("team");
         event = (REvent) bundle.getSerializable("event");
-        form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
-        boolean readOnly = bundle.getBoolean("readOnly");
+        readOnly = bundle.getBoolean("readOnly");
         if(readOnly) position++;
         els = new Elements(getActivity(), new Loader(getActivity()).loadSettings().getRui(), this, false);
         els.setReadOnly(readOnly);
@@ -70,11 +68,14 @@ public class Match extends Fragment implements ElementsListener {
     public void load() {
         if(layout != null && layout.getChildCount() > 0) layout.removeAllViews();
 
+        System.out.println("Elements received in match: "+team.getTabs().get(position).getElements().size()+" for tab "+team.getTabs().get(position).getTitle());
+
         for(int i = 0; i < team.getTabs().get(position).getElements().size(); i++) {
-            for(int j = 0; j < team.getTabs().get(position).getElements().size(); j++) {
+            innerLoop: for(int j = 0; j < team.getTabs().get(position).getElements().size(); j++) {
                 if(i == team.getTabs().get(position).getElements().get(j).getPosition()) {
+                    System.out.println("found it");
                     loadElement(team.getTabs().get(position).getElements().get(j));
-                    break;
+                    break innerLoop;
                 }
             }
         }
@@ -169,10 +170,11 @@ public class Match extends Fragment implements ElementsListener {
 
     // Start a save thread and save everything to the file system
     private void save() {
-        new SaveThread(view.getContext(), event.getID(), team);
+        if(!readOnly) new SaveThread(view.getContext(), event.getID(), team);
     }
 
     public int getPosition() {
+        if(readOnly) return position;
         return position + 1;
     }
 

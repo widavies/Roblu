@@ -56,6 +56,8 @@ public class UIHandler {
     public void update() {
         rui = new Loader(activity).loadSettings().getRui();
 
+        if(rui == null) rui = new RUI();
+
         // set toolbar colors
         if(toolbar != null) {
             toolbar.setBackgroundColor(rui.getPrimaryColor());

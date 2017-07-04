@@ -658,7 +658,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                 bundle.putInt("ID", ID);
                 bundle.putSerializable("event", event);
                 bundle.putSerializable("team", team);
-                bundle.putSerializable("tabID", tabID);
+                bundle.putInt("tabID", tabID);
                 bundle.putBoolean("readOnly", readOnly);
                 intent.putExtras(bundle);
                 activity.startActivityForResult(intent, Constants.GENERAL);

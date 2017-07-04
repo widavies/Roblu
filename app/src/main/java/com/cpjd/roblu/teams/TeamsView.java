@@ -1036,6 +1036,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         Intent startView = new Intent(this, TeamViewer.class);
         startView.putExtra("team", team);
         startView.putExtra("event", event);
+        startView.putExtra("readOnly", false);
         startActivityForResult(startView, Constants.GENERAL);
     }
 

@@ -38,6 +38,11 @@ public class RTab implements Serializable, Comparable<RTab> {
         this.time = time;
     }
 
+    public RTab duplicate() {
+        RTab tab = new RTab(Text.createNew(elements), title, redAlliance, won, time);
+        return tab;
+    }
+
     @Override
     public int compareTo(RTab tab) {
         return ((Long)Text.getMatchScore(title)).compareTo(Text.getMatchScore(tab.getTitle()));

@@ -86,8 +86,10 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         rui = new Loader(getApplicationContext()).loadSettings().getRui();
 
         // Verify the team
-        team.verify(form);
-        if(!readOnly) new Loader(getApplicationContext()).saveTeam(team, event.getID());
+        if(!readOnly) {
+            team.verify(form);
+            new Loader(getApplicationContext()).saveTeam(team, event.getID());
+        }
 
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
@@ -189,7 +191,9 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         };
         popup.setOnMenuItemClickListener(popupListener);
         if(pager.getCurrentItem() > 2) {
-            boolean won = team.getTabs().get(pager.getCurrentItem() - 1).isWon();
+            boolean won;
+            if(readOnly) won = team.getTabs().get(pager.getCurrentItem()).isWon();
+            else won = team.getTabs().get(pager.getCurrentItem() - 1).isWon();
             if(won && pager.getCurrentItem() > 2) popup.getMenu().getItem(0).setTitle("Mark as lost");
         }
         popup.show();
@@ -205,8 +209,10 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     }
     @Override
     public void onPageSelected(int page) {
-        team.setPage(page);
-        new SaveThread(getApplicationContext(), event.getID(), team);
+        if(!readOnly) {
+            team.setPage(page);
+            new SaveThread(getApplicationContext(), event.getID(), team);
+        }
 
         if(page < 3) setColorScheme(rui.getPrimaryColor(), RUI.darker(rui.getPrimaryColor(), 0.85f));
         else {

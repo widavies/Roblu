@@ -142,7 +142,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         RTeam team = new RTeam(name, number, ID);
         team.setLastEdit(lastEdit);
         team.setPage(page);
-        team.setTabs(tabs);
+        team.setTabs(Text.createNewTabs(tabs));
         team.setRelevance(relevance);
         team.setTBAInfo(fullName, location, motto, website, rookieYear);
         team.setSearchTip(searchTip);

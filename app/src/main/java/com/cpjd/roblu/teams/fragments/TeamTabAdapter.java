@@ -45,6 +45,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     }
 
     public boolean isPageRed(int page) {
+        if(readOnly) return team.getTabs().get(page).isRedAlliance();
         return page > 2 && team.getTabs().get(page - 1).isRedAlliance();
     }
 
@@ -53,7 +54,6 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
-        bundle.putSerializable("form", form);
         bundle.putSerializable("position", 0);
 
         if (i == 0 && !readOnly) {
@@ -104,8 +104,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
-        bundle.putSerializable("form", form);
-        bundle.putBoolean("readOnly", true);
+        bundle.putBoolean("readOnly", readOnly);
         bundle.putInt("position", position);
 
         Match match = new Match();
@@ -121,7 +120,6 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
-        bundle.putSerializable("form", form);
         bundle.putInt("position", position);
 
         Match match = new Match();
@@ -131,6 +129,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     }
 
     private boolean isWon(int position) {
+        if(readOnly) return team.getTabs().get(position).isWon();
         return team.getTabs().get(position - 1).isWon();
     }
 
@@ -142,12 +141,13 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
+        if(readOnly) return team.getTabs().size();
         return team.getTabs().size() + 1;
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        if(readOnly) return getWinSuffix(position)+" "+team.getTabs().get(position ).getTitle();
+        if(readOnly) return getWinSuffix(position)+" "+team.getTabs().get(position).getTitle();
 
         if (position == 0) return "Overview";
         return getWinSuffix(position)+" "+team.getTabs().get(position - 1).getTitle();

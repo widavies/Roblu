@@ -67,11 +67,13 @@ class TutorialAdapter extends RecyclerView.Adapter<TutorialAdapter.ViewHolder> {
         void bindMovie(RTutorial tutorial) {
             this.title.setText(tutorial.getTitle());
             this.subtitle.setText(tutorial.getSubtitle());
-            this.title.setTextColor(rui.getText());
-            this.subtitle.setTextColor(rui.getText());
+            if(rui != null) {
+                this.title.setTextColor(rui.getText());
+                this.subtitle.setTextColor(rui.getText());
+                this.title.setBackgroundColor(rui.getCardColor());
+                this.subtitle.setBackgroundColor(rui.getCardColor());
+            }
 
-            this.title.setBackgroundColor(rui.getCardColor());
-            this.subtitle.setBackgroundColor(rui.getCardColor());
         }
     }
 }

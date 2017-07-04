@@ -35,7 +35,7 @@ public class CreateCloudTeam extends AppCompatActivity {
         TextView money = (TextView) findViewById(R.id.textView1);
         money.setText(new Loader(getApplicationContext()).loadSettings().getAdminEmail()+" will be used for purchasing Roblu. Note, the owner of the address can be changed later, but the" +
                 " charging account cannot be changed without deactivating your Roblu Cloud team. If you would like to use a different account for purchasing Roblu, please sign out in Roblu" +
-                " settings and sign in with the desired account.");
+                " settings and sign in with the desired account.\n\nYou will also receive access to source code for Roblu Master, Roblu Scouter, and the Roblu API.");
 
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 

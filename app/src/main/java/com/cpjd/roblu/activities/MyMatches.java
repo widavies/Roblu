@@ -139,7 +139,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final RCheckout checkout = adapter.getCheckouts().get(rv.getChildAdapterPosition(v));
+                final RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
                 final Dialog d = new Dialog(MyMatches.this);
                 d.setTitle("Open team ");
                 d.setContentView(R.layout.event_import_dialog);

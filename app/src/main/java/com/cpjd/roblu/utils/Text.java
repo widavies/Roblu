@@ -38,6 +38,7 @@ import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
@@ -251,6 +252,7 @@ public class Text {
             t = new EGallery(e.getTitle());
         }
         if(t != null) t.setID(e.getID());
+        if(t != null) t.setPosition(e.getPosition());
         return t;
     }
     public static String concantenteTeams(ArrayList<RTeam> teams) {
@@ -300,6 +302,13 @@ public class Text {
 		return sdf.format(resultdate);
 
 	}
+
+	public static ArrayList<RTab> createNewTabs(ArrayList<RTab> tabs) {
+        if(tabs == null || tabs.size() == 0) return tabs;
+        ArrayList<RTab> toReturn = new ArrayList<>();
+        for(int i = 0; i < tabs.size(); i++) toReturn.add(tabs.get(i).duplicate());
+        return toReturn;
+    }
 
 	public static void loadAd(AdView adView) {
         AdRequest adRequest = new AdRequest.Builder().build();
