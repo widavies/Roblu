@@ -686,7 +686,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     FILTER = CUSTOM;
                     lastFilter = CUSTOM;
                     return activeTeams;
-
                 }
 
                 Element temp = null;

@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import lombok.Setter;
+
 /**
  * This is the most janky class in the entire project, fear not (it works).
  *
@@ -69,6 +71,8 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
     private final ElementsListener listener;
     private final boolean modifyMode;
     private final int width;
+    @Setter
+    private boolean readOnly;
 
     // Values that might need to be modified
     public static int min, max, increment;
@@ -94,6 +98,10 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         AppCompatRadioButton yes = new AppCompatRadioButton(activity);
         AppCompatRadioButton no = new AppCompatRadioButton(activity);
         AppCompatRadioButton na = new AppCompatRadioButton(activity);
+
+        yes.setEnabled(!readOnly);
+        no.setEnabled(!readOnly);
+        na.setEnabled(!readOnly);
 
         ColorStateList colorStateList = new ColorStateList(
                 new int[][] {
@@ -186,6 +194,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         ImageView addButton = new ImageView(activity);
         addButton.setId(Text.generateViewId());
+        addButton.setEnabled(!readOnly);
         addButton.setBackground(add);
         addButton.setPadding(Text.DPToPX(activity, 8), Text.DPToPX(activity, 6), Text.DPToPX(activity, 8), Text.DPToPX(activity, 6));
         addButton.setLayoutParams(params);
@@ -230,6 +239,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         ImageView minusButton = new ImageView(activity);
         minusButton.setBackground(minus);
         minusButton.setId(Text.generateViewId());
+        minusButton.setEnabled(!readOnly);
         minusButton.setLayoutParams(params);
         minusButton.setPadding(Text.DPToPX(activity, 8), Text.DPToPX(activity, 6), Text.DPToPX(activity, 8), Text.DPToPX(activity, 6));
         minusButton.setOnClickListener(new View.OnClickListener() {
@@ -272,6 +282,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         sb.getThumb().setColorFilter(rui.getAccent(), PorterDuff.Mode.SRC_IN);
         sb.getProgressDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.SRC_IN);
         sb.setMax(max);
+        sb.setEnabled(!readOnly);
         sb.setProgress(value);
         sb.setId(Text.generateViewId());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -334,6 +345,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         listener.nameInited(name);
         Spinner spinner = new Spinner(activity);
         spinner.setId(Text.generateViewId());
+        spinner.setEnabled(!readOnly);
         spinner.setPadding(400, spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
         if(values != null) {
             ArrayAdapter<String> adapter =
@@ -424,6 +436,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                 box.setId(Text.generateViewId());
                 box.setTextColor(rui.getText());
                 box.setChecked(checked.get(i));
+                box.setEnabled(!readOnly);
                 box.setLayoutParams(params);
                 ColorStateList colorStateList = new ColorStateList(
                         new int[][] {
@@ -480,6 +493,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         final ImageView playButton = new ImageView(activity);
         playButton.setBackground(play);
+        playButton.setEnabled(!readOnly);
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         playButton.setId(Text.generateViewId());
@@ -491,6 +505,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         final ImageView button = new ImageView(activity);
         button.setBackground(reset);
         button.setId(Text.generateViewId());
+        button.setEnabled(!readOnly);
         button.setLayoutParams(params);
         final TextView timer = new TextView(activity);
         timer.setTextSize(25);
@@ -588,6 +603,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         });
         Text.setCursorColor(et, rui.getAccent());
         et.setText(value);
+        et.setEnabled(!readOnly);
         et.setTextColor(rui.getText());
         et.setHighlightColor(rui.getAccent());
         Drawable d = et.getBackground();
@@ -643,6 +659,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                 bundle.putSerializable("event", event);
                 bundle.putSerializable("team", team);
                 bundle.putSerializable("tabID", tabID);
+                bundle.putBoolean("readOnly", readOnly);
                 intent.putExtras(bundle);
                 activity.startActivityForResult(intent, Constants.GENERAL);
             }
@@ -661,10 +678,10 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         TextView tip = new TextView(activity);
         tip.setTag("tip");
         if(files != null){
-            if(files.size() == 1) tip.setText(R.string.contains_one_image);
+            if(files.size() == 1) tip.setText("Contains 1 image");
             else tip.setText("Contains "+files.size()+" images");
         }
-        else tip.setText(R.string.contains_no_images);
+        else tip.setText("Contains 0 images");
         tip.setId(Text.generateViewId());
         tip.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -764,7 +781,6 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         layout.addView(textView); layout.addView(et);
         return getCard(layout);
     }
-
     public CardView getSTextfield(final int ID, final String name, final String value, final boolean numberOnly) {
         listener.nameInited(name);
         RelativeLayout layout = new RelativeLayout(activity);
@@ -779,6 +795,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         Text.setCursorColor(et, rui.getAccent());
         if(numberOnly) et.setInputType(InputType.TYPE_CLASS_NUMBER);
         et.setMaxLines(1);
+        et.setEnabled(!readOnly);
         et.setTextColor(rui.getText());
         et.setHighlightColor(rui.getAccent());
         Drawable d = et.getBackground();

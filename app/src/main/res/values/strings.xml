@@ -48,8 +48,8 @@
     <string name="add_element">Element type:</string>
     <string name="no_time">0.0s</string>
     <string name="open">Open</string>
-    <string name="contains_no_images">Contains no images</string>
-    <string name="contains_one_image">Contains one image</string>
+    <string name="contains_no_images">Contains 0 images</string>
+    <string name="contains_one_image">Contains 1 image</string>
     <string name="title_activity_predefined">Predefined</string>
     <string name="title_activity_team_viewer">TeamViewer</string>
     <string name="create_a_team">Create a team</string>

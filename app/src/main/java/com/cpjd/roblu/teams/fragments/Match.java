@@ -57,11 +57,12 @@ public class Match extends Fragment implements ElementsListener {
         event = (REvent) bundle.getSerializable("event");
         form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
-
+        boolean readOnly = bundle.getBoolean("readOnly");
+        if(readOnly) position++;
         els = new Elements(getActivity(), new Loader(getActivity()).loadSettings().getRui(), this, false);
+        els.setReadOnly(readOnly);
 
         load();
-
 
         return view;
     }

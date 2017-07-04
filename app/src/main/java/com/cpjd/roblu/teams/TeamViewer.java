@@ -58,6 +58,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     private RUI rui;
     private REvent event;
     private RTeam team;
+    private boolean readOnly;
 
     // ViewPager
     private ViewPager pager;
@@ -78,6 +79,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
         event = (REvent) getIntent().getSerializableExtra("event");
         team = (RTeam) getIntent().getSerializableExtra("team");
+        readOnly = getIntent().getBooleanExtra("readOnly", false);
 
         RForm form = new Loader(getApplicationContext()).loadForm(event.getID());
 
@@ -85,7 +87,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
         // Verify the team
         team.verify(form);
-        new Loader(getApplicationContext()).saveTeam(team, event.getID());
+        if(!readOnly) new Loader(getApplicationContext()).saveTeam(team, event.getID());
 
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
@@ -93,7 +95,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         getSupportActionBar().setTitle(team.getName());
         getSupportActionBar().setSubtitle("#"+String.valueOf(team.getNumber()));
 
-        tabAdapter = new TeamTabAdapter(getSupportFragmentManager(), event, team, form, getApplicationContext());
+        tabAdapter = new TeamTabAdapter(getSupportFragmentManager(), event, team, form, getApplicationContext(), readOnly);
         pager = (ViewPager) findViewById(R.id.pager);
 
         pager.addOnPageChangeListener(this);
@@ -119,7 +121,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
             finish();
             return true;
         }
-        if(item.getItemId() == R.id.add_match) {
+        if(item.getItemId() == R.id.add_match && !readOnly) {
             openMatchCreater();
             return true;
         }
@@ -156,7 +158,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     }
                     return true;
                 }
-                if(item.getItemId() == R.id.delete_match) {
+                if(item.getItemId() == R.id.delete_match && !readOnly) {
                     if(pager.getCurrentItem() == 0) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Overiew can't be deleted", true, 0);
                     else if(pager.getCurrentItem() == 1) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "PIT can't be deleted", true, 0);
                     else if(pager.getCurrentItem() == 2) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Predictions can't be deleted", true, 0);
@@ -170,7 +172,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     }
                     return true;
                 }
-                if(item.getItemId() == won) {
+                if(item.getItemId() == won && !readOnly) {
                     if(pager.getCurrentItem() == 0) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Overiew can't be marked as won", true, 0);
                     else if(pager.getCurrentItem() == 1) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "PIT can't be marked as won", true, 0);
                     else if(pager.getCurrentItem() == 2) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Predictions can't be marked as won", true, 0);

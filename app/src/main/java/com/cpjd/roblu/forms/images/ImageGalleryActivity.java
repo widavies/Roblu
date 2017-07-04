@@ -78,6 +78,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     private int tabID;
 
     private RelativeLayout layout;
+    private boolean readOnly;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,6 +100,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
                 event = (REvent) extras.getSerializable("event");
                 team = (RTeam) extras.getSerializable("team");
                 tabID = extras.getInt("tabID");
+                readOnly = extras.getBoolean("readOnly");
             }
         }
 
@@ -154,6 +156,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
         bundle.putInt("tab", tabID);
         bundle.putInt("galleryID", ID);
         bundle.putSerializable("team", team);
+        bundle.putBoolean("readOnly", readOnly);
         intent.putExtras(bundle);
         startActivityForResult(intent, Constants.GENERAL);
     }
@@ -190,6 +193,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
 
     @Override
     public void onClick(View v) {
+        if(readOnly) return;
         if(EasyPermissions.hasPermissions(this, android.Manifest.permission.CAMERA)) {
             pic = new Loader(getApplicationContext()).getTempPictureFile();
 

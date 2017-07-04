@@ -70,6 +70,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
 
     private LinearLayout layout;
     private RUI rui;
+    private boolean readOnly;
 
     private final ViewPager.OnPageChangeListener viewPagerOnPageChangeListener = new ViewPager.OnPageChangeListener() {
         @Override
@@ -118,6 +119,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
                 team = (RTeam) extras.getSerializable("team");
                 galleryID = extras.getInt("galleryID");
                 tab = extras.getInt("tab");
+                readOnly = extras.getBoolean("readOnly");
             }
         }
 
@@ -158,7 +160,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
             finish();
             return true;
         }
-        else if(item.getItemId() == com.cpjd.roblu.R.id.edit) {
+        else if(item.getItemId() == com.cpjd.roblu.R.id.edit && !readOnly) {
             Intent intent = new Intent(this, Drawing.class);
             intent.putExtra("file", images.get(position));
             intent.putExtra("eventID", eventID);
@@ -181,7 +183,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
 
             return true;
         }
-        else if(item.getItemId() == com.cpjd.roblu.R.id.delete_image) {
+        else if(item.getItemId() == com.cpjd.roblu.R.id.delete_image && !readOnly) {
             // get path and delete from system
             File path = images.get(viewPager.getCurrentItem());
 

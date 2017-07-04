@@ -33,13 +33,15 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private final RForm form;
 
     private boolean removing;
+    private boolean readOnly;
 
-    public TeamTabAdapter(FragmentManager fm, REvent event, RTeam team, RForm form, Context context) {
+    public TeamTabAdapter(FragmentManager fm, REvent event, RTeam team, RForm form, Context context, boolean readOnly) {
         super(fm);
         this.event = event;
         this.team = team;
         this.form = form;
         this.context = context;
+        this.readOnly = readOnly;
     }
 
     public boolean isPageRed(int page) {
@@ -54,7 +56,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         bundle.putSerializable("form", form);
         bundle.putSerializable("position", 0);
 
-        if (i == 0) {
+        if (i == 0 && !readOnly) {
             Overview overview = new Overview();
             overview.setArguments(bundle);
             return overview;
@@ -103,6 +105,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
         bundle.putSerializable("form", form);
+        bundle.putBoolean("readOnly", true);
         bundle.putInt("position", position);
 
         Match match = new Match();
@@ -144,6 +147,8 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
+        if(readOnly) return getWinSuffix(position)+" "+team.getTabs().get(position ).getTitle();
+
         if (position == 0) return "Overview";
         return getWinSuffix(position)+" "+team.getTabs().get(position - 1).getTitle();
     }
