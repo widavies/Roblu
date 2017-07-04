@@ -49,6 +49,7 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
     private ListView sharingView;
 
     private Event[] events;
+    private ArrayList<Event> active;
 
     private int selectedYear;
 
@@ -174,32 +175,59 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
     }
 
-    private class FetchEvents extends AsyncTask<Integer, Void, Event[]> {
-        @Override
-        protected Event[] doInBackground(Integer... year) {
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build(); StrictMode.setThreadPolicy(policy);
+    private class SearchEvents extends AsyncTask<Void, Void, ArrayList<Event>> {
 
-            Settings.disableAll();
-            Event[] events = new TBA().getEvents(2017, false);
-            Collections.sort(Arrays.asList(events));
-            return events;
+        private final String query;
+
+        public SearchEvents(String query) {
+            this.query = query;
         }
 
         @Override
-        protected void onPostExecute(Event[] event) {
-            events = event;
+        protected ArrayList<Event> doInBackground(Void... params) {
+            if(events == null || events.length == 0) return null;
 
-            if(events == null) {
-                new FetchEvents().execute(selectedYear);
-                return;
+            if(active == null) active = new ArrayList<>();
+
+            if(!query.equals("")) {
+                active.clear();
+                for(Event e : events) {
+                    e.relevance = 0;
+                    if(e.name.equals(query)) e.relevance += 500;
+                    if(e.name.equalsIgnoreCase(query)) e.relevance += 400;
+                    if(e.name.contains(query)) e.relevance += 200;
+                    if(Text.contains(e.name, query)) e.relevance += 400;
+                    if(e.start_date.contains(query)) e.relevance += 200;
+                    if(e.start_date.equalsIgnoreCase(query)) e.relevance += 400;
+                    if(e.start_date.equals(query)) e.relevance += 500;
+                    if(Text.contains(e.start_date, query)) e.relevance += 400;
+                    if(e.location.equals(query)) e.relevance += 500;
+                    if(e.location.equalsIgnoreCase(query)) e.relevance += 400;
+                    if(e.location.contains(query)) e.relevance += 200;
+                    if(Text.contains(e.location, query)) e.relevance += 400;
+
+                    if(e.relevance != 0) active.add(e);
+                }
+                Collections.sort(active);
+                Collections.reverse(active);
+                return active;
+            } else {
+                if(active != null) active.clear();
+                for(Event e : events) e.relevance = 0;
             }
 
-            String[] items = new String[events.length];
-            String[] sub_items = new String[events.length];
+            Collections.sort(Arrays.asList(events));
+            return new ArrayList<>(Arrays.asList(events));
+        }
 
-            for(int i = 0; i < events.length; i++) {
-                items[i] = events[i].name;
-                sub_items[i] = events[i].start_date+", "+events[i].location;
+        @Override
+        public void onPostExecute(ArrayList<Event> events) {
+            String[] items = new String[events.size()];
+            String[] sub_items = new String[events.size()];
+
+            for(int i = 0; i < events.size(); i++) {
+                items[i] = events.get(i).name;
+                sub_items[i] = events.get(i).start_date+", "+events.get(i).location;
             }
 
             final List<Map<String, String>> data = new ArrayList<>();
@@ -227,6 +255,28 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
                 }
             });
+        }
+    }
+
+    private class FetchEvents extends AsyncTask<Integer, Void, Event[]> {
+        @Override
+        protected Event[] doInBackground(Integer... year) {
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build(); StrictMode.setThreadPolicy(policy);
+
+            Settings.disableAll();
+            Event[] events = new TBA().getEvents(2017, false);
+            Collections.sort(Arrays.asList(events));
+            return events;
+        }
+
+        @Override
+        protected void onPostExecute(Event[] event) {
+            events = event;
+
+            if(events == null) {
+                new FetchEvents().execute(selectedYear);
+                return;
+            }
         }
     }
 

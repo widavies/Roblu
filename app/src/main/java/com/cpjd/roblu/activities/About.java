@@ -17,11 +17,10 @@ public class About extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-        new LibsBuilder().withFields(R.string.class.getFields()).withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR).withActivityTitle("About Roblu").withLicenseShown(true)
-                .withAboutDescription("Copyright 2017. A scouting app for robotics competitions focused on customization, simplicity, and functionality. Roblu is an open source" +
-                        " project designed to streamline your scouting exerpience. Thank you to Andy Pethan and Isaac Faulkner for all the help. App written by Will Davies.").
+        new LibsBuilder().withFields(R.string.class.getFields()).withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR).withAboutDescription("Copyright 2017. A scouting app for robotics competitions focused on customization, simplicity, and functionality. Roblu is an open source" +
+                " project designed to streamline your scouting exerpience. Thank you to Andy Pethan and Isaac Faulkner for all the help. App written by Will Davies.")
+                .withActivityTitle("About Roblu").withLicenseShown(true).
                 start(this);
-
         finish();
 	}
 }

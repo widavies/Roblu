@@ -129,6 +129,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
 
             Bundle b = new Bundle();
             b.putSerializable("file", new Loader(getApplicationContext()).getImagePath(eventID, imageID));
+            b.putSerializable("team", team);
             Intent result = new Intent();
             result.putExtras(b);
             setResult(Constants.IMAGE_EDITED, result);

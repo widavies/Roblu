@@ -216,8 +216,8 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == Constants.IMAGE_EDITED) {
-            imageGalleryAdapter.addImage((File)data.getExtras().getSerializable("file"));
-            imageGalleryAdapter.notifyDataSetChanged();
+            refresh((File)data.getExtras().getSerializable("file"));
+            team = (RTeam) data.getExtras().getSerializable("team");
             return;
         }
         if (requestCode == Constants.CAMERA_REQUEST && resultCode == FragmentActivity.RESULT_OK) {

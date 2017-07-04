@@ -369,7 +369,7 @@ public class Text {
                 ClipData clip = ClipData.newPlainText("Roblu team code", teamCode);
                 clipboard.setPrimaryClip(clip);
                 dialog.dismiss();
-                Toast.makeText(context, "Team code copied", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Team code copied to clipboard", Toast.LENGTH_LONG).show();
             }
         });
         builder.setNegativeButton("Regenerate", new DialogInterface.OnClickListener() {
