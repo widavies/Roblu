@@ -62,4 +62,11 @@
     <string name="library_lombok_libraryDescription">Very spicy additions to the Java programming language.</string>
     <string name="library_lombok_licenseId">MIT</string>
     <string name="library_lombok_libraryWebsite">https://projectlombok.org/</string>
+
+    <string name="define_canvas"></string>
+    <string name="library_canvas_author">Tomohiro Ikeda</string>
+    <string name="library_canvas_libraryName">CanvasView</string>
+    <string name="library_canvas_libraryDescription">Android Application Library for editing images.</string>
+    <string name="library_canvas_licenseId">MIT</string>
+    <string name="library_canvas_libraryWebsite">https://github.com/Korilakkuma/CanvasView</string>
 </resources>

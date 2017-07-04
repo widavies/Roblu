@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
@@ -36,6 +37,7 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
+import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,15 +48,13 @@ import java.util.Map;
 
 public class APIEventSelect extends AppCompatActivity implements AdapterView.OnItemClickListener, AdapterView.OnItemSelectedListener {
 
-    private ListView sharingView;
+    private MaterialSearchView searchView;
 
+    private ListView sharingView;
     private Event[] events;
     private ArrayList<Event> active;
-
     private int selectedYear;
-
     private RelativeLayout layout;
-
     private RUI rui;
 
     @Override
@@ -71,6 +71,10 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
         setTitle("Select an event");
 
+        searchView = (MaterialSearchView) findViewById(R.id.search_view);
+        searchView.setHintTextColor(Color.BLACK);
+        searchView.setHint("Search events");
+
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         spinner.getBackground().setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
         //ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.years_array, android.R.layout.simple_spinner_item);
@@ -85,8 +89,34 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         sharingView = (ListView) findViewById(R.id.listView1);
         sharingView.setOnItemClickListener(this);
         new FetchEvents().execute(selectedYear);
+        new SearchEvents("").execute();
 
         new UIHandler(this, toolbar).update();
+
+        searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
+            @Override
+            public void onSearchViewShown() {
+                //Do some magic
+            }
+
+            @Override
+            public void onSearchViewClosed() {
+                new SearchEvents("").execute();
+            }
+        });
+        searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchView.closeSearch();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                new SearchEvents(newText).execute();
+                return true;
+            }
+        });
     }
 
     @Override
@@ -104,6 +134,10 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
             finish();
             return true;
         }
+        if(item.getItemId() == R.id.search) {
+            searchView.showSearch(true);
+            return true;
+        }
         if(item.getItemId() == R.id.api_manual) {
             manualAdd();
             return false;
@@ -119,7 +153,7 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         try {
-            new ImportEvent().execute(events[position].key);
+            new ImportEvent().execute(active.get(position).key);
         } catch(NullPointerException e) {
             System.out.println("Failed to import event");
         }
@@ -129,6 +163,7 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
     public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
         selectedYear = Integer.parseInt(parent.getItemAtPosition(position).toString());
         new FetchEvents().execute(selectedYear);
+        new SearchEvents("").execute();
     }
 
     @Override
@@ -180,7 +215,7 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         private final String query;
 
         public SearchEvents(String query) {
-            this.query = query;
+            this.query = query.toLowerCase();
         }
 
         @Override
@@ -193,18 +228,15 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
                 active.clear();
                 for(Event e : events) {
                     e.relevance = 0;
-                    if(e.name.equals(query)) e.relevance += 500;
-                    if(e.name.equalsIgnoreCase(query)) e.relevance += 400;
-                    if(e.name.contains(query)) e.relevance += 200;
-                    if(Text.contains(e.name, query)) e.relevance += 400;
-                    if(e.start_date.contains(query)) e.relevance += 200;
-                    if(e.start_date.equalsIgnoreCase(query)) e.relevance += 400;
-                    if(e.start_date.equals(query)) e.relevance += 500;
-                    if(Text.contains(e.start_date, query)) e.relevance += 400;
-                    if(e.location.equals(query)) e.relevance += 500;
-                    if(e.location.equalsIgnoreCase(query)) e.relevance += 400;
-                    if(e.location.contains(query)) e.relevance += 200;
-                    if(Text.contains(e.location, query)) e.relevance += 400;
+                    if(e.name.toLowerCase().equals(query)) e.relevance += 500;
+                    if(e.name.toLowerCase().contains(query)) e.relevance += 200;
+                    if(Text.contains(e.name.toLowerCase(), query)) e.relevance += 400;
+                    if(e.start_date.toLowerCase().contains(query)) e.relevance += 200;
+                    if(e.start_date.toLowerCase().equals(query)) e.relevance += 500;
+                    if(Text.contains(e.start_date.toLowerCase(), query)) e.relevance += 400;
+                    if(e.location.toLowerCase().equals(query)) e.relevance += 500;
+                    if(e.location.toLowerCase().contains(query)) e.relevance += 200;
+                    if(Text.contains(e.location.toLowerCase(), query)) e.relevance += 400;
 
                     if(e.relevance != 0) active.add(e);
                 }
@@ -212,8 +244,9 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
                 Collections.reverse(active);
                 return active;
             } else {
-                if(active != null) active.clear();
+                active.clear();
                 for(Event e : events) e.relevance = 0;
+                active.addAll(Arrays.asList(events));
             }
 
             Collections.sort(Arrays.asList(events));
@@ -265,7 +298,6 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
             Settings.disableAll();
             Event[] events = new TBA().getEvents(2017, false);
-            Collections.sort(Arrays.asList(events));
             return events;
         }
 

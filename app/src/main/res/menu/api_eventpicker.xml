@@ -8,5 +8,10 @@
         android:icon="@drawable/create"
         app:showAsAction="always"
         android:title="Manually add event"/>
+    <item
+        android:id="@+id/search"
+        android:icon="@drawable/search"
+        app:showAsAction="always"
+        android:title="Search"/>
 
 </menu>
