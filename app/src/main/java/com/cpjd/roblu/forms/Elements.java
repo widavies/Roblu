@@ -114,7 +114,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         na.setId(Text.generateViewId());
         yes.setText(R.string.yes);
         no.setText(R.string.no);
-        na.setText("N/A");
+        na.setText("N.O.");
 
         if(value == 1) yes.setChecked(true);
         else if(value == 0) no.setChecked(true);
@@ -198,15 +198,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         number.setTextColor(rui.getText());
         number.setId(Text.generateViewId());
         number.setText(String.valueOf(value));
-        if(notObserved) number.setText("N/A");
+        if(notObserved) number.setText("N.O.");
         number.setLayoutParams(params);
         number.setPadding(Text.DPToPX(activity, 20), number.getPaddingTop(), Text.DPToPX(activity, 20), number.getPaddingBottom());
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(number.getText().toString().equals("N/A")) {
+                if(number.getText().toString().equals("N.O.")) {
                     number.setText(String.valueOf(value));
+                    listener.counterUpdated(ID, value);
                     return;
                 }
 
@@ -288,7 +289,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         current.setTextColor(rui.getText());
         current.setId(Text.generateViewId());
         current.setText(String.valueOf(value));
-        if(notObserved) current.setText("N/A");
+        if(notObserved) current.setText("N.O.");
         current.setTextColor(Color.WHITE);
         minv.setText(String.valueOf(0));
         max.setText(String.valueOf(initMax));
@@ -495,7 +496,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         timer.setTextSize(25);
         timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Text.DPToPX(activity, 15), timer.getPaddingBottom());
         timer.setText(time+"s");
-        if(notObserved) timer.setText("N/A");
+        if(notObserved) timer.setText("N.O.");
         timer.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, button.getId());
@@ -529,7 +530,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                             activity.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    if(timer.getText().equals("N/A")) t = 0;
+                                    if(timer.getText().equals("N.O.")) t = 0;
                                     else t = Double.parseDouble(timer.getText().toString().replace("s", ""));
                                     t+=0.1;
                                     timer.setText(String.valueOf(Text.round(t, 1))+"s");

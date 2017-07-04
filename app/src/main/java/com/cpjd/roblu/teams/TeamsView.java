@@ -54,6 +54,7 @@ import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.teams.customsort.CustomSort;
@@ -670,6 +671,24 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
                 int tab = Integer.parseInt(sortToken.split(":")[0]);
                 int ID = Integer.parseInt(sortToken.split(":")[1]);
+
+                if(tab == 3 && ID == -1) { // sorting by match
+                    if(activeTeams == null) activeTeams = new LinkedList<>();
+                    activeTeams.clear();
+                    for(RTeam tempTeam : teams) {
+                        for(RTab temp : tempTeam.getTabs()) {
+                            if(temp.getTitle().equalsIgnoreCase(sortToken.split(":")[2])) {
+                                tempTeam.setSearchTip2("In "+temp.getTitle());
+                                activeTeams.add(tempTeam);
+                            }
+                        }
+                    }
+                    FILTER = CUSTOM;
+                    lastFilter = CUSTOM;
+                    return activeTeams;
+
+                }
+
                 Element temp = null;
                 if(tab == 0) temp = form.getMatch().get(ID); // match
                 else if(tab == 1) temp = form.getMatch().get(ID); // predictions

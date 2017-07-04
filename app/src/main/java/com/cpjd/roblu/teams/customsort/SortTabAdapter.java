@@ -15,13 +15,16 @@ class SortTabAdapter extends FragmentPagerAdapter {
 
     private final RForm form;
     private final ArrayList<Element> other;
+    private final long eventID;
 
-    SortTabAdapter(FragmentManager fm, RForm form) {
+    SortTabAdapter(FragmentManager fm, RForm form, long eventID) {
         super(fm);
         this.form = form;
+        this.eventID = eventID;
 
         other = new ArrayList<>();
         other.add(new ESort("By wins", "Sort teams by how many matches they've won", 0));
+        other.add(new ESort("By match", "Sort teams by a specific match", -1));
         other.add(new ESort("By # of matches", "Sort teams by how many matches they contain", 1));
         other.add(new ESort("By size", "Sort teams by their size on disk", 2));
     }
@@ -29,6 +32,7 @@ class SortTabAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int i) {
         Bundle bundle = new Bundle();
+        bundle.putLong("eventID", eventID);
         if(i == 0 || i == 1) bundle.putSerializable("elements", form.getMatch());
         else if(i == 2) bundle.putSerializable("elements", form.getPit());
         else bundle.putSerializable("elements", other);

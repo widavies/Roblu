@@ -15,6 +15,8 @@ import com.cpjd.roblu.ui.UIHandler;
 
 public class CustomSort extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
+    private long eventID;
+
     @Override
     public void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
@@ -28,6 +30,8 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
+        eventID = getIntent().getLongExtra("eventID", 0);
+
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
         tabLayout.setBackgroundColor(new Loader(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
@@ -40,7 +44,7 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
             }
         }
 
-        SortTabAdapter adapter = new SortTabAdapter(getSupportFragmentManager(), form);
+        SortTabAdapter adapter = new SortTabAdapter(getSupportFragmentManager(), form, eventID);
         ViewPager pager = (ViewPager) findViewById(R.id.pager);
         pager.addOnPageChangeListener(this);
 
