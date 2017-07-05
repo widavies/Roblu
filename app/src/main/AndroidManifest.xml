@@ -91,10 +91,6 @@
             android:label="Setup"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".activities.About"
-            android:label="about">
-        </activity>
-        <activity
             android:name=".activities.AdvSettings"
             android:label="Settings"
             android:parentActivityName=".activities.AdvSettings">

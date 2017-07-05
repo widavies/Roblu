@@ -4,9 +4,9 @@ import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-class TutorialTouchHelper extends ItemTouchHelper.SimpleCallback {
+public class TutorialTouchHelper extends ItemTouchHelper.SimpleCallback {
 
-    TutorialTouchHelper() {
+    public TutorialTouchHelper() {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
     }
 

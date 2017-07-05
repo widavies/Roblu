@@ -40,6 +40,8 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.mikepenz.aboutlibraries.Libs;
+import com.mikepenz.aboutlibraries.LibsBuilder;
 
 public class AdvSettings extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
@@ -151,8 +153,10 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 return true;
             }
             else if(preference.getKey().equals("about")) {
-                Intent start = new Intent(getActivity(), About.class);
-                startActivity(start);
+                new LibsBuilder().withFields(R.string.class.getFields()).withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR).withAboutIconShown(true).withAboutVersionShown(true).withAboutDescription("Copyright 2017. A scouting app for robotics competitions focused on customization, simplicity, and functionality. Roblu is an open source" +
+                        " project designed to streamline your scouting exerpience. Thank you to Andy Pethan and Isaac Faulkner for all the help. App written by Will Davies.")
+                        .withActivityTitle("About Roblu").withLicenseShown(true).
+                        start(getActivity());
                 return true;
             }
             else if(preference.getKey().equals("tut")) {
