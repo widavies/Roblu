@@ -26,10 +26,11 @@ class TeamTouchHelper extends ItemTouchHelper.SimpleCallback {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mElementsAdapter = elementsAdapter;
 
-        RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
-
         xMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.clear);
-        xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
+        try {
+            RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
+            xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
+        } catch(Exception e) {}
         xMarkMargin = 100;
     }
 

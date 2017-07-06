@@ -80,8 +80,7 @@ public class UIHandler {
             Window window = activity.getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(rui.darker(rui.getPrimaryColor(), 0.85f));
-            //if(start && rui.getPrimaryColor() == -12627531)
-            window.setStatusBarColor(Color.TRANSPARENT);
+            if(start && rui.getPrimaryColor() == -12627531) window.setStatusBarColor(Color.TRANSPARENT);
         }
 
         // activity background

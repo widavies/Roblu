@@ -367,9 +367,13 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if(!getIntent().getBooleanExtra("readOnly", false)) getMenuInflater().inflate(R.menu.team_viewer_actionbar, menu);
+        getMenuInflater().inflate(R.menu.team_viewer_actionbar, menu);
         new UIHandler(this, menu).updateMenu();
-        return !getIntent().getBooleanExtra("readOnly", false);
+        if(getIntent().getBooleanExtra("readOnly", false)) {
+            menu.findItem(R.id.match_settings).setVisible(false);
+            menu.findItem(R.id.add_match).setVisible(false);
+        }
+        return true;
     }
 
     private void hideKeyboard(Activity activity) {

@@ -55,9 +55,17 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:id="@+id/welcome_next_page"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
+
+                <LinearLayout
+                    android:id="@+id/welcome_next_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -70,11 +78,11 @@
 
                     <ImageView
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
                         android:contentDescription="@string/right_arrow"
+                        android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/right" />
-
+                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
 
@@ -116,9 +124,15 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:id="@+id/bluetooth_next_page"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
+
+                <LinearLayout
+                    android:id="@+id/bluetooth_next_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -132,9 +146,10 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:contentDescription="@string/right_arrow"
                         android:layout_gravity="center_vertical"
+                        android:contentDescription="@string/right_arrow"
                         android:src="@drawable/right" />
+                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
         <LinearLayout
@@ -175,9 +190,16 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:id="@+id/permissions_next_page"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
+
+                <LinearLayout
+                    android:id="@+id/permissions_next_page"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:padding="16dp">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -190,9 +212,10 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:contentDescription="@string/right_arrow"
                         android:layout_gravity="center_vertical"
+                        android:contentDescription="@string/right_arrow"
                         android:src="@drawable/right" />
+                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
         <LinearLayout
@@ -255,9 +278,15 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:id="@+id/finished_next"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
+
+                <LinearLayout
+                    android:id="@+id/finished_next"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -272,8 +301,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
+
                         android:contentDescription="@string/right_arrow"
                         android:src="@drawable/right" />
+                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
     </com.cpjd.roblu.utils.DisableSwipeViewPager>

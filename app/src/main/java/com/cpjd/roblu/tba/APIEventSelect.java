@@ -105,14 +105,13 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
         selectedYear = Calendar.getInstance().get(Calendar.YEAR);
         String[] years = new String[selectedYear - 1991];
-        for(int i = 0; i < years.length; i++) years[i] = String.valueOf(1992 + i);
+        for(int i = years.length - 1; i >= 0; i--) years[Math.abs(i - years.length + 1)] = String.valueOf(1992 + i);
 
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, years);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
-
 
         new UIHandler(this, toolbar).update();
 

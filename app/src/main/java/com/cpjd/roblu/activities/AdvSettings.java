@@ -43,13 +43,20 @@ import com.google.android.gms.common.api.Status;
 import com.mikepenz.aboutlibraries.Libs;
 import com.mikepenz.aboutlibraries.LibsBuilder;
 
+/**
+ *
+ * AdvSettings is short for "Advanced Settings", because the last version of settings was absolute garbage.
+ * This one is a bit better. This manages application level settings, not specific to any elements.
+ *
+ * @since 2.0.0
+ * @author Will Davies
+ */
 public class AdvSettings extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
 
     private static RSettings settings;
     private RUI rui;
 
     private static GoogleApiClient apiClient;
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

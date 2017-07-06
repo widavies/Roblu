@@ -19,11 +19,15 @@ class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Context mContext;
     private LinkedList<RTeam> teams;
     private final TeamsItemClickListener listener;
-    private final RUI rui;
+    private RUI rui;
 
     public TeamsAdapter(Context context, TeamsItemClickListener listener){
         this.mContext = context; this.listener = listener;
-        rui = new Loader(context).loadSettings().getRui();
+        try {
+            rui = new Loader(context).loadSettings().getRui();
+        } catch(Exception e) {
+            rui = null;
+        }
     }
 
     public void reAdd(RTeam t) {
@@ -52,7 +56,7 @@ class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(mContext).inflate(R.layout.teams_item, parent, false);
-        view.setBackgroundColor(rui.getCardColor());
+        if(rui != null) view.setBackgroundColor(rui.getCardColor());
         final MyViewHolder holder = new MyViewHolder(view);
         view.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -108,17 +112,17 @@ class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         private void bindMovie(RTeam team){
             this.title.setText(team.getName());
-            this.title.setTextColor(rui.getText());
+            if(rui != null) this.title.setTextColor(rui.getText());
             this.title.setMaxWidth((int)(Text.getWidth()* 0.85));
             String text = "#"+String.valueOf(team.getNumber());
             this.number.setText(text);
-            this.number.setTextColor(rui.getText());
+            if(rui != null) this.number.setTextColor(rui.getText());
             String subtitle = "In "+team.getNumMatches()+" matches\nLast edited: "+ Text.convertTime(team.getLastEdit());
             if(team.getSortTip() != null && !team.getSortTip().equals("")) subtitle +="\n\n"+team.getSortTip();
             if(team.getSearchTip() != null && !team.getSearchTip().equals("")) subtitle +="\n\n"+team.getSearchTip();
 
             this.subtitle.setText(subtitle);
-            this.subtitle.setTextColor(rui.getText());
+            if(rui != null) this.subtitle.setTextColor(rui.getText());
         }
     }
 

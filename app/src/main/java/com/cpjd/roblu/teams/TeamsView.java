@@ -213,7 +213,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
                     .setTitle("Changelist for Version 3.5.9")
-                    .setMessage("-Added my matches\n-Improvements to searching and filtering\n-Ads removed, UI customizer available for everyone\n-Reworked cloud controls\n-Event import now searchable\n-Bug fixes\n\n" +
+                    .setMessage("-Added my matches (long press on search button)\n-Improvements to searching and filtering\n-Ads removed, UI customizer available for everyone\n-Reworked cloud controls\n-Event import now searchable\n-Bug fixes\n\n" +
                             "Cloud support is coming in 3.6.0")
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
