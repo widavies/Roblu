@@ -537,6 +537,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     break;
                 }
             }
+            System.out.println(lastQuery+","+lastSortToken+","+lastFilter+","+temp.getSortTip());
             new LoadTeams(false, lastQuery, lastSortToken, lastFilter).execute();
         }
         if(resultCode == Constants.DATA_SETTINGS_CHANGED) {
@@ -637,6 +638,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
              * Use CUSTOM filter to sort by these items, but if the user is searching these items, then SEARCH filter is more appropriate
              */
             if(!sortToken.equals("") && query.equals("")) {
+                lastFilter = SORT;
                 Loader l = new Loader(getApplicationContext());
                 RForm form = l.loadForm(event.getID());
 

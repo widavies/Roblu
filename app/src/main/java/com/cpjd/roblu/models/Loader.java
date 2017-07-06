@@ -79,6 +79,7 @@ public class Loader extends IO {
         return files.length;
     }
     public void saveTeam(RTeam team, long eventID) {
+        team.resetSortRelevance(); // this need to be serializable for switching between activites, but we don't really care about saving them
         File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+ File.separator+eventID+ File.separator+"teams"+File.separator);
         if(!file.exists()) {
             if(!file.mkdir()) System.out.println("Failed to create directory for teams");
