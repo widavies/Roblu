@@ -55,7 +55,6 @@ public class RUI implements Serializable {
 
         if(preset == 0) defaults();
         if(preset == 1) light();
-        if(preset == 2) hacker();
     }
 
     /**
@@ -92,24 +91,6 @@ public class RUI implements Serializable {
         formRadius = 12;
         dialogDirection = 2;
         preset = 2;
-    }
-
-    /**
-     * Loads the hacker preset
-     */
-    private void hacker() {
-        primaryColor = -13400570;
-
-        accent = -13400570;
-        cardColor = -1;
-        background = -16777216;
-        text = -1;
-        buttons = -16777216;
-
-        teamsRadius = 0;
-        formRadius = 0;
-        dialogDirection = 1;
-        preset = 3;
     }
 
     /**

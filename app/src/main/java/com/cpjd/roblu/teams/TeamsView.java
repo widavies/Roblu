@@ -212,8 +212,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 3.5.8")
-                    .setMessage("-Bug fixes")
+                    .setTitle("Changelist for Version 3.5.9")
+                    .setMessage("-Added my matches\n-Improvements to searching and filtering\n-Ads removed, UI customizer available for everyone\n-Reworked cloud controls\n-Event import now searchable\n-Bug fixes\n\n" +
+                            "Cloud support is coming in 3.6.0")
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -488,7 +489,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(input2.getText().toString().equals("")) input2.setText("0");
                 RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), new Loader(getApplicationContext()).getNewTeamID(event.getID()));
                 new Loader(getApplicationContext()).saveTeam(team, event.getID());
-                new LoadTeams(true, lastQuery, lastSortToken, lastFilter).execute();
+                teams.add(team);
+                new LoadTeams(false, lastQuery, lastSortToken, lastFilter).execute();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -538,7 +540,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 }
             }
             System.out.println(lastQuery+","+lastSortToken+","+lastFilter+","+temp.getSortTip());
-            new LoadTeams(false, lastQuery, lastSortToken, lastFilter).execute();
+            LoadTeams lt = new LoadTeams(false, lastQuery, lastSortToken, lastFilter);
+            lt.setForceSortReload(true);
+            lt.execute();
         }
         if(resultCode == Constants.DATA_SETTINGS_CHANGED) {
             REvent temp = (REvent) data.getSerializableExtra("event");
@@ -590,6 +594,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         private String query;
         private String sortToken;
         private final int filter;
+        private boolean forceSortReload; // when a team is edited
 
         public LoadTeams(boolean loadFromDisk, String query, String sortToken, int filter) {
             this.loadFromDisk = loadFromDisk;
@@ -608,6 +613,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 bar.setVisibility(View.VISIBLE);
                 bar.getIndeterminateDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.MULTIPLY);
             }
+        }
+
+        public void setForceSortReload(boolean b) {
+            this.forceSortReload = b;
         }
 
         protected LinkedList<RTeam> doInBackground(Void... params) {
@@ -637,7 +646,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
              *
              * Use CUSTOM filter to sort by these items, but if the user is searching these items, then SEARCH filter is more appropriate
              */
-            if(!sortToken.equals("") && query.equals("")) {
+            if(!sortToken.equals("") && (query.equals("") || forceSortReload)) {
                 lastFilter = SORT;
                 Loader l = new Loader(getApplicationContext());
                 RForm form = l.loadForm(event.getID());
@@ -655,6 +664,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(tab == ElementsProcessor.OTHER && ID == -1) {
                     activeTeams.clear();
                     for(RTeam tempTeam : teams) {
+                        tempTeam.resetSortRelevance();
                         for(RTab temp : tempTeam.getTabs()) {
                             if(temp.getTitle().equalsIgnoreCase(sortToken.split(":")[2])) {
                                 tempTeam.setSearchTip("In "+temp.getTitle());

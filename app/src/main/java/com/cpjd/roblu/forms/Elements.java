@@ -113,6 +113,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                         rui.getAccent()
                 }
         );
+        if(readOnly) colorStateList = new ColorStateList(
+                new int[][] {
+                        new int[] { -android.R.attr.state_checked }, // unchecked
+                        new int[] {  android.R.attr.state_checked }  // checked
+                },
+                new int[] {
+                        rui.darker(rui.getText(), 0.75f),
+                        rui.getAccent()
+                }
+        );
         yes.setSupportButtonTintList(colorStateList);
         no.setSupportButtonTintList(colorStateList);
         na.setSupportButtonTintList(colorStateList);
@@ -186,9 +196,11 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         Drawable add = ContextCompat.getDrawable(activity, R.drawable.add_small);
         add.mutate();
         add.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        if(readOnly) add.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
         Drawable minus = ContextCompat.getDrawable(activity,R.drawable.minus_small);
         minus.mutate();
         minus.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        if(readOnly) minus.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -205,6 +217,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         final TextView number = new TextView(activity);
         number.setTextSize(25);
         number.setTextColor(rui.getText());
+        if(readOnly) number.setTextColor(rui.darker(rui.getText(), 0.75f));
         number.setId(Text.generateViewId());
         number.setText(String.valueOf(value));
         if(notObserved) number.setText("N.O.");
@@ -292,12 +305,15 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         TextView minv = new TextView(activity);
         minv.setTextColor(rui.getText());
+        if(readOnly) minv.setTextColor(rui.darker(rui.getText(), 0.75f));
         minv.setId(Text.generateViewId());
         TextView max = new TextView(activity);
         max.setTextColor(rui.getText());
+        if(readOnly) max.setTextColor(rui.darker(rui.getText(), 0.75f));
         max.setId(Text.generateViewId());
         final TextView current = new TextView(activity);
         current.setTextColor(rui.getText());
+        if(readOnly) current.setTextColor(rui.darker(rui.getText(), 0.75f));
         current.setId(Text.generateViewId());
         current.setText(String.valueOf(value));
         if(notObserved) current.setText("N.O.");
@@ -357,7 +373,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
                             ((TextView) v).setTextSize(16);
                             ((TextView) v).setTextColor(rui.getText());
-
+                            if(readOnly) ((TextView) v).setTextColor(rui.darker(rui.getText(), 0.75f));
                             return v;
                         }
 
@@ -367,6 +383,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                             v.setBackgroundColor(rui.getBackground());
 
                             ((TextView) v).setTextColor(rui.getText());
+                            if(readOnly) ((TextView) v).setTextColor(rui.darker(rui.getText(), 0.75f));
                             ((TextView) v).setGravity(Gravity.CENTER);
                             return v;
                         }
@@ -435,6 +452,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                 box.setText(values.get(i));
                 box.setId(Text.generateViewId());
                 box.setTextColor(rui.getText());
+                if(readOnly) box.setTextColor(rui.darker(rui.getText(), 0.75f));
                 box.setChecked(checked.get(i));
                 box.setEnabled(!readOnly);
                 box.setLayoutParams(params);
@@ -445,6 +463,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                         },
                         new int[] {
                                 rui.getText(),
+                                rui.getAccent()
+                        }
+                );
+                if(readOnly) colorStateList = new ColorStateList(
+                        new int[][] {
+                                new int[] { -android.R.attr.state_checked }, // unchecked
+                                new int[] {  android.R.attr.state_checked }  // checked
+                        },
+                        new int[] {
+                                rui.darker(rui.getText(), 0.75f),
                                 rui.getAccent()
                         }
                 );
@@ -484,12 +512,14 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         play.mutate();
         play.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        if(readOnly) play.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
 
         pause.mutate();
         pause.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
 
         reset.mutate();
         reset.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        if(readOnly) reset.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
 
         final ImageView playButton = new ImageView(activity);
         playButton.setBackground(play);
@@ -513,6 +543,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         timer.setText(time+"s");
         if(notObserved) timer.setText("N.O.");
         timer.setTextColor(rui.getText());
+        if(readOnly) timer.setTextColor(rui.darker(rui.getText(), 0.75f));
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, button.getId());
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -605,6 +636,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         et.setText(value);
         et.setEnabled(!readOnly);
         et.setTextColor(rui.getText());
+        if(readOnly) et.setTextColor(rui.darker(rui.getText(), 0.75f));
         et.setHighlightColor(rui.getAccent());
         Drawable d = et.getBackground();
         d.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
@@ -797,6 +829,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         et.setMaxLines(1);
         et.setEnabled(!readOnly);
         et.setTextColor(rui.getText());
+        if(readOnly) et.setTextColor(rui.darker(rui.getText(), 0.75f));
         et.setHighlightColor(rui.getAccent());
         Drawable d = et.getBackground();
         d.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);

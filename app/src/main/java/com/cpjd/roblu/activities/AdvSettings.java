@@ -50,6 +50,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
     private static GoogleApiClient apiClient;
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +91,19 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
     @SuppressWarnings("WeakerAccess")
     public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+        private final String PRIVACY = "Roblu Privacy & Terms of Use\n" +
+                "\nData that Roblu stores and transfers:\n-Google email\n-Google display name\n-FRC Name and Number\n-Any and all form data, including scouters' data, local data, and more." +
+                "\n\nRoblu does NOT manage your Google password, payments, or any other data on your device that is not created by Roblu. Data is transferred over" +
+                " an internet connection if syncing is enabled, and all connections are encrypted and secured using your team code. Scouting data is not inherently extremely sensitive information, so appropriate " +
+                "cautions have been made to the level of security required. At any time, Roblu many crash or malfunction and all your data could be deleted. By using Roblu, you agree to all responsibility if your " +
+                "data is lost, or data is stolen. If you do not agree, do not use Roblu.";
+
+        private final String CONTRIBUTIONS = "Roblu Master Android App - Will Davies\n\nRoblu Scouter Android App - Will Davies\n\nRoblu Scouter IOS App - Alex Harker\n\nRoblu Cloud Backend - Andy Pethan & Isaac Faulkner\n\nRoblu Cloud API - Will Davies";
+
+        private final String CHANGELOG = "3.5.9\n-Added my matches\n-Improvements to searching and filtering\n-Ads removed, UI customizer available for everyone\n-Reworked cloud controls\n-Event import now searchable\n-Bug fixes" +
+                "\n\n3.5.8\n-Bug fixes\n\n3.5.5 - 3.5.7\n-Changed app name to Roblu Master\n-Bug fixes\n\n3.5.4\n-Added custom sorting\n-Mark matches as won, delete, open on TBA\n-Bug fixes\n\n3.5.3\n-Bug fixes\n\n3.5.2\n-Added gallery elements\n-Bug fixes" +
+                "\n\n3.5.0 - 3.5.1\n-Bug fixes\n\n3.0.0 - 3.4.9\n-Completed redesigned system\n-Redesigned file system\n-New form editor\n-New form elements\n-TBA-API improvements\n-Less restrictions on naming, editing, etc\n-New interface\n\n" +
+                "2.0.0-2.9.9\nRoblu Version 2, we don't talk about that anymore\n\n1.0.0-1.9.9\nRoblu Version 1 is where humans go to die";
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -107,8 +121,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             teamNumber.setOnPreferenceChangeListener(this);
 
             findPreference("about").setOnPreferenceClickListener(this);
-            findPreference("privacy").setOnPreferenceClickListener(this);
-            findPreference("git").setOnPreferenceClickListener(this);
             findPreference("customizer").setOnPreferenceClickListener(this);
             findPreference("sync_service").setOnPreferenceClickListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
@@ -141,7 +153,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         @Override
                         public void onResult(@NonNull Status status) {
                             toggleCloudControls(!status.isSuccess());
-                            if(status.isSuccess()) Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", true, 0);
+                            if(status.isSuccess()) Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
                             else Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
                         }
                     });
@@ -153,28 +165,15 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 return true;
             }
             else if(preference.getKey().equals("about")) {
-                new LibsBuilder().withFields(R.string.class.getFields()).withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR).withAboutIconShown(true).withAboutVersionShown(true).withAboutDescription("Copyright 2017. A scouting app for robotics competitions focused on customization, simplicity, and functionality. Roblu is an open source" +
-                        " project designed to streamline your scouting exerpience. Thank you to Andy Pethan and Isaac Faulkner for all the help. App written by Will Davies.")
-                        .withActivityTitle("About Roblu").withLicenseShown(true).
+                new LibsBuilder().withFields(R.string.class.getFields()).withActivityStyle(Libs.ActivityStyle.LIGHT_DARK_TOOLBAR).withAboutIconShown(true).withAboutVersionShown(true).withAboutDescription("Copyright 2017. A scouting app for robotics competitions focused on customization, simplicity, and functionality. Roblu is a" +
+                        " project designed to streamline your scouting experience. Thank you to Andy Pethan and Isaac Faulkner for all the help. App written by Will Davies.")
+                        .withActivityTitle("About Roblu").withLicenseShown(true).withAboutSpecial1("Privacy").withAboutSpecial1Description(PRIVACY).withAboutSpecial2("Contributors").withAboutSpecial2Description(CONTRIBUTIONS).withAboutSpecial3("Changelog")
+                        .withAboutSpecial3Description(CHANGELOG).
                         start(getActivity());
                 return true;
             }
             else if(preference.getKey().equals("tut")) {
                 String url = "https://docs.google.com/document/d/1fp3aq5ta4SpJE6AOiHujj8NVpqYdq6gSVoLAl3wQ7f8/edit?usp=sharing";
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-                return true;
-            }
-            else if(preference.getKey().equals("privacy")) {
-                String url = "https://www.cpjd.weebly.com/privacy";
-                Intent i = new Intent(Intent.ACTION_VIEW);
-                i.setData(Uri.parse(url));
-                startActivity(i);
-                return true;
-            }
-            else if(preference.getKey().equals("git")) {
-                String url = "https://www.github.com/wdavies973/Roblu";
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse(url));
                 startActivity(i);

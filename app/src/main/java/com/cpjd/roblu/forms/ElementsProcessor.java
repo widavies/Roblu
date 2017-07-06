@@ -282,7 +282,7 @@ public class ElementsProcessor {
 
     private int numModified(ArrayList<RTab> tabs, int ID) {
         int num = 0;
-        for(RTab tab : tabs) for(Element e : tab.getElements()) if(e.getID() == ID && e.isModified()) num++;
+        for(int i = 2; i < tabs.size(); i++) for(Element e : tabs.get(i).getElements()) if(e.getID() == ID && e.isModified()) num++;
         return num;
     }
 

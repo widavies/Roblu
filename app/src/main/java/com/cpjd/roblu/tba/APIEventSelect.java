@@ -1,9 +1,11 @@
 package com.cpjd.roblu.tba;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -18,16 +20,19 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 
 import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.teams.customsort.SelectListener;
 import com.cpjd.roblu.tutorials.TutorialTouchHelper;
 import com.cpjd.roblu.ui.UIHandler;
@@ -62,6 +67,8 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
     private int selectedYear;
     //private RUI rui;
 
+    private ProgressBar bar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,6 +79,9 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         setTitle("Select an event");
+
+        bar = (ProgressBar) findViewById(R.id.progress_bar);
+        bar.setVisibility(View.GONE);
 
         rv = (RecyclerView) findViewById(R.id.events_recycler);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
@@ -207,6 +217,13 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
     @Override
     public void onItemClick(View v) {
+        // Close the keyboard right away
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
         Event event = adapter.getEvent(rv.getChildLayoutPosition(v));
         try {
             new ImportEvent().execute(event.key);
@@ -274,6 +291,10 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
         public FetchEvents() {
             if(events == null) events = new ArrayList<>();
+
+            rv.setVisibility(View.GONE);
+            bar.setVisibility(View.VISIBLE);
+            bar.getIndeterminateDrawable().setColorFilter(new Loader(getApplicationContext()).loadSettings().getRui().getAccent(), PorterDuff.Mode.MULTIPLY);
         }
 
         @Override
@@ -304,6 +325,8 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
                 new FetchEvents().execute(selectedYear);
                 return;
             }
+            rv.setVisibility(View.VISIBLE);
+            bar.setVisibility(View.GONE);
             new SearchEvents("").execute();
         }
     }

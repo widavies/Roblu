@@ -120,6 +120,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
+        bundle.putBoolean("readOnly", false);
         bundle.putInt("position", position);
 
         Match match = new Match();

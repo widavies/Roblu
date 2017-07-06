@@ -160,7 +160,7 @@ public class UICustomizer extends AppCompatActivity {
         }
 
         private void addPreset(int previous) {
-            final CharSequence[] items = { " Default ", " Light ", " Hacker ", " Custom "};
+            final CharSequence[] items = { " Default ", " Light ", " Custom "};
 
             final Dialog d = new Dialog(getActivity());
             d.setContentView(R.layout.dialog_sort);
@@ -202,7 +202,7 @@ public class UICustomizer extends AppCompatActivity {
 
             if(d.getWindow() != null) {
                 d.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
-                d.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                d.getWindow().getAttributes().windowAnimations = rui.getAnimation();
             }
             d.show();
         }
@@ -248,7 +248,7 @@ public class UICustomizer extends AppCompatActivity {
 
             if(d.getWindow() != null) {
                 d.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
-                d.getWindow().getAttributes().windowAnimations = rui.getDialogDirection();
+                d.getWindow().getAttributes().windowAnimations = rui.getAnimation();
             }
             d.show();
 

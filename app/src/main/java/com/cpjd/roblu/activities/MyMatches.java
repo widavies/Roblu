@@ -74,11 +74,17 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
                 break;
             }
         }
-        if(myTeam == null || myTeam.getTabs() == null || myTeam.getTabs().size() == 0) {
+        if(myTeam == null) {
             Toast.makeText(getApplicationContext(), "Team is missing from event, please add it", Toast.LENGTH_LONG).show();
             finish();
             return;
         }
+
+         if(myTeam.getTabs() == null || myTeam.getTabs().size() <= 2) {
+             Toast.makeText(getApplicationContext(), "Team does not contain any match data, please add some.", Toast.LENGTH_LONG).show();
+             finish();
+             return;
+         }
 
         myTeam.verify(new Loader(getApplicationContext()).loadForm(eventID));
 

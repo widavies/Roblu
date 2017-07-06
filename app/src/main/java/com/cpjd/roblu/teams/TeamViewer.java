@@ -81,6 +81,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         team = (RTeam) getIntent().getSerializableExtra("team");
         readOnly = getIntent().getBooleanExtra("readOnly", false);
 
+        if(readOnly) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Read only mode is enabled when resolving conflicts", false, new Loader(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
+
         RForm form = new Loader(getApplicationContext()).loadForm(event.getID());
 
         rui = new Loader(getApplicationContext()).loadSettings().getRui();
@@ -123,7 +125,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
             finish();
             return true;
         }
-        if(item.getItemId() == R.id.add_match && !readOnly) {
+        if(item.getItemId() == R.id.add_match) {
             openMatchCreater();
             return true;
         }
@@ -160,7 +162,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     }
                     return true;
                 }
-                if(item.getItemId() == R.id.delete_match && !readOnly) {
+                if(item.getItemId() == R.id.delete_match) {
                     if(pager.getCurrentItem() == 0) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Overiew can't be deleted", true, 0);
                     else if(pager.getCurrentItem() == 1) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "PIT can't be deleted", true, 0);
                     else if(pager.getCurrentItem() == 2) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Predictions can't be deleted", true, 0);
@@ -174,7 +176,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     }
                     return true;
                 }
-                if(item.getItemId() == won && !readOnly) {
+                if(item.getItemId() == won) {
                     if(pager.getCurrentItem() == 0) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Overiew can't be marked as won", true, 0);
                     else if(pager.getCurrentItem() == 1) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "PIT can't be marked as won", true, 0);
                     else if(pager.getCurrentItem() == 2) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Predictions can't be marked as won", true, 0);
@@ -365,9 +367,9 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.team_viewer_actionbar, menu);
+        if(!getIntent().getBooleanExtra("readOnly", false)) getMenuInflater().inflate(R.menu.team_viewer_actionbar, menu);
         new UIHandler(this, menu).updateMenu();
-        return true;
+        return !getIntent().getBooleanExtra("readOnly", false);
     }
 
     private void hideKeyboard(Activity activity) {

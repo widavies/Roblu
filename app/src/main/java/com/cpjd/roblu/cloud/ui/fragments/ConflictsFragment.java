@@ -70,7 +70,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
             RTeam localCopy = new Loader(getActivity()).loadTeam(eventID, conflict.getID());
             localCopy.verify(form);
 
-            RTeam temp = new RTeam("Resolving", checkout.getTeam().getNumber(), checkout.getTeam().getID());
+            RTeam temp = new RTeam("Resolving "+conflict.getName(), checkout.getTeam().getNumber(), checkout.getTeam().getID());
             for(int i = 0; i < conflict.getTabs().size(); i++) {
                 for(int j = 0; j < localCopy.getTabs().size(); j++) {
                     if(conflict.getTabs().get(i).getTitle().equalsIgnoreCase(localCopy.getTabs().get(j).getTitle())) {

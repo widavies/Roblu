@@ -51,13 +51,5 @@
             android:title="About"
             android:key="about"
             android:summary="External library information"/>
-        <com.cpjd.roblu.ui.MyPreference
-            android:title="Privacy and terms"
-            android:key="privacy"
-            android:summary="View troubleshooting, console commands, how Roblu handles your data, and the terms of use."/>
-        <com.cpjd.roblu.ui.MyPreference
-            android:title="Roblu is open source"
-            android:key="git"
-            android:summary="View project on Github"/>
     </com.cpjd.roblu.ui.MyPreferenceCategory>
 </PreferenceScreen>

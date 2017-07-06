@@ -14,6 +14,14 @@
         android:background="@color/primary"
         android:minHeight="?actionBarSize">
     </android.support.v7.widget.Toolbar>
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        style="?android:progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        />
     <Spinner
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

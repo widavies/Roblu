@@ -57,6 +57,7 @@ public class Match extends Fragment implements ElementsListener {
         position = bundle.getInt("position") - 1;
         readOnly = bundle.getBoolean("readOnly");
         if(readOnly) position++;
+
         els = new Elements(getActivity(), new Loader(getActivity()).loadSettings().getRui(), this, false);
         els.setReadOnly(readOnly);
 
@@ -68,14 +69,11 @@ public class Match extends Fragment implements ElementsListener {
     public void load() {
         if(layout != null && layout.getChildCount() > 0) layout.removeAllViews();
 
-        System.out.println("Elements received in match: "+team.getTabs().get(position).getElements().size()+" for tab "+team.getTabs().get(position).getTitle());
-
         for(int i = 0; i < team.getTabs().get(position).getElements().size(); i++) {
-            innerLoop: for(int j = 0; j < team.getTabs().get(position).getElements().size(); j++) {
+            for(int j = 0; j < team.getTabs().get(position).getElements().size(); j++) {
                 if(i == team.getTabs().get(position).getElements().get(j).getPosition()) {
-                    System.out.println("found it");
                     loadElement(team.getTabs().get(position).getElements().get(j));
-                    break innerLoop;
+                    break;
                 }
             }
         }

@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
@@ -171,7 +172,9 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
                     changeWidth();
                     return true;
                 } else if(item.getItemId() == R.id.color) {
-                    ColorPickerDialog.newBuilder().setColor(color).show(Drawing.this);
+                    ColorPickerDialog.newBuilder().setAllowPresets(true).setPresets(new int[] {
+                            Color.RED, Color.BLUE, Color.CYAN, Color.YELLOW, Color.MAGENTA, Color.BLACK, Color.WHITE, Color.GRAY, Color.GREEN, Color.DKGRAY, Color.LTGRAY }
+                    ).setColor(color).setShowColorShades(true).show(Drawing.this);
                     return true;
                 }
                 return false;
