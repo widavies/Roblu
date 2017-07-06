@@ -45,7 +45,8 @@ public class Overview extends Fragment implements StatsListener {
 
         // Load the other card
         layout.addView(els.getInfoField("Other", "Last edited: "+ Text.convertTime(team.getLastEdit())+"\nSize on disk: "+
-                new Loader(view.getContext()).getTeamSize(event.getID(), team.getID())+" KB", "", -1));
+                new Loader(view.getContext()).getTeamSize(event.getID(), team.getID())+" KB", "", 0));
+
         return view;
     }
 

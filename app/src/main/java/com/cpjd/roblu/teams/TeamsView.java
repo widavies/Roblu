@@ -94,12 +94,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private TeamsAdapter adapter;
 
     // Filter & searching
-	public static int FILTER;
     private int lastFilter;
 	public static final int NUMERICAL = 0;
 	public static final int ALPHABETICAL = 1;
 	public static final int LAST_EDIT = 2;
-    public static final int CUSTOM = 3;
+    public static final int SORT = 3;
     public static final int SEARCH = 4; // when searching, teams are sorting be relevance
     private String lastQuery;
     private String lastSortToken;
@@ -190,8 +189,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
             @Override
             public void onSearchViewClosed() {
-                FILTER = lastFilter;
-                new LoadTeams(false, "").execute();
+                new LoadTeams(false, "", lastSortToken, lastFilter).execute();
                 fab.setVisibility(FloatingActionButton.VISIBLE);
             }
         });
@@ -204,7 +202,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                new LoadTeams(false, newText).execute();
+                new LoadTeams(false, newText, lastSortToken, lastFilter).execute();
                 return true;
             }
         });
@@ -341,9 +339,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 }
                 settings.setLastEventID(ID);
                 new Loader(getApplicationContext()).saveSettings(settings);
-                FILTER = event.getLastFilter();
-                lastFilter = FILTER;
-                new LoadTeams(true, "").execute();
+                new LoadTeams(true, "", "", event.getLastFilter()).execute();
                 return;
             }
         }
@@ -432,19 +428,15 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 @Override
                 public void onClick(View v) {
                     if(i2 == 3) {
-                        FILTER = CUSTOM;
                         Intent intent = new Intent(TeamsView.this, CustomSort.class);
                         intent.putExtra("eventID", event.getID());
                         startActivityForResult(intent, Constants.GENERAL);
                         d.dismiss();
                         return;
                     }
-
-                    FILTER = i2;
-                    lastFilter = FILTER;
-                    event.setLastFilter(FILTER);
+                    event.setLastFilter(i2);
                     new Loader(getApplicationContext()).saveEvent(event);
-                    new LoadTeams(false, "").execute();
+                    new LoadTeams(false, "", "", i2).execute();
                     d.dismiss();
                 }
             });
@@ -496,7 +488,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(input2.getText().toString().equals("")) input2.setText("0");
                 RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), new Loader(getApplicationContext()).getNewTeamID(event.getID()));
                 new Loader(getApplicationContext()).saveTeam(team, event.getID());
-                new LoadTeams(true, lastQuery).execute();
+                new LoadTeams(true, lastQuery, lastSortToken, lastFilter).execute();
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -524,7 +516,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         loadEvents();
         if(resultCode == Constants.CUSTOM_SORT_CONFIRMED) {
             String sortToken = data.getStringExtra("sortToken");
-            new LoadTeams(sortToken, false).execute();
+            new LoadTeams(false, "", sortToken, SORT).execute();
         }
         if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIMRED) {
             Bundle b = data.getExtras();
@@ -545,8 +537,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     break;
                 }
             }
-            if(FILTER == CUSTOM) new LoadTeams(lastSortToken, false).execute();
-            else new LoadTeams(false, lastQuery).execute();
+            new LoadTeams(false, lastQuery, lastSortToken, lastFilter).execute();
         }
         if(resultCode == Constants.DATA_SETTINGS_CHANGED) {
             REvent temp = (REvent) data.getSerializableExtra("event");
@@ -554,7 +545,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(getSupportActionBar() != null) getSupportActionBar().setTitle(temp.getName());
                 event = temp;
             }
-            new LoadTeams(true, lastQuery).execute();
+            new LoadTeams(true, lastQuery, lastSortToken, lastFilter).execute();
         }
         if(resultCode == Constants.SETTINGS_CHANGED) {
             settings = new Loader(getApplicationContext()).loadSettings();
@@ -584,7 +575,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
 
     /*
-     * Asyncronous method to load teams from the file system.
+     * Asynchronous method to load teams from the file system.
      * Manages the following:
      *
      * -Loading teams
@@ -597,35 +588,23 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         private final boolean loadFromDisk;
         private final String query;
         private final String sortToken;
+        private final int filter;
 
-        LoadTeams(boolean loadFromDisk, String query) {
+        public LoadTeams(boolean loadFromDisk, String query, String sortToken, int filter) {
             this.loadFromDisk = loadFromDisk;
-            this.query = query.toLowerCase();
-            this.sortToken = "";
-            lastQuery = this.query;
-
-            if(loadFromDisk && event != null) {
-                rv.setVisibility(View.GONE);
-                bar.setVisibility(View.VISIBLE);
-                bar.getIndeterminateDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.MULTIPLY);
-            }
-
-        }
-
-        LoadTeams(String sortToken, boolean loadFromDisk) {
+            this.query = query;
             this.sortToken = sortToken;
-            this.loadFromDisk = loadFromDisk;
-            query = "";
+            this.filter = filter;
+            lastFilter = filter;
             lastSortToken = sortToken;
+            if(filter != SEARCH && filter != SORT) lastSortToken = "";
 
-            if(event != null) {
+            if((loadFromDisk || (sortToken != null && !sortToken.equals("")))  && event != null) {
                 rv.setVisibility(View.GONE);
-                bar.getIndeterminateDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.MULTIPLY);
                 bar.setVisibility(View.VISIBLE);
+                bar.getIndeterminateDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.MULTIPLY);
             }
-
         }
-
 
         protected LinkedList<RTeam> doInBackground(Void... params) {
             // Before we do anything, we must verify that an event exists, if not, nothing needs to be done
@@ -644,7 +623,15 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             // Okay, let's make sure that teams actually contains stuff, in case the array wasn't reloaded
             if(teams == null || teams.size() == 0) return null;
 
-            // Sorting!!
+            for(RTeam team : teams) {
+                if(team != null) team.setFilter(filter); // set the desired filter, this might get overrided though
+            }
+
+            /**
+             * The sorting method will simply assign a sortTip and a relevance to each team
+             *
+             * Use CUSTOM filter to sort by these items, but if the user is searching these items, then SEARCH filter is more appropriate
+             */
             if(sortToken != null && !sortToken.equals("")) {
                 Loader l = new Loader(getApplicationContext());
                 RForm form = l.loadForm(event.getID());
@@ -658,45 +645,38 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 int tab = Integer.parseInt(sortToken.split(":")[0]);
                 int ID = Integer.parseInt(sortToken.split(":")[1]);
 
-                // It's easier to process sort by specific match and sort by size here instead of in element processor
+                // It's easier to process sort by specific match
                 if(tab == ElementsProcessor.OTHER && ID == -1) {
                     activeTeams.clear();
                     for(RTeam tempTeam : teams) {
                         for(RTab temp : tempTeam.getTabs()) {
                             if(temp.getTitle().equalsIgnoreCase(sortToken.split(":")[2])) {
                                 tempTeam.setSearchTip("In "+temp.getTitle());
+                                tempTeam.setFilter(SORT);
                                 activeTeams.add(tempTeam);
                             }
                         }
                     }
-                    FILTER = CUSTOM;
-                    lastFilter = CUSTOM;
                     return activeTeams;
                 } else {
                     ElementsProcessor ep = new ElementsProcessor();
-                    for(RTeam team : teams) {
-                        String[] tokens = ep.process(team.getTabs(), tab, ID).split(":");
-                        team.addRelevance(Double.parseDouble(tokens[0]));
-                        team.setSearchTip(tokens[1]);
+                    for(int i = 0; i < teams.size(); i++) {
+                        RTeam tempTeam = ep.process(teams.get(i), tab, ID);
+                        tempTeam.setFilter(SORT);
+                        teams.set(i, tempTeam);
                     }
                 }
-
-                Collections.sort(teams);
-                Collections.reverse(teams);
-                FILTER = CUSTOM;
-                lastFilter = CUSTOM;
-                return teams;
-
+            } else {
+                if(teams != null && teams.size() > 0) for(int i = 0; i < teams.size(); i++) if(teams.get(i) != null) teams.get(i).resetSortRelevance();
             }
 
             // Okay, let's manage searching next
-            if(!query.equals("")) {
-                FILTER = SEARCH;
+            if(query != null && !query.equals("")) {
                 activeTeams.clear();
                 int relevance;
                 for(int i = 0; i < teams.size(); i++) {
                     relevance = 0;
-                    teams.get(i).resetRelevance();
+                    teams.get(i).resetSearchRelevance();
                     String name = teams.get(i).getName().toLowerCase();
                     int number = teams.get(i).getNumber();
 
@@ -709,23 +689,23 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     relevance += teams.get(i).searchMatches(query);
 
                     if(relevance > 0) {
-                        teams.get(i).addRelevance(relevance);
-                        activeTeams.add(teams.get(i).duplicate());
+                        teams.get(i).setSearchRelevance(teams.get(i).getSearchRelevance() + relevance);
+                        teams.get(i).setFilter(SEARCH);
+                        activeTeams.add(teams.get(i));
                     }
                 }
                 Collections.sort(activeTeams);
                 Collections.reverse(activeTeams);
                 return activeTeams;
             } else {
-                if(teams != null && teams.size() > 0) for(int i = 0; i < teams.size(); i++) if(teams.get(i) != null) teams.get(i).resetRelevance();
-                FILTER = event.getLastFilter();
+                if(teams != null && teams.size() > 0) for(int i = 0; i < teams.size(); i++) if(teams.get(i) != null) teams.get(i).resetSearchRelevance();
                 if(activeTeams != null) activeTeams.clear();
             }
 
             // Okay, let's manage sorting / filter, for this, we want to display all teams, so display the teams array
             try {
                 Collections.sort(teams);
-                if (FILTER == LAST_EDIT) Collections.reverse(teams);
+                if(filter == SORT || filter == SEARCH || filter == LAST_EDIT) Collections.reverse(teams);
             } catch(final Exception e) {
                 e.printStackTrace();
                 runOnUiThread(new Runnable() {
@@ -800,8 +780,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     public void onBackPressed() {
         if(searchView.isSearchOpen()) {
             searchView.closeSearch();
-            FILTER = lastFilter;
-            new LoadTeams(false, "").execute();
+            new LoadTeams(false, "", lastSortToken, lastFilter).execute();
         }
     }
 
@@ -826,6 +805,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
         }
         Text.showSnackbar(layout, getApplicationContext(), team.getName()+" was successfully deleted", false, rui.getPrimaryColor());
-        new LoadTeams(false, lastQuery).execute();
+        new LoadTeams(false, lastQuery, lastSortToken, lastFilter).execute();
     }
 }

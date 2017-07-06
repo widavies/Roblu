@@ -76,8 +76,13 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * is displayed on team cards. Can be safely deleted
      * when the app is closed.
      */
-    private transient double relevance;
+    private transient int filter;
+
+    private transient double searchRelevance;
+    private transient double sortRelevance;
+
     private transient String searchTip;
+    private transient String sortTip;
 
     /**
      * Creates a new RTeam with default values
@@ -91,7 +96,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         this.ID = ID;
         this.page = 1;
 
-        relevance = 0;
         lastEdit = 0;
     }
 
@@ -126,12 +130,14 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     public RTeam duplicate() {
         RTeam team = new RTeam(name, number, ID);
-        team.setLastEdit(lastEdit);
         team.setPage(page);
         team.setTabs(Text.createNewTabs(tabs));
-        team.setRelevance(relevance);
         team.setTBAInfo(fullName, location, motto, website, rookieYear);
         team.setSearchTip(searchTip);
+        team.setSortTip(sortTip);
+        team.setFilter(filter);
+        team.setSearchRelevance(searchRelevance);
+        team.setSortRelevance(searchRelevance);
         return team;
     }
 
@@ -153,7 +159,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     /**
-     * verify() makes sure that the form and team are syncrhonized. Here's what it does:
+     * verify() makes sure that the form and team are synchronized. Here's what it does:
      * <p>
      * PIT:
      * -If the user modified the form and ADDED elements, then we'll make sure to add them to this team
@@ -359,17 +365,14 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     /**
      * Resets the relevance when and associated contextual information
      */
-    public void resetRelevance() {
-        searchTip = "";
-        this.relevance = 0;
+    public void resetSearchRelevance() {
+        this.searchTip = "";
+        this.searchRelevance = 0;
     }
 
-    /**
-     * Adds the specified amount of relevance to the team
-     * @param relevance the amount of relevance to add
-     */
-    public void addRelevance(double relevance) {
-        this.relevance += relevance;
+    public void resetSortRelevance() {
+        this.sortTip = "";
+        this.sortRelevance = 0;
     }
 
     /**
@@ -548,15 +551,15 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     @Override
     public int compareTo(@NonNull RTeam team) {
-        switch (TeamsView.FILTER) {
+        switch (filter) {
             case TeamsView.ALPHABETICAL:
                 return this.getName().compareTo(team.getName());
             case TeamsView.NUMERICAL:
                 return ((Integer) getNumber()).compareTo(team.getNumber());
             case TeamsView.SEARCH:
-                return ((Integer) (int)Math.round(getRelevance())).compareTo((int)Math.round(team.getRelevance()));
-            case TeamsView.CUSTOM:
-                return ((Integer) (int)Math.round(getRelevance())).compareTo((int)Math.round(team.getRelevance()));
+                return Double.compare(getSearchRelevance(), team.getSearchRelevance());
+            case TeamsView.SORT:
+                return Double.compare(getSortRelevance(), getSortRelevance());
             case TeamsView.LAST_EDIT:
                 return ((Long)getLastEdit()).compareTo(team.getLastEdit());
             default:

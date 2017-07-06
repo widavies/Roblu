@@ -16,7 +16,6 @@ public class ETextfield extends Element {
     public ETextfield(String title, String text) {
         super(title);
         this.text = text;
-
     }
 
     public String getSubtitle() {

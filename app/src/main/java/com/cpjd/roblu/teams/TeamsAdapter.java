@@ -128,9 +128,9 @@ public class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             this.number.setText(text);
             this.number.setTextColor(rui.getText());
             String subtitle = "In "+team.getNumMatches()+" matches\nLast edited: "+ Text.convertTime(team.getLastEdit());
+            if(team.getSortTip() != null && !team.getSortTip().equals("")) subtitle +="\n\n"+team.getSortTip();
             if(team.getSearchTip() != null && !team.getSearchTip().equals("")) subtitle +="\n\n"+team.getSearchTip();
-            if(team.getSearchTip2() != null && !team.getSearchTip2().equals("")) subtitle += "\n\n"+team.getSearchTip2();
-            if(team.getSearchTip3() != null && !team.getSearchTip3().equals("")) subtitle +=team.getSearchTip3();
+
             this.subtitle.setText(subtitle);
             this.subtitle.setTextColor(rui.getText());
         }

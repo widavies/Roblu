@@ -120,7 +120,9 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
         }
 
         // Sort teams by number
-        TeamsView.FILTER = TeamsView.NUMERICAL;
+        for(RTeam team : teams) {
+            team.setFilter(TeamsView.NUMERICAL);
+        }
         Collections.sort(Arrays.asList(teams));
 
         // Create workbook
