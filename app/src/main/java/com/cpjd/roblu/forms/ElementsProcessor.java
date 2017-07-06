@@ -11,6 +11,7 @@ import com.cpjd.roblu.forms.elements.ETextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.teams.TeamsView;
 import com.cpjd.roblu.utils.Text;
 
 import java.util.ArrayList;
@@ -43,6 +44,7 @@ public class ElementsProcessor {
      */
     public RTeam process(RTeam team, int set, int ID) {
         team.setSortRelevance(0);
+        team.setFilter(TeamsView.SORT);
 
         String text = "";
         int occurrences = 0;

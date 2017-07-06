@@ -559,7 +559,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             case TeamsView.SEARCH:
                 return Double.compare(getSearchRelevance(), team.getSearchRelevance());
             case TeamsView.SORT:
-                return Double.compare(getSortRelevance(), getSortRelevance());
+                return Double.compare(getSortRelevance(), team.getSortRelevance());
             case TeamsView.LAST_EDIT:
                 return ((Long)getLastEdit()).compareTo(team.getLastEdit());
             default:

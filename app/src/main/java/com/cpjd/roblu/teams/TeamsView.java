@@ -586,8 +586,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      */
     private class LoadTeams extends AsyncTask<Void, Void, LinkedList<RTeam>> {
         private final boolean loadFromDisk;
-        private final String query;
-        private final String sortToken;
+        private String query;
+        private String sortToken;
         private final int filter;
 
         public LoadTeams(boolean loadFromDisk, String query, String sortToken, int filter) {
@@ -597,9 +597,12 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             this.filter = filter;
             lastFilter = filter;
             lastSortToken = sortToken;
+            lastQuery = query;
             if(filter != SEARCH && filter != SORT) lastSortToken = "";
+            if(this.query == null) this.query = "";
+            if(this.sortToken == null) this.sortToken = "";
 
-            if((loadFromDisk || (sortToken != null && !sortToken.equals("")))  && event != null) {
+            if((loadFromDisk || (!sortToken.equals("")))  && event != null) {
                 rv.setVisibility(View.GONE);
                 bar.setVisibility(View.VISIBLE);
                 bar.getIndeterminateDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.MULTIPLY);
@@ -625,6 +628,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
             for(RTeam team : teams) {
                 if(team != null) team.setFilter(filter); // set the desired filter, this might get overrided though
+                if(filter == NUMERICAL || filter == ALPHABETICAL || filter == LAST_EDIT) team.resetSortRelevance();
             }
 
             /**
@@ -632,7 +636,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
              *
              * Use CUSTOM filter to sort by these items, but if the user is searching these items, then SEARCH filter is more appropriate
              */
-            if(sortToken != null && !sortToken.equals("")) {
+            if(!sortToken.equals("") && query.equals("")) {
                 Loader l = new Loader(getApplicationContext());
                 RForm form = l.loadForm(event.getID());
 
@@ -661,17 +665,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 } else {
                     ElementsProcessor ep = new ElementsProcessor();
                     for(int i = 0; i < teams.size(); i++) {
-                        RTeam tempTeam = ep.process(teams.get(i), tab, ID);
-                        tempTeam.setFilter(SORT);
-                        teams.set(i, tempTeam);
+                        teams.set(i, ep.process(teams.get(i), tab, ID));
                     }
                 }
-            } else {
-                if(teams != null && teams.size() > 0) for(int i = 0; i < teams.size(); i++) if(teams.get(i) != null) teams.get(i).resetSortRelevance();
             }
 
             // Okay, let's manage searching next
-            if(query != null && !query.equals("")) {
+            if(!query.equals("")) {
                 activeTeams.clear();
                 int relevance;
                 for(int i = 0; i < teams.size(); i++) {
