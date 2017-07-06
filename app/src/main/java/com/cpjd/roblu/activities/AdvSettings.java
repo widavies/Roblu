@@ -198,8 +198,10 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 toggleCloudControls(true);
                 // Signed in successfully, show authenticated UI.
                 GoogleSignInAccount acct = result.getSignInAccount();
-                settings.setAdminEmail(acct.getEmail());
-                settings.setAdminDisplayName(acct.getDisplayName());
+                if(acct != null) {
+                    settings.setAdminEmail(acct.getEmail());
+                    settings.setAdminDisplayName(acct.getDisplayName());
+                } else return;
                 updateUI(true);
             } else {
                 // Signed out, show unauthenticated UI.

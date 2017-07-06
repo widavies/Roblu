@@ -5,12 +5,12 @@
         android:id="@+id/match_settings"
         android:icon="@drawable/settings_circle"
         app:showAsAction="ifRoom"
-        android:title="Match settings"/>
+        android:title="@string/match_settings"/>
     <item
         android:id="@+id/add_match"
         android:icon="@drawable/create"
         app:showAsAction="ifRoom"
-        android:title="Add match"/>
+        android:title="@string/add_match"/>
 
 
 </menu>

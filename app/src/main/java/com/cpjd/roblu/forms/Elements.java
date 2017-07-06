@@ -368,7 +368,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                     new ArrayAdapter<String>(activity, R.layout.spinner_item, values)
                     {
                         @NonNull
-                        public View getView(@NonNull int position, @NonNull View convertView, @NonNull ViewGroup parent) {
+                        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
                             View v = super.getView(position, convertView, parent);
 
                             ((TextView) v).setTextSize(16);
@@ -378,7 +378,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                         }
 
                         @Override
-                        public View getDropDownView(int position, @NonNull View convertView,@NonNull ViewGroup parent) {
+                        public View getDropDownView(int position, View convertView,@NonNull ViewGroup parent) {
                             View v = super.getDropDownView(position, convertView, parent);
                             v.setBackgroundColor(rui.getBackground());
 
@@ -540,7 +540,8 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         final TextView timer = new TextView(activity);
         timer.setTextSize(25);
         timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Text.DPToPX(activity, 15), timer.getPaddingBottom());
-        timer.setText(time+"s");
+        String timerText = time+"s";
+        timer.setText(timerText);
         if(notObserved) timer.setText("N.O.");
         timer.setTextColor(rui.getText());
         if(readOnly) timer.setTextColor(rui.darker(rui.getText(), 0.75f));
@@ -579,7 +580,8 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                                     if(timer.getText().equals("N.O.")) t = 0;
                                     else t = Double.parseDouble(timer.getText().toString().replace("s", ""));
                                     t+=0.1;
-                                    timer.setText(String.valueOf(Text.round(t, 1))+"s");
+                                    String timerText = String.valueOf(Text.round(t, 1))+"s";
+                                    timer.setText(timerText);
 
                                 }
                             });
@@ -710,10 +712,10 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         TextView tip = new TextView(activity);
         tip.setTag("tip");
         if(files != null){
-            if(files.size() == 1) tip.setText("Contains 1 image");
+            if(files.size() == 1) tip.setText(R.string.contains_one_image);
             else tip.setText("Contains "+files.size()+" images");
         }
-        else tip.setText("Contains 0 images");
+        else tip.setText(R.string.contains_no_images);
         tip.setId(Text.generateViewId());
         tip.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -737,7 +739,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
     public CardView getEditHistory(ArrayList<String> edits) {
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
-        textView.setText("Edit history");
+        textView.setText(R.string.edit_history);
         textView.setTextColor(rui.getText());
         textView.setId(Text.generateViewId());
 

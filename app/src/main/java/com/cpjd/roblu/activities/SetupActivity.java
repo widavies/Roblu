@@ -13,7 +13,6 @@ import com.cpjd.roblu.teams.TeamsView;
 import com.cpjd.roblu.tutorials.Tutorial;
 import com.cpjd.roblu.utils.DisableSwipeViewPager;
 import com.cpjd.roblu.utils.SetupFragmentAdapter;
-import com.cpjd.roblu.utils.Text;
 
 public class SetupActivity extends Activity implements View.OnClickListener {
     private DisableSwipeViewPager pager;
@@ -59,7 +58,7 @@ public class SetupActivity extends Activity implements View.OnClickListener {
                 pager.goToNextPage();
                 break;
             case R.id.permissions_next_page:
-                if(Text.getAPI() < 23) { // Below API Level 23 doesn't require asking for permissions
+                if(android.os.Build.VERSION.SDK_INT < 23) { // Below API Level 23 doesn't require asking for permissions
                     pager.goToNextPage();
                     break;
                 }
@@ -75,7 +74,7 @@ public class SetupActivity extends Activity implements View.OnClickListener {
         }
     }
 
-    public void setupFinished() {
+    private void setupFinished() {
         startActivity(new Intent(this, TeamsView.class));
         finish();
     }

@@ -84,7 +84,7 @@ public class MetricFragment extends Fragment implements SelectListener {
             d.setContentView(R.layout.event_import_dialog);
             final Spinner spinner = (Spinner) d.findViewById(R.id.type);
             TextView t = (TextView) d.findViewById(R.id.spinner_tip);
-            t.setText("Match ");
+            t.setText(R.string.match);
             final String[] values = getMatches();
             if(values == null) {
                 Toast.makeText(getActivity(), "Error occured while loading matches. Do any matches exist?", Toast.LENGTH_LONG).show();
@@ -94,7 +94,7 @@ public class MetricFragment extends Fragment implements SelectListener {
             adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adp);
             Button button = (Button) d.findViewById(R.id.button7);
-            button.setText("Select");
+            button.setText(R.string.select);
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

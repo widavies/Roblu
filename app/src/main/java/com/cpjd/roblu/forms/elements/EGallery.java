@@ -10,6 +10,7 @@ import java.io.File;
 import java.util.ArrayList;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * EGallery supports an array of images. Note, the gallery only stores the IDs, the IDs reference
@@ -20,6 +21,7 @@ import lombok.Data;
  */
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class EGallery extends Element {
 
     private ArrayList<Long> imageIDs;

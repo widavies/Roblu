@@ -12,7 +12,6 @@
         android:layout_height="match_parent">
         <TextView
             android:id="@+id/title"
-            android:text="test"
             android:background="#FF444444"
             android:textColor="#FFFFFFFF"
             android:layout_width="match_parent"
@@ -22,7 +21,6 @@
 
         <TextView
             android:id="@+id/subtitle"
-            android:text="text"
             android:layout_below="@id/title"
             android:background="#FF444444"
             android:textColor="#FFFFFFFF"
@@ -30,6 +28,7 @@
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:paddingLeft="8dp"
+            android:paddingRight="8dp"
             android:paddingBottom="8dp"/>
 
     </RelativeLayout>

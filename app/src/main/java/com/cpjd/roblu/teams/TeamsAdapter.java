@@ -9,31 +9,21 @@ import android.widget.TextView;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.Loader;
-import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Text;
 
 import java.util.LinkedList;
 
-public class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Context mContext;
     private LinkedList<RTeam> teams;
-    private REvent event;
     private final TeamsItemClickListener listener;
     private final RUI rui;
 
     public TeamsAdapter(Context context, TeamsItemClickListener listener){
         this.mContext = context; this.listener = listener;
         rui = new Loader(context).loadSettings().getRui();
-    }
-
-    public REvent getEvent() {
-        return event;
-    }
-
-    public void setEvent(REvent event) {
-        this.event = event;
     }
 
     public void reAdd(RTeam t) {
@@ -91,10 +81,6 @@ public class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
     public int getItemCount() {
         if(teams == null) teams = new LinkedList<>();
         return teams.size();
-    }
-
-    public LinkedList<RTeam> getTeams() {
-        return teams;
     }
 
     public void remove(final int position) {

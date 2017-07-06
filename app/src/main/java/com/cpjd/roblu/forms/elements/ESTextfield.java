@@ -1,6 +1,7 @@
 package com.cpjd.roblu.forms.elements;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * A more restrictive field, ONLY used for team number and team name in PIT.
@@ -9,6 +10,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ESTextfield extends Element {
 
     private final boolean numberOnly;

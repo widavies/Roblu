@@ -1,6 +1,7 @@
 package com.cpjd.roblu.forms.elements;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Stores a numeric value. Supports a min, max, increment, and default value. Can be N/A
@@ -9,6 +10,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ECounter extends Element {
 
     private int min;

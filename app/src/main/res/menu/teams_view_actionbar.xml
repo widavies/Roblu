@@ -5,7 +5,7 @@
         android:id="@+id/action_team_create"
         android:icon="@drawable/create"
         app:showAsAction="ifRoom"
-        android:title="Create team"/>
+        android:title="@string/create_team"/>
     <item
         android:id="@+id/action_teams_filter"
         android:icon="@drawable/filter"

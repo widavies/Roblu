@@ -11,12 +11,12 @@ import lombok.Data;
  * @since 3.5.5
  */
 @Data
-public class RImage implements Serializable {
+class RImage implements Serializable {
 
     private long ID;
     private final byte[] bytes;
 
-    public RImage(long ID, byte[] bytes) {
+    RImage(long ID, byte[] bytes) {
         this.bytes = bytes;
         this.ID = ID;
     }

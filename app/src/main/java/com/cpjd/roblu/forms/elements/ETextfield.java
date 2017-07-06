@@ -1,6 +1,7 @@
 package com.cpjd.roblu.forms.elements;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Stores text. Nuff said.
@@ -9,6 +10,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ETextfield extends Element {
 
     private String text;

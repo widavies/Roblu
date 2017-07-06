@@ -18,35 +18,30 @@ import com.cpjd.roblu.ui.UIHandler;
  */
 public class Mailbox extends AppCompatActivity {
 
-    private ViewPager pager;
-    private MailAdapter adapter;
-    private TabLayout tabLayout;
-    private RUI rui;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_team_viewer);
 
-        rui = new Loader(getApplicationContext()).loadSettings().getRui();
+        RUI rui = new Loader(getApplicationContext()).loadSettings().getRui();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        tabLayout = (TabLayout) findViewById(R.id.tab_layout);
+        TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
-        adapter = new MailAdapter(getSupportFragmentManager(), getIntent().getLongExtra("eventID", 0));
-        pager = (ViewPager) findViewById(R.id.pager);
+        MailAdapter adapter = new MailAdapter(getSupportFragmentManager(), getIntent().getLongExtra("eventID", 0));
+        ViewPager pager = (ViewPager) findViewById(R.id.pager);
         pager.setAdapter(adapter);
         pager.setCurrentItem(0);
 
         tabLayout.setupWithViewPager(pager);
         tabLayout.setBackgroundColor(rui.getPrimaryColor());
         tabLayout.setSelectedTabIndicatorColor(rui.getAccent());
-        tabLayout.setTabTextColors(RUI.darker(rui.getText(), 0.95f), rui.getText());
+        tabLayout.setTabTextColors(rui.darker(rui.getText(), 0.95f), rui.getText());
 
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         new UIHandler(this, toolbar).update();
     }

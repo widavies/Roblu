@@ -28,7 +28,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerHorizontal="true"
                     android:gravity="center_horizontal"
-                    android:text="Welcome to"
+                    android:text="@string/welcome_to"
                     android:textSize="40sp" />
 
                 <TextView
@@ -38,7 +38,7 @@
                     android:layout_height="wrap_content"
                     android:layout_below="@+id/welcome_welcome_to"
                     android:layout_centerHorizontal="true"
-                    android:text="Roblu"
+                    android:text="@string/app_name"
                     android:textSize="50sp"
                     android:textStyle="bold" />
 
@@ -49,40 +49,32 @@
                     android:layout_alignParentBottom="true"
                     android:gravity="center_horizontal"
                     android:padding="16dp"
-                    android:text="Roblu must be setup. Click next to begin." />
+                    android:text="@string/must_be_setup" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:id="@+id/welcome_next_page"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
-
-                <LinearLayout
-                    android:id="@+id/welcome_next_page"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:text="Next"
+                        android:text="@string/next"
                         android:textAllCaps="true"
                         android:textColor="#FFFFFF"
                         android:textSize="16sp" />
 
                     <ImageView
                         android:layout_width="wrap_content"
-                        android:contentDescription="Right arrow"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/right_arrow"
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/right" />
-                </LinearLayout>
+
             </RelativeLayout>
         </LinearLayout>
 
@@ -106,7 +98,7 @@
                     android:layout_marginRight="16dp"
                     android:layout_marginTop="16dp"
                     android:gravity="center_horizontal"
-                    android:text="Privacy Policy and Terms of Use"
+                    android:text="@string/privacy"
                     android:textSize="35sp" />
 
                 <TextView
@@ -117,28 +109,22 @@
                     android:padding="16dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
-                    android:text="By using Roblu, you agree to the Privacy Policy and Terms of Use located at www.cpjd.weebly.com/privacy"
+                    android:text="@string/agreement"
                     android:textSize="20sp" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:id="@+id/bluetooth_next_page"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
-
-                <LinearLayout
-                    android:id="@+id/bluetooth_next_page"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:text="Agree"
+                        android:text="@string/agree"
                         android:textColor="#FFFFFF"
                         android:textAllCaps="true"
                         android:textSize="16sp" />
@@ -146,10 +132,9 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/right_arrow"
                         android:layout_gravity="center_vertical"
-                        android:contentDescription="Right arrow"
                         android:src="@drawable/right" />
-                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
         <LinearLayout
@@ -172,7 +157,7 @@
                     android:layout_marginRight="16dp"
                     android:layout_marginTop="16dp"
                     android:gravity="center_horizontal"
-                    android:text="Permissions"
+                    android:text="@string/permissions"
                     android:textSize="35sp" />
 
                 <TextView
@@ -183,28 +168,21 @@
                     android:padding="16dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
-                    android:text="Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next."
+                    android:text="@string/requires_permissions"
                     android:textSize="20sp" />
             </RelativeLayout>
 
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:id="@+id/permissions_next_page"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
-
-                <LinearLayout
-                    android:id="@+id/permissions_next_page"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:padding="16dp">
-
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:text="Next"
+                        android:text="@string/next"
                         android:textColor="#FFFFFF"
                         android:textAllCaps="true"
                         android:textSize="16sp" />
@@ -212,10 +190,9 @@
                     <ImageView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:contentDescription="@string/right_arrow"
                         android:layout_gravity="center_vertical"
-                        android:contentDescription="Right arrow"
                         android:src="@drawable/right" />
-                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
         <LinearLayout
@@ -238,7 +215,7 @@
                     android:layout_marginRight="16dp"
                     android:layout_marginTop="16dp"
                     android:gravity="center_horizontal"
-                    android:text="Roblu is ready to use"
+                    android:text="@string/ready_to_use"
                     android:id="@+id/ready"
                     android:textSize="35sp" />
 
@@ -251,7 +228,7 @@
                     android:padding="16dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
-                    android:text="Head of the scouting division of your team? Coach? Learn how to use Roblu with these official tutorials:"
+                    android:text="@string/head_of_team"
                     android:textSize="20sp" />
                 <Button
                     android:id="@+id/ytube"
@@ -259,7 +236,7 @@
                     android:layout_width="150dp"
                     android:layout_height="75dp"
                     android:layout_centerHorizontal="true"
-                    android:text="View YouTube tutorials"/>
+                    android:text="@string/view_youtube_tutorials"/>
 
                 <TextView
                     android:id="@+id/v3"
@@ -270,7 +247,7 @@
                     android:padding="16dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
-                    android:text="Welcome to Roblu V3. Not all features are complete yet, but look for them in coming updates. For now, explore the new version!"
+                    android:text="@string/welcome"
                     android:textSize="20sp" />
 
             </RelativeLayout>
@@ -278,21 +255,15 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
+                android:id="@+id/finished_next"
                 android:background="@color/colorPrimary"
                 android:minHeight="56dp">
-
-                <LinearLayout
-                    android:id="@+id/finished_next"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentRight="true"
-                    android:padding="16dp">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:text="Done"
+                        android:text="@string/done"
                         android:textColor="#FFFFFF"
                         android:textAllCaps="true"
                         android:textSize="16sp" />
@@ -301,10 +272,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-
-                        android:contentDescription="Right arrow"
+                        android:contentDescription="@string/right_arrow"
                         android:src="@drawable/right" />
-                </LinearLayout>
             </RelativeLayout>
         </LinearLayout>
     </com.cpjd.roblu.utils.DisableSwipeViewPager>

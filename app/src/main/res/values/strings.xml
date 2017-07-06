@@ -1,35 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string-array name="years_array">
-        <item>2017</item>
-        <item>2016</item>
-        <item>2015</item>
-        <item>2014</item>
-        <item>2013</item>
-        <item>2012</item>
-        <item>2011</item>
-        <item>2010</item>
-        <item>2009</item>
-        <item>2008</item>
-        <item>2007</item>
-        <item>2006</item>
-        <item>2005</item>
-        <item>2004</item>
-        <item>2003</item>
-        <item>2002</item>
-        <item>2001</item>
-        <item>2000</item>
-        <item>1999</item>
-        <item>1998</item>
-        <item>1997</item>
-        <item>1996</item>
-        <item>1995</item>
-        <item>1994</item>
-        <item>1993</item>
-        <item>1992</item>
-
-    </string-array>
-
+    <string name="app_name">Roblu</string>
     <string-array name="alliances">
         <item>Red Alliance</item>
         <item>Blue Alliance</item>
@@ -41,22 +12,19 @@
         <item>Use master form</item>
         <item>No form (create form later)</item>
     </string-array>
-
-    <string name="ad_unit_id">ca-app-pub-3709068050341047/4068656817</string>
+    <!-- Element helper text -->
     <string name="yes">Yes</string>
     <string name="no">No</string>
-    <string name="add_element">Element type:</string>
     <string name="no_time">0.0s</string>
     <string name="open">Open</string>
     <string name="contains_no_images">Contains 0 images</string>
     <string name="contains_one_image">Contains 1 image</string>
+    <string name="edit_history">Edit history</string>
+
+    <!-- Activity titles -->
     <string name="title_activity_predefined">Predefined</string>
     <string name="title_activity_team_viewer">TeamViewer</string>
-    <string name="create_a_team">Create a team</string>
     <string name="ui_preset">UI Preset</string>
-    <string name="animation_direction">Animation Direction</string>
-
-    <string name="app_name">Roblu</string>
     <string name="event_create_action">Create new event</string>
     <string name="teams_filter_teams">Filter teams</string>
     <string name="title_activity_create_event_view">Create Event</string>
@@ -66,5 +34,84 @@
     <string name="title_activity_apievent_select">APIEventSelect</string>
     <string name="title_activity_add_element">AddElement</string>
     <string name="title_activity_tutorial">Tutorial</string>
+
+    <!-- Sorting -->
+    <string name="animation_direction">Animation Direction</string>
+    <string name="filter_type">Filter type:</string>
+    <string name="numerical">Numerical</string>
+    <string name="alpha">Alphabetical</string>
+    <string name="last_edited">Last edited</string>
+    <string name="custom">Custom</string>
+
+
+
+    <!-- Event creation -->
+    <string name="cloud_team_warning">Choose wisely! This cannot be changed later.</string>
+    <string name="frc_team_name">FRC Team name</string>
+    <string name="event_name">Event name</string>
+    <string name="form_type">Form type: </string>
+    <string name="start_date">Start date</string>
+    <string name="end_date">End date</string>
+    <string name="tba_key">TBA key</string>
+
+    <!-- Setup activity -->
+    <string name="welcome_to">Welcome to</string>
+    <string name="must_be_setup">Roblu must be setup. Tap next to begin.</string>
+    <string name="next">Next</string>
+    <string name="privacy">Privacy Policy and Terms of Use</string>
+    <string name="agreement">By using Roblu, you agree to the Privacy Policy and Terms of Use located at www.cpjd.weebly.com/privacy</string>
+    <string name="agree">Agree</string>
+    <string name="permissions">Permissions</string>
+    <string name="requires_permissions">Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next.</string>
+    <string name="ready_to_use">Roblu is ready to use</string>
+    <string name="head_of_team">Head of the scouting division of your team? Coach? Learn how to use Roblu with these official tutorials.</string>
+    <string name="view_youtube_tutorials">View YouTube tutorials</string>
+    <string name="welcome">Welcome to Roblu V3. Not all features are complete yet, but look for them in coming updates. For now, explore the new version.</string>
+    <string name="done">Done</string>
+
+    <!-- Menus -->
+    <string name="add_element">Add element</string>
+    <string name="manually_add">Manually add event</string>
+    <string name="search">Search</string>
+    <string name="create_team">Create team</string>
+    <string name="undo">Undo</string>
+    <string name="mode">Mode</string>
+    <string name="save">Save</string>
+    <string name="delete_image">Delete image</string>
+    <string name="edit_image">Edit image</string>
+    <string name="save_image">Save image to device</string>
+    <string name="confirm">Confirm</string>
+    <string name="mark_won">Mark as won</string>
+    <string name="open_tba">Open on TBA</string>
+    <string name="delete_match">Delete match</string>
+    <string name="bug_report">Bug report</string>
+    <string name="match_settings">Match settings</string>
+    <string name="add_match">Create match</string>
+
+    <!-- Drawing -->
+    <string name="pen">Pen</string>
+    <string name="line">Line</string>
+    <string name="rectangle">Rectangle</string>
+    <string name="circle">Circle</string>
+    <string name="ellipse">Ellipse</string>
+    <string name="quad">Quad</string>
+    <string name="line_width">Line width</string>
+    <string name="line_color">Line color</string>
+    <string name="set_line_width">Set line width</string>
+
+    <!-- event selector -->
+    <string name="event">Event:</string>
+    <string name="import_from_event">Import form from event</string>
+
+    <!-- match create -->
+    <string name="type">Type:</string>
+    <string name="match_num">Match #:</string>
+    <string name="one">1</string>
+    <string name="alliance">Alliance:</string>
+    <string name="create_match">Create match</string>
+    <string name="match">Match </string>
+    <string name="team">Team: </string>
+    <string name="select">Select</string>
+    <string name="right_arrow">Right arrow</string>
 
 </resources>

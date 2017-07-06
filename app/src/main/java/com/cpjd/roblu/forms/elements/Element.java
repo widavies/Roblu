@@ -18,7 +18,6 @@ public abstract class Element implements Serializable {
     private String title;
     private int ID;
     private boolean modified; // if this is false, we can safely override the element's value
-    private int position;
 
     Element(String title) {
         this.title = title; modified = false;

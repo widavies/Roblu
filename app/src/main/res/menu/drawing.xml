@@ -4,17 +4,17 @@
     <item
         android:id="@+id/undo"
         android:icon="@drawable/replay"
-        app:showAsAction="always"
-		android:title="Undo" />
+        app:showAsAction="ifRoom"
+		android:title="@string/undo" />
     <item
         android:id="@+id/mode"
         android:icon="@drawable/edit_large"
-        app:showAsAction="always"
-        android:title="Mode" />
+        app:showAsAction="ifRoom"
+        android:title="@string/mode" />
     <item
         android:id="@+id/confirm"
         android:icon="@drawable/confirm"
-        app:showAsAction="always"
-        android:title="Save" />
+        app:showAsAction="ifRoom"
+        android:title="@string/save" />
 
 </menu>

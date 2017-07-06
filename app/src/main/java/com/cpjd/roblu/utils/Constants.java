@@ -12,7 +12,6 @@ package com.cpjd.roblu.utils;
 public abstract class Constants {
 
     public static final int VERSION = 10; // used for updating the changelist
-    public static final int DELETE_LEVEL = 4; // all files with a lower delete level will be purged, only settings at the moment
 
     // Drawer identifier codes
     public static final int CREATE_EVENT = 1;

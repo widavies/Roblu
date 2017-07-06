@@ -110,7 +110,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         tabLayout.setupWithViewPager(pager);
         tabLayout.setBackgroundColor(rui.getPrimaryColor());
         tabLayout.setSelectedTabIndicatorColor(rui.getAccent());
-        tabLayout.setTabTextColors(RUI.darker(rui.getText(), 0.95f), rui.getText());
+        tabLayout.setTabTextColors(rui.darker(rui.getText(), 0.95f), rui.getText());
 
         new UIHandler(this, toolbar).update();
         if(team.getPage() > 2) onPageSelected(team.getPage());
@@ -216,7 +216,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
             new SaveThread(getApplicationContext(), event.getID(), team);
         }
 
-        if(page < 3) setColorScheme(rui.getPrimaryColor(), RUI.darker(rui.getPrimaryColor(), 0.85f));
+        if(page < 3) setColorScheme(rui.getPrimaryColor(), rui.darker(rui.getPrimaryColor(), 0.85f));
         else {
             if(tabAdapter.isPageRed(page)) setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.red), ContextCompat.getColor(getApplicationContext(), R.color.darkRed));
             else setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.primary), ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));

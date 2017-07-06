@@ -22,20 +22,17 @@ import com.cpjd.roblu.models.RUI;
  * @author Will Davies
  */
 public class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
-    private final CheckoutAdapter mElementsAdapter;
 
     // Helpers
     private final Drawable xMark, editMark;
     private final int xMarkMargin;
-    private RUI rui;
-    private int mode;
+    private final int mode;
 
     public AssignmentsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
-        this.mElementsAdapter = elementsAdapter;
         this.mode = mode;
 
-        rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
+        RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
 
         xMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.confirm);
         xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);

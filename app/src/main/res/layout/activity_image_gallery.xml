@@ -3,7 +3,6 @@
               android:layout_width="match_parent"
               android:layout_height="match_parent"
               xmlns:app="http://schemas.android.com/apk/res-auto"
-              android:background="@color/grey_800"
               android:orientation="vertical">
 
     <android.support.v7.widget.Toolbar
@@ -25,6 +24,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:layout_margin="18dp"
         android:layout_marginBottom="60dp"
         android:src="@drawable/create"

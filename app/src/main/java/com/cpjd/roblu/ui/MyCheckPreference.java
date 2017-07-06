@@ -9,7 +9,6 @@ import android.view.View;
 
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.utils.Text;
 
 public class MyCheckPreference extends CheckBoxPreference {
 
@@ -42,7 +41,7 @@ public class MyCheckPreference extends CheckBoxPreference {
                         rui.getAccent()
                 }
         );
-        if(Text.getAPI() >= 21) checkbox.setSupportButtonTintList(colorStateList);
+        if(android.os.Build.VERSION.SDK_INT >= 21) checkbox.setSupportButtonTintList(colorStateList);
 
     }
 

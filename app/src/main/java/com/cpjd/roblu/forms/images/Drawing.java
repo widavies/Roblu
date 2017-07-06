@@ -48,9 +48,7 @@ import java.io.File;
  */
 public class Drawing extends AppCompatActivity implements ColorPickerDialogListener {
 
-    private File file;
     private CanvasView canvas = null;
-    private Bitmap bitmap;
     private RUI rui;
     private int color;
     private long eventID;
@@ -73,7 +71,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         eventID = getIntent().getLongExtra("eventID", 0);
-        file = (File) getIntent().getSerializableExtra("file");
+        File file = (File) getIntent().getSerializableExtra("file");
         tabID = getIntent().getIntExtra("tabID", 0);
         team = (RTeam) getIntent().getSerializableExtra("team");
         ID = getIntent().getIntExtra("ID", 0);
@@ -83,11 +81,11 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         View content = getWindow().findViewById(Window.ID_ANDROID_CONTENT);
         int temp = 0;
         if(content != null) temp = content.getHeight();
-        bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeFile(file.getAbsolutePath(), options), displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
+        Bitmap bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeFile(file.getAbsolutePath(), options), displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
 
         this.canvas = (CanvasView) this.findViewById(R.id.canvas);
         this.canvas.setBaseColor(rui.getBackground());
-        if(this.bitmap != null) this.canvas.drawBitmap(bitmap);
+        if(bitmap != null) this.canvas.drawBitmap(bitmap);
 
         this.canvas.setPaintStrokeWidth(3F);
     }
@@ -216,7 +214,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         TextView view = new TextView(this);
         view.setTextSize(Text.DPToPX(getApplicationContext(), 5));
         view.setPadding(Text.DPToPX(this, 18), Text.DPToPX(this, 18), Text.DPToPX(this, 18), Text.DPToPX(this, 18));
-        view.setText("Set line width");
+        view.setText(R.string.set_line_width);
         view.setTextColor(rui.getText());
         AlertDialog dialog = builder.create();
         dialog.setCustomTitle(view);

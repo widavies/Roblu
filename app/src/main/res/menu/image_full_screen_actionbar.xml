@@ -5,16 +5,16 @@
         android:id="@+id/delete_image"
         android:icon="@drawable/delete"
         app:showAsAction="ifRoom"
-        android:title="Delete image" />
+        android:title="@string/delete_image" />
     <item
         android:id="@+id/edit"
         android:icon="@drawable/edit_large"
         app:showAsAction="ifRoom"
-        android:title="Edit image" />
+        android:title="@string/edit_image" />
 
     <item
         android:id="@+id/save_to_device"
         android:icon="@drawable/save"
         app:showAsAction="ifRoom"
-        android:title="Save image to device" />
+        android:title="@string/save_image" />
 </menu>

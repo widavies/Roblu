@@ -269,7 +269,6 @@ public class Loader extends IO {
         // Save the image
         FileOutputStream fos = null;
         try {
-            RSettings settings = loadSettings();
             fos = new FileOutputStream(toSave);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
         } catch(Exception e) {
@@ -284,7 +283,7 @@ public class Loader extends IO {
         return ID;
     }
 
-    public void saveImage(Bitmap bitmap, long eventID, long imageID) {
+    private void saveImage(Bitmap bitmap, long eventID, long imageID) {
 
         // First, verify that we have the correct directory
         File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
@@ -300,7 +299,6 @@ public class Loader extends IO {
         // Save the image
         FileOutputStream fos = null;
         try {
-            RSettings settings = loadSettings();
             fos = new FileOutputStream(toSave);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
         } catch(Exception e) {
@@ -322,7 +320,6 @@ public class Loader extends IO {
         File dir = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
         File[] children = dir.listFiles();
         if(children == null || children.length == 0) return null;
-        RSettings settings = new Loader(context).loadSettings();
         ArrayList<RImage> temp = new ArrayList<>();
         for(File f : children) {
             Bitmap bmp = BitmapFactory.decodeFile(f.getPath());
@@ -337,7 +334,6 @@ public class Loader extends IO {
         if(IDs == null || IDs.size() == 0) return null;
         File[] children = new File[IDs.size()];
         for(int i = 0; i < IDs.size(); i++) children[i] = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+IDs.get(i)+File.separator+"images"+File.separator);
-        RSettings settings = new Loader(context).loadSettings();
         ArrayList<RImage> temp = new ArrayList<>();
         for(File f : children) {
             Bitmap bmp = BitmapFactory.decodeFile(f.getPath());
@@ -360,7 +356,7 @@ public class Loader extends IO {
         delete(directory);
     }
 
-    public long getNewImageID(long eventID) {
+    private long getNewImageID(long eventID) {
         File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
 
         File[] children = directory.listFiles();
@@ -409,7 +405,7 @@ public class Loader extends IO {
         serializeObject(checkout, PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkout.getID()+".ser");
     }
 
-    public RCheckout loadCheckoutConflict(long checkoutID) {
+    private RCheckout loadCheckoutConflict(long checkoutID) {
         return (RCheckout) deserializeObject(PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkoutID+".ser");
     }
 
@@ -441,7 +437,7 @@ public class Loader extends IO {
         serializeObject(checkout, PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser");
     }
 
-    public RCheckout loadCheckout(long checkoutID) {
+    private RCheckout loadCheckout(long checkoutID) {
         return (RCheckout) deserializeObject(PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser");
     }
 

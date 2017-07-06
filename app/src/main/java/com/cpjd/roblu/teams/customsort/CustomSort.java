@@ -15,8 +15,6 @@ import com.cpjd.roblu.ui.UIHandler;
 
 public class CustomSort extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
-    private long eventID;
-
     @Override
     public void onCreate(Bundle saveInstanceState) {
         super.onCreate(saveInstanceState);
@@ -30,7 +28,7 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        eventID = getIntent().getLongExtra("eventID", 0);
+        long eventID = getIntent().getLongExtra("eventID", 0);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);

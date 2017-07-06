@@ -147,18 +147,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     /**
-     * Loads the correct element from the specified tab and with the specified ID
-     * @param tab the tab to get the element from
-     * @param ID the ID of the element
-     * @return null if no element is found, otherwise, the element matching the input criteria
-     */
-    public Element getElement(int tab, int ID) {
-        if(tabs == null || tabs.get(tab).getElements() == null) return null;
-        for(int i = 0; i < tabs.get(tab).getElements().size(); i++) if(tabs.get(tab).getElements().get(i).getID() == ID) return tabs.get(tab).getElements().get(i);
-        return null;
-    }
-
-    /**
      * verify() makes sure that the form and team are synchronized. Here's what it does:
      * <p>
      * PIT:
@@ -295,20 +283,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                 }
             }
         }
-
-        // set item positions
-        if(tabs == null || tabs.size() == 0) return;
-        formb = form.getPit();
-        for(int i = 0 ; i < tabs.size(); i++) {
-            if(i == 1) formb = form.getMatch();
-            for(int j = 0; j < tabs.get(i).getElements().size(); j++) {
-                for(int k = 0; k < formb.size(); k++) {
-                    if(formb.get(k).getID() == tabs.get(i).getElements().get(j).getID()) {
-                        tabs.get(i).getElements().get(j).setPosition(k);
-                    }
-                }
-            }
-        }
     }
 
     /**
@@ -396,18 +370,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             searchTip = "";
         }
         return 0;
-    }
-
-    /**
-     * Gets the number of elements with the specified ID that are modified,
-     * used for statistics
-     * @param ID the element's ID
-     * @return the number of elements with the specified ID that have been modified
-     */
-    public int numModified(int ID) {
-        int temp = 0;
-        for(int i = 2; i < tabs.size(); i++) for(Element e : tabs.get(i).getElements()) if(e.getID() == ID && e.isModified()) temp++;
-        return temp;
     }
 
     /**

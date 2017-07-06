@@ -33,7 +33,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private final RForm form;
 
     private boolean removing;
-    private boolean readOnly;
+    private final boolean readOnly;
 
     public TeamTabAdapter(FragmentManager fm, REvent event, RTeam team, RForm form, Context context, boolean readOnly) {
         super(fm);
@@ -104,6 +104,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
+        bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", readOnly);
         bundle.putInt("position", position);
 
@@ -120,6 +121,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("team", team);
+        bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", false);
         bundle.putInt("position", position);
 

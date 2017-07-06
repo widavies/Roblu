@@ -4,6 +4,6 @@
     <item
         android:id="@+id/settings_bug"
         android:icon="@drawable/bug"
-        android:title="Bug report"
+        android:title="@string/bug_report"
         app:showAsAction="always"/>
 </menu>

@@ -7,7 +7,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 public class MailAdapter extends FragmentPagerAdapter {
 
-    private long eventID;
+    private final long eventID;
 
     public MailAdapter(FragmentManager fm, long eventID) {
         super(fm);
@@ -16,7 +16,7 @@ public class MailAdapter extends FragmentPagerAdapter {
     @Override
     public Fragment getItem(int i) {
         Bundle bundle = new Bundle();
-        bundle.putLong("eventID", 0);
+        bundle.putLong("eventID", eventID);
         if(i == 0) {
             ConflictsFragment conflicts = new ConflictsFragment();
             conflicts.setArguments(bundle);

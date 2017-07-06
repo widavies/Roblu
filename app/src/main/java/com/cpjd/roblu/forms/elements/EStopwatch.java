@@ -8,8 +8,10 @@ package com.cpjd.roblu.forms.elements;
  */
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class EStopwatch extends Element {
 
     private double time;

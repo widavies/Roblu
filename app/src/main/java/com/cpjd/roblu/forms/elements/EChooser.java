@@ -3,6 +3,7 @@ package com.cpjd.roblu.forms.elements;
 import java.util.ArrayList;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Allows the selection of one item from a list of item from spinner card.
@@ -11,6 +12,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class EChooser extends Element {
 
     private ArrayList<String> values;

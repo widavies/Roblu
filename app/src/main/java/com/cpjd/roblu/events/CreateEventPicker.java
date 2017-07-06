@@ -108,9 +108,6 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
         if(position == 2) {
             openFileChooser();
         }
-        if(position == 3) {
-            startActivityForResult(new Intent(this, ViewEvent.class), Constants.GENERAL);
-        }
     }
 
     private void openFileChooser() {

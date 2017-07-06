@@ -250,7 +250,6 @@ public class Text {
             t = new EGallery(e.getTitle());
         }
         if(t != null) t.setID(e.getID());
-        if(t != null) t.setPosition(e.getPosition());
         return t;
     }
     public static String concantenteTeams(ArrayList<RTeam> teams) {
@@ -307,10 +306,6 @@ public class Text {
         for(int i = 0; i < tabs.size(); i++) toReturn.add(tabs.get(i).duplicate());
         return toReturn;
     }
-
-	public static int getAPI() {
-		return android.os.Build.VERSION.SDK_INT;
-	}
 
 	public static String getDay(int dayOfWeek) {
 		return Constants.daysOfWeek[dayOfWeek];

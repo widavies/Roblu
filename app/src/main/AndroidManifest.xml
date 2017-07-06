@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.cpjd.roblu"
-          android:versionCode="35"
-          android:versionName="3.5.8">
-
-    <uses-sdk
-        android:minSdkVersion="16"
-        android:targetSdkVersion="25" />
+          package="com.cpjd.roblu">
 
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
@@ -132,8 +126,6 @@
         </activity>
         <activity android:name=".cloud.ui.Mailbox"
                   android:label="Mailbox"/>
-        <activity android:name=".events.ViewEvent"
-                  android:label="View Events"/>
         <activity android:name=".cloud.ui.CreateCloudTeam"
                   android:label="Create Cloud Team"/>
         <activity android:name =".forms.images.Drawing"

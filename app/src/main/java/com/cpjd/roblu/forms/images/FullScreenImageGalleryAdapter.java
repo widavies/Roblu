@@ -51,7 +51,7 @@ public class FullScreenImageGalleryAdapter extends PagerAdapter {
         LayoutInflater inflater = (LayoutInflater) container.getContext()
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        View view = inflater.inflate(R.layout.fullscreen_image, null);
+        View view = inflater.inflate(R.layout.fullscreen_image, container, false);
 
         ImageView imageView = (ImageView) view.findViewById(R.id.iv);
         final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.ll);

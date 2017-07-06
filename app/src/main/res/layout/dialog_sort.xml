@@ -9,11 +9,12 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_margin="20dp"
-        android:text="Filter type:"/>
+        android:text="@string/filter_type"/>
     <RadioGroup
         android:id="@+id/filter_group"
         android:layout_width="match_parent"
         android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
         android:layout_marginBottom="10dp"
         android:layout_height="wrap_content">
         <android.support.v7.widget.AppCompatRadioButton
@@ -22,28 +23,28 @@
             android:layout_marginBottom="10dp"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Numerical"/>
+            android:text="@string/numerical"/>
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/alphabetical"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Alphabetical"/>
+            android:text="@string/alpha"/>
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/last_edited"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Last edited"/>
+            android:text="@string/last_edited"/>
         <android.support.v7.widget.AppCompatRadioButton
             android:id="@+id/custom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="15dp"
             android:textAppearance="?android:attr/textAppearanceLarge"
-            android:text="Custom"/>
+            android:text="@string/custom"/>
     </RadioGroup>
 
 </LinearLayout>

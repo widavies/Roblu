@@ -21,15 +21,12 @@ class TeamTouchHelper extends ItemTouchHelper.SimpleCallback {
     // Helpers
     private final Drawable xMark;
     private final int xMarkMargin;
-    private RUI rui;
-    private View layout;
 
-    TeamTouchHelper(TeamsAdapter elementsAdapter, View layout) {
+    TeamTouchHelper(TeamsAdapter elementsAdapter) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mElementsAdapter = elementsAdapter;
-        this.layout = layout;
 
-        rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
+        RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
 
         xMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.clear);
         xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);

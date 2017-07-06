@@ -2,6 +2,7 @@ package com.cpjd.roblu.forms.elements;
 
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Supports one value on a horizontal slider, with a max. Can be N/A
@@ -10,6 +11,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ESlider extends Element{
 
     private int max;

@@ -22,14 +22,13 @@ public class ElementTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final Drawable xMark, editMark;
     private final int xMarkMargin;
     private final boolean sorting;
-    private RUI rui;
 
     public ElementTouchHelper(ElementsAdapter elementsAdapter, boolean sorting) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mElementsAdapter = elementsAdapter;
         this.sorting = sorting;
 
-        rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
+        RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
 
         xMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.clear);
         xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);

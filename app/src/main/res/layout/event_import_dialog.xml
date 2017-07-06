@@ -6,11 +6,13 @@
         android:id="@+id/spinner_tip"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="Event:"
+        android:text="@string/event"
         android:textAppearance="?android:attr/textAppearanceMedium" />
     <Spinner
         android:id="@+id/type"
@@ -25,7 +27,7 @@
         android:id="@+id/button7"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Import form from event"
+        android:text="@string/import_from_event"
         android:layout_below="@+id/type"
         android:layout_alignLeft="@+id/spinner_tip"
         android:layout_alignStart="@+id/spinner_tip"

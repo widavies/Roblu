@@ -6,12 +6,12 @@
     <item
         android:id="@+id/api_manual"
         android:icon="@drawable/create"
-        app:showAsAction="always"
-        android:title="Manually add event"/>
+        app:showAsAction="ifRoom"
+        android:title="@string/manually_add"/>
     <item
         android:id="@+id/search"
         android:icon="@drawable/search"
-        app:showAsAction="always"
-        android:title="Search"/>
+        app:showAsAction="ifRoom"
+        android:title="@string/search"/>
 
 </menu>

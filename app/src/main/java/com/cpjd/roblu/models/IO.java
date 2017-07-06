@@ -93,7 +93,7 @@ class IO {
         }
     }
 
-    protected void delete(File folder) {
+    void delete(File folder) {
         File[] files = folder.listFiles();
         if(files!=null) {
             for(File f: files) {

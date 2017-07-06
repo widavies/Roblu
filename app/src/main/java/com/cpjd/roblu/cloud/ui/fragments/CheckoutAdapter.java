@@ -36,18 +36,18 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Getter
     private final Context context;
     private CheckoutListener listener;
-    private RUI rui;
-    private long eventID;
+    private final RUI rui;
+    private final long eventID;
 
     private ArrayList<RCheckout> checkouts;
     public static final int CONFLICTS = 1;
     public static final int INBOX = 2;
     public static final int MYMATCHES = 3;
-    private int mode;
+    private final int mode;
 
-    public CheckoutAdapter(Context context, long eventID, int mode){
+    public CheckoutAdapter(Context context, long eventID){
         this.context = context;
-        this.mode = mode;
+        this.mode = CheckoutAdapter.INBOX;
         this.eventID = eventID;
         this.rui = new Loader(getContext()).loadSettings().getRui();
     }
@@ -102,10 +102,6 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         RCheckout assignment = checkouts.get(position);
         notifyItemRemoved(position);
     }
-    public Context getContext() {
-        return context;
-    }
-
     private class MyViewHolder extends RecyclerView.ViewHolder{
         public final TextView title;
         public final TextView number;
@@ -146,7 +142,8 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 subtitle.setText("Completed by "+checkout.getCompletedBy()+"\nCheckout completed on "+Text.convertTime(checkout.getCompletedTime())+"\nMerged on "+Text.convertTime(checkout.getMergedTime()));
             }
             title.setText(checkout.getTeam().getName());
-            number.setText("#"+checkout.getTeam().getNumber());
+            String numberText = "#"+checkout.getTeam().getNumber();
+            number.setText(numberText);
 
         }
     }

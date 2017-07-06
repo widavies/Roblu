@@ -42,6 +42,7 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 
 /**
@@ -101,13 +102,17 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         //spinner.getBackground().setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
         //ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.years_array, android.R.layout.simple_spinner_item);
+
+        selectedYear = Calendar.getInstance().get(Calendar.YEAR);
+        String[] years = new String[selectedYear - 1991];
+        for(int i = 0; i < years.length; i++) years[i] = String.valueOf(1992 + i);
+
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, getResources().getStringArray(R.array.years_array));
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, years);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setOnItemSelectedListener(this);
 
-        selectedYear = 2017;
 
         new UIHandler(this, toolbar).update();
 
@@ -310,7 +315,9 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
                     while(e.name.startsWith(" ")) e.name = e.name.substring(1);
                     e.start_date = Integer.parseInt(e.start_date.split("-")[1])+"/"+Integer.parseInt(e.start_date.split("-")[2])+"/"+e.start_date.split("-")[0];
                 }
-            } catch(Exception e) {}
+            } catch(Exception e) {
+                System.err.println("An error occurred while trying to clean event names.");
+            }
 
 
             return events;

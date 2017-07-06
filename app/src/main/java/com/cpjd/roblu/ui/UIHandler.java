@@ -23,7 +23,7 @@ import com.cpjd.roblu.models.RUI;
 public class UIHandler {
 
     private RUI rui;
-    private AppCompatActivity activity;
+    private final AppCompatActivity activity;
     private Toolbar toolbar;
     private FloatingActionButton fab;
     private Menu menu;
@@ -79,8 +79,9 @@ public class UIHandler {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             Window window = activity.getWindow();
             window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-            window.setStatusBarColor(RUI.darker(rui.getPrimaryColor(), 0.85f));
-            if(start && rui.getPrimaryColor() == -12627531) window.setStatusBarColor(Color.TRANSPARENT);
+            window.setStatusBarColor(rui.darker(rui.getPrimaryColor(), 0.85f));
+            //if(start && rui.getPrimaryColor() == -12627531)
+            window.setStatusBarColor(Color.TRANSPARENT);
         }
 
         // activity background

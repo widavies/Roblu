@@ -25,6 +25,7 @@ import com.cpjd.roblu.forms.elements.ETextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.TeamViewer;
 import com.cpjd.roblu.utils.Text;
@@ -37,6 +38,7 @@ public class Match extends Fragment implements ElementsListener {
 
     private REvent event;
     private RTeam team;
+    private RForm form;
 
     private Elements els;
 
@@ -54,8 +56,10 @@ public class Match extends Fragment implements ElementsListener {
         Bundle bundle = this.getArguments();
         team = (RTeam) bundle.getSerializable("team");
         event = (REvent) bundle.getSerializable("event");
+        form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
         readOnly = bundle.getBoolean("readOnly");
+
         if(readOnly) position++;
 
         els = new Elements(getActivity(), new Loader(getActivity()).loadSettings().getRui(), this, false);
@@ -69,11 +73,16 @@ public class Match extends Fragment implements ElementsListener {
     public void load() {
         if(layout != null && layout.getChildCount() > 0) layout.removeAllViews();
 
-        for(int i = 0; i < team.getTabs().get(position).getElements().size(); i++) {
-            for(int j = 0; j < team.getTabs().get(position).getElements().size(); j++) {
-                if(i == team.getTabs().get(position).getElements().get(j).getPosition()) {
-                    loadElement(team.getTabs().get(position).getElements().get(j));
-                    break;
+        if(layout != null && layout.getChildCount() > 0) layout.removeAllViews();
+
+        ArrayList<Element> elements;
+        if(position == 0) elements = form.getPit();
+        else elements = form.getMatch();
+
+        for(Element s : elements) {
+            for (Element e : team.getTabs().get(position).getElements()) {
+                if (e.getID() == s.getID()) {
+                    loadElement(e);
                 }
             }
         }

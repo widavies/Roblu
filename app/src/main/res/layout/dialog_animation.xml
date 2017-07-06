@@ -9,11 +9,12 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:layout_margin="20dp"
-        android:text="Filter type:"/>
+        android:text="@string/animation_direction"/>
     <RadioGroup
         android:id="@+id/filter_group"
         android:layout_width="match_parent"
         android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
         android:layout_marginBottom="10dp"
         android:layout_height="wrap_content">
         <android.support.v7.widget.AppCompatRadioButton

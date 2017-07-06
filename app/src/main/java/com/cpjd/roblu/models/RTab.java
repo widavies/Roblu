@@ -39,8 +39,7 @@ public class RTab implements Serializable, Comparable<RTab> {
     }
 
     public RTab duplicate() {
-        RTab tab = new RTab(Text.createNew(elements), title, redAlliance, won, time);
-        return tab;
+        return new RTab(Text.createNew(elements), title, redAlliance, won, time);
     }
 
     @Override

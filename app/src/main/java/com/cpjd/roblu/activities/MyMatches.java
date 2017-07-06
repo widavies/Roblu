@@ -42,7 +42,6 @@ import java.util.ArrayList;
  */
 public class MyMatches extends AppCompatActivity implements CheckoutListener {
 
-    private ArrayList<RCheckout> toSave;
     private CheckoutAdapter adapter;
     private RecyclerView rv;
     private long eventID;
@@ -88,7 +87,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
 
         myTeam.verify(new Loader(getApplicationContext()).loadForm(eventID));
 
-        toSave = new ArrayList<>(); // we'll use this array for storing info, one RChecklist per match
+        ArrayList<RCheckout> toSave = new ArrayList<>(); // we'll use this array for storing info, one RChecklist per match
 
         for(int i = 0; i < myTeam.getTabs().size(); i++) {
             if(i < 2) continue;
@@ -156,12 +155,12 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
                      else values[i] = checkout.getTeam().getTabs().get(0).getOpponents().get(i - 3).getNumber() + " (Opponent)";
                 }
                 TextView t = (TextView) d.findViewById(R.id.spinner_tip);
-                t.setText("Team: ");
+                t.setText(R.string.team);
                 ArrayAdapter<String> adp = new ArrayAdapter<>(MyMatches.this, android.R.layout.simple_list_item_1, values);
                 adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinner.setAdapter(adp);
                 Button button = (Button) d.findViewById(R.id.button7);
-                button.setText("Open");
+                button.setText(R.string.open);
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

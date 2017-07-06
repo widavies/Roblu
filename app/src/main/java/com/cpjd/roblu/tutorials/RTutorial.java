@@ -2,8 +2,8 @@ package com.cpjd.roblu.tutorials;
 
 class RTutorial {
 
-    private String title;
-    private String subtitle;
+    private final String title;
+    private final String subtitle;
 
     RTutorial(String title, String subtitle) {
         this.title = title;

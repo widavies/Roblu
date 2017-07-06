@@ -2,28 +2,26 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/pen"
-        android:title="Pen"/>
+        android:title="@string/pen"/>
     <item
         android:id="@+id/line"
-        android:title="Line"/>
+        android:title="@string/line"/>
     <item
         android:id="@+id/rectangle"
-        android:title="Rectangle"/>
+        android:title="@string/rectangle"/>
     <item
         android:id="@+id/circle"
-        android:title="Circle"/>
+        android:title="@string/circle"/>
     <item
         android:id="@+id/ellipse"
-        android:title="Ellipse"/>
+        android:title="@string/ellipse"/>
     <item
         android:id="@+id/quad"
-        android:title="Quad"/>
+        android:title="@string/quad"/>
     <item
         android:id="@+id/stroke"
-        android:title="Line width"/>
+        android:title="@string/line_width"/>
     <item
         android:id="@+id/color"
-        android:title="Line color"/>
-
-
+        android:title="@string/line_color"/>
 </menu>

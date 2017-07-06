@@ -213,7 +213,6 @@ public class UICustomizer extends AppCompatActivity {
             final Dialog d = new Dialog(getActivity());
             d.setContentView(R.layout.dialog_animation);
             TextView view = (TextView) d.findViewById(R.id.sort_title);
-            view.setText(R.string.animation_direction);
             view.setTextColor(rui.getText());
             RadioGroup group  = (RadioGroup) d.findViewById(R.id.filter_group);
             for(int i = 0; i < group.getChildCount(); i++) {

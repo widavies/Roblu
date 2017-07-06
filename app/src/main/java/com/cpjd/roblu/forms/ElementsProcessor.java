@@ -27,7 +27,7 @@ import java.util.ArrayList;
  */
 public class ElementsProcessor {
 
-    public static final int PIT = 0;
+    private static final int PIT = 0;
     public static final int PREDICTIONS = 1;
     public static final int MATCHES = 2;
     public static final int OTHER = 3;

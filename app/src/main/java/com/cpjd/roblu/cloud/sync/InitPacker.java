@@ -19,7 +19,7 @@ import java.util.ArrayList;
  * @since 3.5.9
  * @author Will Davies
  */
-public class InitPacker extends AsyncTask<Void, Void, Boolean> {
+class InitPacker extends AsyncTask<Void, Void, Boolean> {
 
     private final Context context;
     private final long eventID;
@@ -40,9 +40,9 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         ArrayList<RCheckout> checkouts = new ArrayList<>();
 
         // Verify everything
-        for(int i = 0; i < teams.length; i++) {
-            teams[i].verify(form);
-            l.saveTeam(teams[i], eventID);
+        for(RTeam team : teams) {
+            team.verify(form);
+            l.saveTeam(team, eventID);
         }
 
         // Create pit checkouts first

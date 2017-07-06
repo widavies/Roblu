@@ -110,7 +110,7 @@ public class RUI implements Serializable {
      * @return
      */
     @ColorInt
-    public static int darker(@ColorInt int color, @FloatRange(from = 0.0, to = 1.0) float factor) {
+    public int darker(@ColorInt int color, @FloatRange(from = 0.0, to = 1.0) float factor) {
         return Color.argb(Color.alpha(color),
                 Math.max((int) (Color.red(color) * factor), 0),
                 Math.max((int) (Color.green(color) * factor), 0),

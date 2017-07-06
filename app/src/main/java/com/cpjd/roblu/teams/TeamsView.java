@@ -170,7 +170,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
         });
 
-        ItemTouchHelper.Callback callback = new TeamTouchHelper(adapter, layout);
+        ItemTouchHelper.Callback callback = new TeamTouchHelper(adapter);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
@@ -500,7 +500,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         TextView view = new TextView(this);
         view.setTextSize(Text.DPToPX(getApplicationContext(), 5));
         view.setPadding(Text.DPToPX(this, 18), Text.DPToPX(this, 18), Text.DPToPX(this, 18), Text.DPToPX(this, 18));
-        view.setText(R.string.create_a_team);
+        view.setText(R.string.create_team);
         view.setTextColor(rui.getText());
         AlertDialog dialog = builder.create();
         dialog.setCustomTitle(view);
@@ -541,7 +541,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
             System.out.println(lastQuery+","+lastSortToken+","+lastFilter+","+temp.getSortTip());
             LoadTeams lt = new LoadTeams(false, lastQuery, lastSortToken, lastFilter);
-            lt.setForceSortReload(true);
+            lt.enableForceReload();
             lt.execute();
         }
         if(resultCode == Constants.DATA_SETTINGS_CHANGED) {
@@ -615,8 +615,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
         }
 
-        public void setForceSortReload(boolean b) {
-            this.forceSortReload = b;
+        public void enableForceReload() {
+            this.forceSortReload = true;
         }
 
         protected LinkedList<RTeam> doInBackground(Void... params) {
@@ -638,7 +638,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
             for(RTeam team : teams) {
                 if(team != null) team.setFilter(filter); // set the desired filter, this might get overrided though
-                if(filter == NUMERICAL || filter == ALPHABETICAL || filter == LAST_EDIT) team.resetSortRelevance();
+                if(team != null && (filter == NUMERICAL || filter == ALPHABETICAL || filter == LAST_EDIT))team.resetSortRelevance();
             }
 
             /**
@@ -737,7 +737,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             if(adapter != null) {
                 adapter.removeAll();
                 adapter.setElements(result);
-                adapter.setEvent(event);
             }
             updateActionBar(result);
             rv.setVisibility(View.VISIBLE);

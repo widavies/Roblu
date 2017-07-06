@@ -30,7 +30,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:hint="Event name"
+                android:hint="@string/event_name"
                 android:nextFocusUp="@id/create_layout"
                 android:nextFocusLeft="@id/create_layout"/>
         </android.support.design.widget.TextInputLayout>
@@ -40,7 +40,7 @@
             android:layout_width="wrap_content"
             android:layout_below="@id/name_wrapper"
             android:layout_height="wrap_content"
-            android:text="Form type:"
+            android:text="@string/form_type"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:padding="5dp"/>
 
@@ -64,7 +64,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:hint="Start date"/>
+                android:hint="@string/start_date"/>
 
         </android.support.design.widget.TextInputLayout>
 
@@ -79,7 +79,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:hint="End date"/>
+                android:hint="@string/end_date"/>
 
         </android.support.design.widget.TextInputLayout>
 

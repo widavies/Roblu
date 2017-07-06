@@ -1,5 +1,0 @@
-package com.cpjd.roblu.utils;
-
-public class SecretConstants {
-    public static final String BUY_ID = "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjBkoljes9AawQg0AKDATr41eKwkRtrXcGWDWadXV9sIxa+ThdJ3M4wsy13Qo9IPMRnjwyGO38VAepoO1owEDQnwh7Gv7KkO8+o7atHeJ3UUeJz0t9XNBV6ZKMUevYKaQqJZmMJbcYrjgzFRaIKs9wQiyswO5ZKCr6AujlHkWQ6rfTZs2hrA/IahKyLZTBJA2FT0irHcTIxxQD1o2KWvU1B4zQ/6PRrvQlVKXa+4Dl2yGUGV5vK8/0YItct+6HqjEd/UBR4qWa163S1l6d2B/lkxkevGMNEKSusFnfMLTwTUQCRzkRF+tDyerfSfHaMQ031EUGiy5B0EgUFjpxWx9xwIDAQAB";
-}

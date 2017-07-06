@@ -94,7 +94,7 @@ public class Tutorial extends AppCompatActivity implements SelectListener{
 
     }
 
-    public void watchYoutubeVideo(String id){
+    void watchYoutubeVideo(String id){
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
         Intent webIntent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse("http://www.youtube.com/watch?v=" + id));

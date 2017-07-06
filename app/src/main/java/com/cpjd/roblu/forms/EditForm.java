@@ -313,7 +313,6 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
                 changesMade = true;
             } else if(resultCode == Constants.EDIT_DISCARDED) {
                 Bundle bundle = data.getExtras();
-                Element e = (Element) bundle.getSerializable("element");
                 elementsAdapter.reAdd(editElement);
             }
     }

@@ -34,6 +34,6 @@ public class MyPreference extends Preference {
         titleView.setTextColor(rui.getText());
 
         TextView subtitle = (TextView) view.findViewById(android.R.id.summary);
-        subtitle.setTextColor(RUI.darker(rui.getText(), 0.60f));
+        subtitle.setTextColor(rui.darker(rui.getText(), 0.60f));
     }
 }

@@ -10,7 +10,7 @@
     <string name="define_apache"></string>
     <string name="library_apache_author">Apache Software Foundation</string>
     <string name="library_apache_libraryName">Apache POI</string>
-    <string name="library_apache_libraryDescription">Java API for Microsoft Documents. Used to generate .xlsx files. Copyright (c) 2002&#8211;2017.</string>
+    <string name="library_apache_libraryDescription">Java API for Microsoft Documents. Used to generate .xlsx files. Copyright (&#169;) 2002&#8211;2017.</string>
     <string name="library_apache_licenseId">apache_2_0</string>
     <string name="library_apache_libraryWebsite">https://poi.apache.org/</string>
 
@@ -24,7 +24,7 @@
     <string name="define_bb"></string>
     <string name="library_bb_author">Iiro Krankka</string>
     <string name="library_bb_libraryName">BottomBar</string>
-    <string name="library_bb_libraryDescription">A custom view component that mimics the new Material Design Bottom Navigation pattern. Copyright (c) 2016.</string>
+    <string name="library_bb_libraryDescription">A custom view component that mimics the new Material Design Bottom Navigation pattern. Copyright (&#169;) 2016.</string>
     <string name="library_bb_licenseId">apache_2_0</string>
     <string name="library_bb_libraryWebsite">https://github.com/roughike/BottomBar</string>
 

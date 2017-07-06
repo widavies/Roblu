@@ -3,6 +3,7 @@ package com.cpjd.roblu.forms.elements;
 import java.util.ArrayList;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Supports an array of checkboxes, each can either be true or false.
@@ -11,6 +12,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class ECheckbox extends Element {
 
     private ArrayList<String> values;
