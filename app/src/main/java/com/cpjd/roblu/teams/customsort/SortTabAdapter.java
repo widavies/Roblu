@@ -5,6 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
+import com.cpjd.roblu.forms.ElementsProcessor;
 import com.cpjd.roblu.forms.elements.ESort;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.RForm;
@@ -26,7 +27,6 @@ class SortTabAdapter extends FragmentPagerAdapter {
         other.add(new ESort("By wins", "Sort teams by how many matches they've won", 0));
         other.add(new ESort("By match", "Sort teams by a specific match", -1));
         other.add(new ESort("By # of matches", "Sort teams by how many matches they contain", 1));
-        other.add(new ESort("By size", "Sort teams by their size on disk", 2));
     }
 
     @Override
@@ -36,25 +36,28 @@ class SortTabAdapter extends FragmentPagerAdapter {
         if(i == 0 || i == 1) bundle.putSerializable("elements", form.getMatch());
         else if(i == 2) bundle.putSerializable("elements", form.getPit());
         else bundle.putSerializable("elements", other);
-        bundle.putSerializable("tabID", i);
 
         if(i == 0) {
             MetricFragment frag = new MetricFragment();
+            bundle.putSerializable("tabID", ElementsProcessor.MATCHES);
             frag.setArguments(bundle);
             return frag;
         }
         if(i == 1) {
             MetricFragment frag = new MetricFragment();
+            bundle.putSerializable("tabID", ElementsProcessor.PREDICTIONS);
             frag.setArguments(bundle);
             return frag;
         }
         if(i == 2) {
             MetricFragment frag = new MetricFragment();
+            bundle.putSerializable("tabID", ElementsProcessor.MATCHES);
             frag.setArguments(bundle);
             return frag;
         }
         if(i == 3) {
             MetricFragment frag = new MetricFragment();
+            bundle.putSerializable("tabID", ElementsProcessor.OTHER);
             frag.setArguments(bundle);
             return frag;
         }

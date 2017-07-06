@@ -41,14 +41,7 @@ import com.cpjd.roblu.cloud.ui.Mailbox;
 import com.cpjd.roblu.events.CreateEventPicker;
 import com.cpjd.roblu.events.EventSettings;
 import com.cpjd.roblu.forms.EditForm;
-import com.cpjd.roblu.forms.elements.EBoolean;
-import com.cpjd.roblu.forms.elements.ECheckbox;
-import com.cpjd.roblu.forms.elements.EChooser;
-import com.cpjd.roblu.forms.elements.ECounter;
-import com.cpjd.roblu.forms.elements.EGallery;
-import com.cpjd.roblu.forms.elements.ESlider;
-import com.cpjd.roblu.forms.elements.EStopwatch;
-import com.cpjd.roblu.forms.elements.ETextfield;
+import com.cpjd.roblu.forms.ElementsProcessor;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
@@ -142,6 +135,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         bar.setVisibility(View.GONE);
 
         new Loader(getApplicationContext()).verifyFileCompatibility();
+
+        activeTeams = new LinkedList<>();
 
         // Initialize UI elements
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -330,9 +325,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             drawer.getActionBarDrawerToggle().getDrawerArrowDrawable().setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
             drawer.getActionBarDrawerToggle().setDrawerIndicatorEnabled(true);
         }
-
-        settings.setPremium(true);
-        new Loader(getApplicationContext()).saveSettings(settings);
     }
 
 
@@ -656,12 +648,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             if(sortToken != null && !sortToken.equals("")) {
                 Loader l = new Loader(getApplicationContext());
                 RForm form = l.loadForm(event.getID());
-                /*
-                 * Alright, let's break this down.
-                 * -We can have any of the 8 elements selected from Pit, predictions, or match
-                 * -We can have an "other" element (by wins, by # matches, by size).
-                 * Let's take care of elements first
-                 */
 
                 // first, let's verify the elements
                 for(int i = 0; i < teams.size(); i++) {
@@ -672,13 +658,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 int tab = Integer.parseInt(sortToken.split(":")[0]);
                 int ID = Integer.parseInt(sortToken.split(":")[1]);
 
-                if(tab == 3 && ID == -1) { // sorting by match
-                    if(activeTeams == null) activeTeams = new LinkedList<>();
+                // It's easier to process sort by specific match and sort by size here instead of in element processor
+                if(tab == ElementsProcessor.OTHER && ID == -1) {
                     activeTeams.clear();
                     for(RTeam tempTeam : teams) {
                         for(RTab temp : tempTeam.getTabs()) {
                             if(temp.getTitle().equalsIgnoreCase(sortToken.split(":")[2])) {
-                                tempTeam.setSearchTip2("In "+temp.getTitle());
+                                tempTeam.setSearchTip("In "+temp.getTitle());
                                 activeTeams.add(tempTeam);
                             }
                         }
@@ -686,224 +672,15 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     FILTER = CUSTOM;
                     lastFilter = CUSTOM;
                     return activeTeams;
-                }
-
-                Element temp = null;
-                if(tab == 0) temp = form.getMatch().get(ID); // match
-                else if(tab == 1) temp = form.getMatch().get(ID); // predictions
-                else if(tab == 2) temp = form.getPit().get(ID); // pit
-                /*
-                 * Okay, we need to do several things. First, we need to convert every element into some sort of relevance integer, for sorting
-                 * Then we need to assign a String searchTip so the user knows what we're talking about
-                 */
-                for(int i = 0; i < teams.size(); i++) {
-                    teams.get(i).resetRelevance();
-
-                    for(int j = 0; j < teams.get(i).getTabs().size(); j++) {
-                        if(tab == 3) {
-                            if(ID == 0) { // wins
-                                if(teams.get(i).getTabs().get(j).isWon())  {
-                                    teams.get(i).addRelevance(1);
-                                    if(j >= 2) {
-                                         if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3("W, ");
-                                         else teams.get(i).addToSearchTip3("W");
-                                    }
-                                } else if(j >= 2) {
-                                    if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3("L, ");
-                                    else teams.get(i).addToSearchTip3("L");
-                                }
-                                if(teams.get(i).getRelevance() == 1) teams.get(i).setSearchTip2("1 match win\n");
-                                else teams.get(i).setSearchTip2((int)teams.get(i).getRelevance()+" match wins\n");
-                            } else if(ID == 1) {
-                                teams.get(i).addRelevance(teams.get(i).getTabs().size() - 2);
-                                break;
-                            } else if(ID == 2) {
-                                teams.get(i).addRelevance(l.getTeamSize(event.getID(), teams.get(i).getID()));
-                                teams.get(i).setSearchTip2((int)teams.get(i).getRelevance()+" KB");
-                            }
-
-                            continue;
-                        }
-
-                        if((tab == 0 && j == 0) || (tab == 0 && j == 1) || (tab == 1 && j != 1) || (tab == 2 && j != 0)) continue;
-                        Element teamElement = teams.get(i).getElement(j, temp.getID());
-                        if(teamElement instanceof EBoolean) {
-                            if(((EBoolean) teamElement).getValue() == 1) {
-                                teams.get(i).addRelevance(1);
-                            }
-                            if(tab == 0) {
-                                teams.get(i).setSearchTip2("Boolean: "+teamElement.getTitle()+" is true in "+(int)teams.get(i).getRelevance()+" / "+(teams.get(i).getTabs().size() - 2)+" matches");
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
-                                if(((EBoolean) teamElement).getValue() == 1) {
-                                    if(j != teams.get(i).getTabs().size() - 1)teams.get(i).addToSearchTip3("T, ");
-                                    else teams.get(i).addToSearchTip3("T");
-                                }
-                                else if(((EBoolean) teamElement).getValue() == -1) {
-                                    if(j != teams.get(i).getTabs().size() - 1)teams.get(i).addToSearchTip3("N/A, ");
-                                    else teams.get(i).addToSearchTip3("N/A");
-                                }
-                                else {
-                                    if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3("F, ");
-                                    else teams.get(i).addToSearchTip3("F");
-                                }
-                            }
-                            else if(tab == 1) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Boolean: "+teamElement.getTitle()+" is "+((EBoolean) teamElement).getValue()+" in predictions");
-                                else teams.get(i).setSearchTip2("Boolean: "+teamElement.getTitle()+" is N/A in predictions");
-                            }
-                            else if(tab == 2) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Boolean: "+teamElement.getTitle()+" is "+((EBoolean) teamElement).getValue()+" in pit");
-                                else teams.get(i).setSearchTip2("Boolean: "+teamElement.getTitle()+" is N/A in pit");
-                            }
-                        }
-                        else if(teamElement instanceof ECounter) {
-                            // add the value to the relevance
-                            teams.get(i).addRelevance(((ECounter) teamElement).getCurrent());
-                            // let's also process an average
-                            if(tab == 0) {
-                                if(teamElement.isModified()) teams.get(i).addAverage(((double)((ECounter) teamElement).getCurrent()) / ((double)teams.get(i).numModified(teamElement.getID())));
-                                if(j == 2) teams.get(i).setMin(((ECounter) teamElement).getCurrent());
-                                if(((ECounter) teamElement).getCurrent() < teams.get(i).getMin() && teamElement.isModified()) teams.get(i).setMin(((ECounter) teamElement).getCurrent());
-                                if(((ECounter) teamElement).getCurrent() > teams.get(i).getMax() && teamElement.isModified()) teams.get(i).setMax(((ECounter) teamElement).getCurrent());
-
-                                teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+" Min: "+teams.get(i).getMin() + " Max: "+teams.get(i).getMax()+" ");
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("Raw data: ");
-                                if(j != teams.get(i).getTabs().size() - 1) {
-                                    if(teamElement.isModified()) teams.get(i).addToSearchTip3(((ECounter) teamElement).getCurrent()+", ");
-                                    else teams.get(i).addToSearchTip3("N/A, ");
-                                }
-                                else {
-                                    if(teamElement.isModified()) teams.get(i).addToSearchTip3(((ECounter) teamElement).getCurrent()+", ");
-                                    else teams.get(i).addToSearchTip3("N/A");
-                                }
-                            }
-                            else if(tab == 1) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" has value "+((ECounter) teamElement).getCurrent()+" in predictions");
-                                else teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" has value N/A in predictions");
-                            }
-                            else if(tab == 2) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" has value "+((ECounter) teamElement).getCurrent()+" in pit");
-                                else teams.get(i).setSearchTip2("Counter: "+teamElement.getTitle()+" has value N/A in pit");
-                            }
-                        }
-                        else if(teamElement instanceof ESlider) {
-                            // add the value to the relevance
-                            teams.get(i).addRelevance(((ESlider) teamElement).getCurrent());
-                            // let's also process an average
-                            if(tab == 0) {
-                                teams.get(i).addAverage(((double)((ESlider) teamElement).getCurrent()) / ((double)teams.get(i).numModified(teamElement.getID())));
-                                if(j == 2) teams.get(i).setMin(((ESlider) teamElement).getCurrent());
-                                if(((ESlider) teamElement).getCurrent() < teams.get(i).getMin() && teamElement.isModified()) teams.get(i).setMin(((ESlider) teamElement).getCurrent());
-                                if(((ESlider) teamElement).getCurrent() > teams.get(i).getMax() && teamElement.isModified()) teams.get(i).setMax(((ESlider) teamElement).getCurrent());
-
-                                teams.get(i).setSearchTip2("Slider: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+" Min: "+teams.get(i).getMin() + " Max: "+teams.get(i).getMax());
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("Raw data: ");
-                                if(j != teams.get(i).getTabs().size() - 1) {
-                                    if(teamElement.isModified()) teams.get(i).addToSearchTip3(((ESlider) teamElement).getCurrent()+", ");
-                                    else teams.get(i).addToSearchTip3("N/A, ");
-                                }
-                                else {
-                                    if(teamElement.isModified()) teams.get(i).addToSearchTip3(String.valueOf(((ESlider) teamElement).getCurrent()));
-                                    else teams.get(i).addToSearchTip3("N/A");
-                                }
-                            }
-                            else if(tab == 1) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Slider: "+teamElement.getTitle()+" has value "+((ESlider) teamElement).getCurrent()+" in predictions");
-                                else teams.get(i).setSearchTip2("Slider: "+teamElement.getTitle()+" has value N/A in predictions");
-                            }
-                            else if(tab == 2) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Slider: "+teamElement.getTitle()+" has value "+((ESlider) teamElement).getCurrent()+" in pit");
-                                else teams.get(i).setSearchTip2("Slider: "+teamElement.getTitle()+" has value N/A in pit");
-                            }
-                        }
-                        else if(teamElement instanceof EStopwatch) {
-                            // add the value to the relevance
-                            teams.get(i).addRelevance(((EStopwatch) teamElement).getTime());
-                            // let's also process an average
-                            if(tab == 0) {
-                                teams.get(i).addAverage((((((EStopwatch) teamElement).getTime()) / ((double)teams.get(i).numModified(teamElement.getID())))));
-                                if(j == 2) teams.get(i).setMinDouble(((EStopwatch) teamElement).getTime());
-                                if(((EStopwatch) teamElement).getTime() < teams.get(i).getMinDouble() && teamElement.isModified()) teams.get(i).setMinDouble(((EStopwatch) teamElement).getTime());
-                                if(((EStopwatch) teamElement).getTime() > teams.get(i).getMaxDouble() && teamElement.isModified()) teams.get(i).setMaxDouble(((EStopwatch) teamElement).getTime());
-
-                                teams.get(i).setSearchTip2("Stopwatch: "+teamElement.getTitle()+" Average: "+Text.round(teams.get(i).getAverage(), 2)+"s Min: "+teams.get(i).getMinDouble() + "s Max: "+teams.get(i).getMaxDouble()+"s");
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
-                                if(j != teams.get(i).getTabs().size() - 1) {
-                                    if(teamElement.isModified()) teams.get(i).addToSearchTip3(((EStopwatch) teamElement).getTime()+"s, ");
-                                    else teams.get(i).addToSearchTip3("N/A, ");
-                                }
-                                else {
-                                    if(teamElement.isModified()) teams.get(i).addToSearchTip3(((EStopwatch) teamElement).getTime()+"s");
-                                    else teams.get(i).addToSearchTip3("N/A");
-                                }
-                            }
-                            else if(tab == 1) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Stopwatch: "+teamElement.getTitle()+" has value "+((EStopwatch) teamElement).getTime()+"s in predictions");
-                                else teams.get(i).setSearchTip2("Stopwatch: "+teamElement.getTitle()+" has value N/A in predictions");
-                            }
-                            else if(tab == 2) {
-                                if(teamElement.isModified()) teams.get(i).setSearchTip2("Stopwatch: "+teamElement.getTitle()+" has value "+((EStopwatch) teamElement).getTime()+"s in pit");
-                                else teams.get(i).setSearchTip2("Stopwatch: "+teamElement.getTitle()+" has value N/A in pit");
-                            }
-                        }
-                        else if(teamElement instanceof ETextfield) {
-                            teams.get(i).addRelevance(((ETextfield) teamElement).getText().getBytes().length);
-                            if(tab == 0) {
-                                teams.get(i).setSearchTip2("Textfield: "+teamElement.getTitle()+" total size (bytes): ");
-                                teams.get(i).addToSearchTip3(String.valueOf(((ETextfield) teamElement).getText().getBytes().length));
-                            }
-                            if(tab == 1) teams.get(i).setSearchTip2("Textfield: "+teamElement.getTitle()+" total size "+((ETextfield) teamElement).getText().getBytes().length+" bytes in predictions");
-                            if(tab == 2) teams.get(i).setSearchTip2("Textfield: "+teamElement.getTitle()+" total size "+((ETextfield) teamElement).getText().getBytes().length+" bytes in pit");
-                        }
-                        else if(teamElement instanceof EGallery) {
-                            teams.get(i).addRelevance(((EGallery) teamElement).getImageIDs().size());
-                            if (tab == 0)
-                                teams.get(i).setSearchTip2("Gallery: " + teamElement.getTitle() + " contains a total of " + (int)teams.get(i).getRelevance() + " images in all matches");
-                            if (tab == 1)
-                                teams.get(i).setSearchTip2("Gallery: " + teamElement.getTitle() + " contains a total of " + (int)teams.get(i).getRelevance() + " images in predictions");
-                            if (tab == 2)
-                                teams.get(i).setSearchTip2("Gallery: " + teamElement.getTitle() + " contains a total of " + (int)teams.get(i).getRelevance() + " images in pit");
-                        }
-                        else if(teamElement instanceof ECheckbox) {
-                            if(tab == 1 || tab == 2) { // (T,F,T,F),(T,F,S)
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) {
-                                    if(tab == 2) teams.get(i).setSearchTip3("\nRaw data (PIT): ");
-                                    else teams.get(i).setSearchTip3("\nRaw data (Predictions): ");
-                                }
-                                for(int k = 0; k < ((ECheckbox) teamElement).getChecked().size(); k++) {
-                                    teams.get(i).addRelevance(1);
-                                    String ind = "F";
-                                    if(((ECheckbox) teamElement).getChecked().get(k)) ind = "T";
-                                    if(k == 0) teams.get(i).addToSearchTip3("("+ind+",");
-                                    else if(k == ((ECheckbox) teamElement).getChecked().size() - 1) teams.get(i).addToSearchTip3(ind+")");
-                                    else teams.get(i).addToSearchTip3(ind+",");
-                                }
-                            } else { // TAB 0
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
-                                for(int k = 0; k < ((ECheckbox) teamElement).getChecked().size(); k++) {
-                                    teams.get(i).addRelevance(1);
-                                    String ind = "F";
-                                    if(((ECheckbox) teamElement).getChecked().get(k)) ind = "T";
-                                    if(k == 0) teams.get(i).addToSearchTip3("("+ind+",");
-                                    else if(k == ((ECheckbox) teamElement).getChecked().size() - 1) teams.get(i).addToSearchTip3(ind+")");
-                                    else teams.get(i).addToSearchTip3(ind+",");
-                                }
-                                if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3(", ");
-                            }
-                        } else if(teamElement instanceof EChooser) {
-                            FILTER = NUMERICAL;
-                            if(tab == 0) {
-                                if(teams.get(i).getSearchTip3() == null || teams.get(i).getSearchTip3().equals("")) teams.get(i).setSearchTip3("\nRaw data: ");
-
-                                if(j != teams.get(i).getTabs().size() - 1) teams.get(i).addToSearchTip3(((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+", ");
-                                else teams.get(i).addToSearchTip3(((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected()));
-                            } else {
-                                if(tab == 1) teams.get(i).setSearchTip2("EChooser: "+teamElement.getTitle()+" has value "+((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+"s in predictions");
-                                else teams.get(i).setSearchTip2("EChooser: "+teamElement.getTitle()+" has value "+((EChooser) teamElement).getValues().get(((EChooser) teamElement).getSelected())+"s in pit");
-                            }
-                        }
+                } else {
+                    ElementsProcessor ep = new ElementsProcessor();
+                    for(RTeam team : teams) {
+                        String[] tokens = ep.process(team.getTabs(), tab, ID).split(":");
+                        team.addRelevance(Double.parseDouble(tokens[0]));
+                        team.setSearchTip(tokens[1]);
                     }
                 }
+
                 Collections.sort(teams);
                 Collections.reverse(teams);
                 FILTER = CUSTOM;
@@ -915,7 +692,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             // Okay, let's manage searching next
             if(!query.equals("")) {
                 FILTER = SEARCH;
-                if(activeTeams == null) activeTeams = new LinkedList<>();
                 activeTeams.clear();
                 int relevance;
                 for(int i = 0; i < teams.size(); i++) {

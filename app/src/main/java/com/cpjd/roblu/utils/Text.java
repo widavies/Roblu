@@ -40,8 +40,6 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -308,11 +306,6 @@ public class Text {
         ArrayList<RTab> toReturn = new ArrayList<>();
         for(int i = 0; i < tabs.size(); i++) toReturn.add(tabs.get(i).duplicate());
         return toReturn;
-    }
-
-	public static void loadAd(AdView adView) {
-        AdRequest adRequest = new AdRequest.Builder().build();
-        adView.loadAd(adRequest);
     }
 
 	public static int getAPI() {

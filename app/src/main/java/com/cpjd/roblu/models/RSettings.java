@@ -34,11 +34,6 @@ public class RSettings implements Serializable {
      */
     private RUI rui;
     /**
-     * If the account is premium, we should verify this at startup
-     * (Check if user has already purchased app or not)
-     */
-    private boolean premium;
-    /**
      * The team code, a top secret code using for connecting with the Roblu API
      */
     private String teamCode;
@@ -63,7 +58,6 @@ public class RSettings implements Serializable {
         teamNumber = 0;
         lastEventID = -1;
         master = null;
-        premium = false;
         updateLevel = 0;
         isSignedIn = false;
     }

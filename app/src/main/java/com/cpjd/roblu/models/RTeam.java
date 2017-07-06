@@ -78,13 +78,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     private transient double relevance;
     private transient String searchTip;
-    private transient String searchTip2;
-    private transient String searchTip3;
-    private transient double average;
-    private transient int min;
-    private transient int max;
-    private transient double maxDouble;
-    private transient double minDouble;
 
     /**
      * Creates a new RTeam with default values
@@ -124,13 +117,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     public boolean hasTBAInfo() {
         return name != null || location != null || motto != null || website == null || rookieYear > 0;
-    }
-
-    public void addAverage(double value) {
-        average += value;
-    }
-    public void addToSearchTip3(String string) {
-        searchTip3+=string;
     }
 
     /**
@@ -375,14 +361,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     public void resetRelevance() {
         searchTip = "";
-        searchTip2 = "";
-        searchTip3 = "";
         this.relevance = 0;
-        average = 0;
-        min = 0;
-        max = 0;
-        maxDouble = 0;
-        minDouble = 0;
     }
 
     /**

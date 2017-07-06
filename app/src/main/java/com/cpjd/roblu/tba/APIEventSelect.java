@@ -39,6 +39,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+/**
+ * To add a new year, go into res/values/strings.xml and add it to the years array there.
+ *
+ * Then, change the selectedYear variable in onCreate() to the year
+ *
+ * You might want to automate this in the future
+ *
+ * @since 3.0.0
+ * @author Will Davies
+ */
 public class APIEventSelect extends AppCompatActivity implements AdapterView.OnItemSelectedListener, SelectListener {
 
     private EventAdapter adapter;

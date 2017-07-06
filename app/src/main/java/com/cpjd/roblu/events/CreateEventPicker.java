@@ -32,7 +32,6 @@ import com.cpjd.roblu.tba.APIEventSelect;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
-import com.google.android.gms.ads.AdView;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,8 +92,6 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
         };
         sharingView.setAdapter(adapter);
         sharingView.setOnItemClickListener(this);
-
-        if(!settings.isPremium()) Text.loadAd((AdView)findViewById(R.id.adView));
 
         new UIHandler(this, toolbar).update();
     }

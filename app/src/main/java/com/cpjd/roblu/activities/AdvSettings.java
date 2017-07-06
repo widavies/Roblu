@@ -181,10 +181,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 return true;
             }
             else if(preference.getKey().equals("customizer")) {
-                if(!settings.isPremium()) {
-                    Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You don't have premium", true, 0);
-                    return false;
-                }
                 getActivity().startActivityForResult(new Intent(getActivity(), UICustomizer.class), Constants.GENERAL);
                 return true;
             }
