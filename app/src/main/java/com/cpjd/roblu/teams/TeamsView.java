@@ -212,9 +212,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 3.5.9")
+                    .setTitle("Changelist for Version 3.5.9 - 3.6.0")
                     .setMessage("-Added my matches (long press on search button)\n-Improvements to searching and filtering\n-Ads removed, UI customizer available for everyone\n-Reworked cloud controls\n-Event import now searchable\n-Bug fixes\n\n" +
-                            "Cloud support is coming in 3.6.0")
+                            "Cloud support is coming in 3.6.1")
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -489,6 +489,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(input2.getText().toString().equals("")) input2.setText("0");
                 RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), new Loader(getApplicationContext()).getNewTeamID(event.getID()));
                 new Loader(getApplicationContext()).saveTeam(team, event.getID());
+                if(teams == null) teams = new LinkedList<>();
                 teams.add(team);
                 new LoadTeams(false, lastQuery, lastSortToken, lastFilter).execute();
             }
@@ -728,7 +729,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 });
                 return null;
             }
-
             return teams;
         }
 

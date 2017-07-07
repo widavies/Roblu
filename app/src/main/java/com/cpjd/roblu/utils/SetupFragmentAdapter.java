@@ -17,7 +17,7 @@ public class SetupFragmentAdapter extends PagerAdapter {
 
     @Override
     public int getCount() {
-        return 4;
+        return 5;
     }
 
     @Override
@@ -35,6 +35,9 @@ public class SetupFragmentAdapter extends PagerAdapter {
                 resId = R.id.permissions_setup_page;
                 break;
             case 3:
+                resId = R.id.team_number;
+                break;
+            case 4:
                 resId = R.id.finished;
                 break;
         }

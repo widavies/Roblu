@@ -292,6 +292,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     ArrayList<Long> getAllImagesID() {
         ArrayList<Long> ids = new ArrayList<>();
+        if(tabs == null || tabs.size() == 0) return ids;
 
         for(RTab tab : tabs) {
             for(Element e : tab.getElements()) {

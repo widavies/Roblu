@@ -32,6 +32,15 @@
         android:layout_alignParentStart="true"
         android:layout_marginLeft="11dp"
         android:layout_marginStart="11dp"/>
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:id="@+id/show_team"
+        android:layout_below="@+id/toolbar"
+        android:layout_toRightOf="@id/spinner"
+        android:layout_marginLeft="11dp"
+        android:layout_marginStart="11dp"/>
     <android.support.v7.widget.RecyclerView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/events_recycler"

@@ -125,6 +125,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
             EditTextPreference teamNumber = (EditTextPreference) findPreference("team_number");
             teamNumber.setDefaultValue(settings.getTeamNumber());
+            teamNumber.setText(String.valueOf(settings.getTeamNumber()));
             teamNumber.setOnPreferenceChangeListener(this);
 
             findPreference("about").setOnPreferenceClickListener(this);

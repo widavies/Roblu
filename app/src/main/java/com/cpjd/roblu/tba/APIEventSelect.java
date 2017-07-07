@@ -70,6 +70,8 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
     private ProgressBar bar;
 
+    private boolean showAllEvents;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -98,6 +100,13 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         searchView = (MaterialSearchView) findViewById(R.id.search_view);
         searchView.setHintTextColor(Color.BLACK);
         searchView.setHint("Search events");
+
+        Spinner showTeam = (Spinner) findViewById(R.id.show_team);
+        ArrayAdapter<String> sAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, new String[]{"My events", "All events"});
+        sAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        showTeam.setAdapter(sAdapter);
+        showTeam.setOnItemSelectedListener(this);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         //spinner.getBackground().setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
@@ -174,9 +183,10 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-        selectedYear = Integer.parseInt(parent.getItemAtPosition(position).toString());
-        new FetchEvents().execute(selectedYear);
+        if(parent.getId() == R.id.spinner) selectedYear = Integer.parseInt(parent.getItemAtPosition(position).toString());
+        else showAllEvents = parent.getItemAtPosition(position).toString() == "All events";
 
+        new FetchEvents(showAllEvents).execute(selectedYear);
     }
 
     @Override
@@ -293,7 +303,10 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
      */
     private class FetchEvents extends AsyncTask<Integer, Void, Event[]> {
 
-        public FetchEvents() {
+        private final boolean showEvents;
+
+        public FetchEvents(boolean showEvents) {
+            this.showEvents = showEvents;
             if(events == null) events = new ArrayList<>();
 
             rv.setVisibility(View.GONE);
@@ -306,7 +319,9 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build(); StrictMode.setThreadPolicy(policy);
 
             Settings.disableAll();
-            Event[] events = new TBA().getEvents(year[0], false);
+            Event[] events;
+            if(showEvents) events = new TBA().getEvents(year[0], false);
+            else events = new TBA().getTeamEvents(new Loader(getApplicationContext()).loadSettings().getTeamNumber(), year[0], false);
 
             // Clean names and dates
             try {
@@ -325,12 +340,8 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         @Override
         protected void onPostExecute(Event[] event) {
             events.clear();
-            events.addAll(Arrays.asList(event));
+            if(event != null) events.addAll(Arrays.asList(event));
 
-            if(events.size() == 0) {
-                new FetchEvents().execute(selectedYear);
-                return;
-            }
             rv.setVisibility(View.VISIBLE);
             bar.setVisibility(View.GONE);
             new SearchEvents("").execute();
