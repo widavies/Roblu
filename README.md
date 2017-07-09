@@ -38,15 +38,6 @@ Roblu makes use of huge amounts of online data available through thebluealliance
 TBA integration is smooth and stable. With TBA integration, event can be easily imported with teams, matches, and more. TBA integration will save you from wasting time on things such as creating a list of teams and instead allow you to get straight into things that matter.
 ## CSV!
 Roblu has got you covered when it comes to spreadsheets. Roblu supports exporting of ALL event data into multiple sheets with condensed data. Currently under construction is a custom CSV programming langauge, with this language, your team can specify an export configuration so Roblu knows how to export your data, and where. Roblu exports all those fancy colors too.
-# What's the catch?
-Roblu is free to use and always will be. As a developer, I firmly believe in delivering a quality product that people want to use. Is there a catch? No. However, server hosting costs, IOS and Android versions, as well as a soon to come desktop version take quite a bit of time and money. Roblu has non-intrusive in-app ads that generate ad-revenue. However, if you're feeling generous, you can try out
-Roblu premium for 50 cents, with Roblu premium you'll have access to feature that aren't neccessary to your scouting experience, but
-will increase productivity and usefulness of the app. Roblu Premium offers the following:  
--No ads  
--UI customizer - Customize your interface with different colors, animations, icons, and more.  
--Access to machine learning and AI - Every Roblu user has the option of making their data annonymously available for machine learning use. If you purchase Roblu Premium, you'll have access to powerful machine learning features. With a soon-to-come Roblu machine learning API, you can access data and more.  
-
-If you'd like to purchase Roblu Premium for you whole team, you can. Roblu Premium for teams costs $2.99.
 # License
 How does all the legal stuff related to Roblu help you? First off, Roblu is copyrighted, so other people can't pawn Roblu's code off and upload clone apps. When you use Roblu, we want to make sure that you're using the authentic Roblu.  
 
