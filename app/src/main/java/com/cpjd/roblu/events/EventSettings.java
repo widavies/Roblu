@@ -29,6 +29,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.cloud.sync.InitPacker;
 import com.cpjd.roblu.csv.ExportCSV;
 import com.cpjd.roblu.forms.EditForm;
@@ -38,6 +39,7 @@ import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.teams.TeamsView;
@@ -322,8 +324,6 @@ public class EventSettings extends AppCompatActivity {
             return false;
         }
 
-
-
         @Override
         public boolean onPreferenceChange(Preference preference, Object o) {
             if(preference.getKey().equals("sync")) {
@@ -336,8 +336,17 @@ public class EventSettings extends AppCompatActivity {
                     new InitPacker(getActivity(), event.getID()).execute();
                     Text.showSnackbar(layout, getActivity(), "Cloud sync enabled for "+event.getName(), false, rui.getPrimaryColor());
                 }
-                else Text.showSnackbar(layout, getActivity(), "Cloud sync disabled for "+event.getName(), false, rui.getPrimaryColor());
-                return true;
+                else {
+                    try {
+                        RSettings settings = new Loader(getActivity()).loadSettings();
+                        new CloudRequest(settings.getAuth(), settings.getTeamCode()).clearActiveEvent();
+                        Text.showSnackbar(layout, getActivity(), "Cloud sync disabled for "+event.getName(), false, rui.getPrimaryColor());
+                        return true;
+                    } catch(Exception e) {
+                        System.out.println("Failed to clear active event: "+e.getMessage());
+                        return false;
+                    }
+                }
             }
             return false;
         }

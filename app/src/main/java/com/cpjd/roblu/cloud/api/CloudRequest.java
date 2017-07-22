@@ -49,10 +49,6 @@ public class CloudRequest {
 
     public CloudRequest() {}
 
-    public CloudRequest(String auth) {
-        this.auth = auth;
-    }
-
     public CloudRequest(String auth, String teamCode) {
         this.auth = auth;
         this.teamCode = teamCode;
@@ -119,12 +115,28 @@ public class CloudRequest {
         return doRequest(true, "checkouts/initPushCheckouts", "?content="+encodeString(content)+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&active="+encodeString(activeEventTitle));
     }
-/*
-    public boolean pushCheckout(int id, String status, String content) {
-        Object response = POST("checkouts/pushCheckout", "?content="+encodeString(content)+"&status="+encodeString(status)+"&id="+encodeString(String.valueOf(id))+
+
+    /**
+     * Pushes the checkout to the Checkouts database and overwrites the old one
+     * @param id the checkout to overwrite
+     * @param status the status of the checkout ('completed')
+     * @return object representing the servers response (either success or error)
+     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
+     */
+    public Object pushCheckout(int id, String status, String content) throws Exception {
+        return doRequest(true, "checkouts/pushCheckout", "?content="+encodeString(content)+"&status="+encodeString(status)+"&id="+encodeString(String.valueOf(id))+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
-        return response != null && response.toString().equals("success");
-    }*/
+    }
+
+    /**
+     * Clears the active event from the server (deletes Checkouts db, InCheckouts db, and active event tag)
+     * @return object representing the servers response (either success or error)
+     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
+     */
+    public Object clearActiveEvent() throws Exception {
+        return doRequest(false, "checkouts/clearActiveEvent", "?code="+encodeString(teamCode));
+    }
+
     /**
      * Pulls checkouts from the InCheckouts database
      * @return object representing the servers response (either success or error)

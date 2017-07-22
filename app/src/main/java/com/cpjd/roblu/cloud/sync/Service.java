@@ -92,7 +92,7 @@ public class Service extends android.app.Service {
                 // sleep a bit
                 try {
                     if(isAppOnForeground(getApplicationContext())) Thread.sleep(5000);
-                    else Thread.sleep(300);
+                    else Thread.sleep(300000);
                 } catch(Exception e) {}
 
                 // first, check if we have an internet connection, if we don't, the background service is useless
