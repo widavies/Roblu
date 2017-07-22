@@ -76,7 +76,6 @@ import java.util.LinkedList;
  *
  * Roblu cannot be distributed for a price or to people outside of your local robotics team.
  *******************************************************/
-
 public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsItemClickListener, View.OnLongClickListener {
 
     // UI
@@ -609,7 +608,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             if(this.query == null) this.query = "";
             if(this.sortToken == null) this.sortToken = "";
 
-            if((loadFromDisk || (!sortToken.equals("")))  && event != null) {
+            if((loadFromDisk || (sortToken != null && !sortToken.equals("")))  && event != null) {
                 rv.setVisibility(View.GONE);
                 bar.setVisibility(View.VISIBLE);
                 bar.getIndeterminateDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.MULTIPLY);

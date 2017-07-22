@@ -1,6 +1,7 @@
 package com.cpjd.roblu.cloud.sync;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -8,6 +9,9 @@ import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.type.TypeFactory;
 
 import java.util.ArrayList;
 
@@ -19,7 +23,7 @@ import java.util.ArrayList;
  * @since 3.5.9
  * @author Will Davies
  */
-class InitPacker extends AsyncTask<Void, Void, Boolean> {
+public class InitPacker extends AsyncTask<Void, Void, Boolean> {
 
     private final Context context;
     private final long eventID;
@@ -49,7 +53,7 @@ class InitPacker extends AsyncTask<Void, Void, Boolean> {
         for(RTeam team : teams) {
             RTeam temp = team.duplicate();
             temp.removeAllTabsButPIT();
-            checkouts.add(new RCheckout(eventID, temp));
+            checkouts.add(new RCheckout(temp));
         }
 
         /*
@@ -59,14 +63,34 @@ class InitPacker extends AsyncTask<Void, Void, Boolean> {
             if(team.getTabs() == null || team.getTabs().size() == 0) continue;
             for(int i = 2; i < team.getTabs().size(); i++) {
                 RTeam temp = team.duplicate();
+                temp.setPage(0);
                 temp.removeAllTabsBut(i);
-                checkouts.add(new RCheckout(eventID, temp));
+                checkouts.add(new RCheckout(temp));
             }
         }
 
         /*
          * Process images
          */
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            String json = mapper.writeValueAsString(checkouts);
+            System.out.println("Exported: "+json);
+            RCheckout[] imported = mapper.readValue(json, TypeFactory.defaultInstance().constructArrayType(RCheckout.class));
+            System.out.println("Imported title: "+imported[0].getTeam().getTabs().get(0).getTitle());
+            System.out.println("Imported size: "+imported.length);
+
+            Intent i = new Intent(Intent.ACTION_SEND);
+            i.setType("message/rfc822");
+            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"wdavies973@gmail.com"});
+            i.putExtra(Intent.EXTRA_SUBJECT, "Roblu Bug Report");
+            i.putExtra(Intent.EXTRA_TEXT   , json);
+            context.startActivity(Intent.createChooser(i, "yeet"));
+        } catch(Exception e) {
+            System.out.println("An error occured: "+e.getMessage());
+            e.printStackTrace();
+        }
+
 
         // begin uploading
         Log.i("[*] ", "There are "+checkouts.size());

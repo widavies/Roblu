@@ -84,6 +84,8 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     private transient String searchTip;
     private String sortTip;
 
+    public RTeam() {}
+
     /**
      * Creates a new RTeam with default values
      * @param name

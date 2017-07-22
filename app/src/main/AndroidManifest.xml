@@ -126,8 +126,6 @@
         </activity>
         <activity android:name=".cloud.ui.Mailbox"
                   android:label="Mailbox"/>
-        <activity android:name=".cloud.ui.CreateCloudTeam"
-                  android:label="Create Cloud Team"/>
         <activity android:name =".forms.images.Drawing"
                   android:label="Drawing"/>
         <activity android:name=".activities.MyMatches"

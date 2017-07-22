@@ -17,14 +17,27 @@ import com.cpjd.roblu.tutorials.Tutorial;
 import com.cpjd.roblu.utils.DisableSwipeViewPager;
 import com.cpjd.roblu.utils.SetupFragmentAdapter;
 
+/**
+ * Manages the initial setup of the application
+ *
+ * Steps:
+ * -Welcome the user
+ * -Agree to terms & privacy (explains what we store about the user)
+ * -Permissions (in newer versions of Android, some permissions must be explicity requested with a dialog, in this case, Roblu only needs the camera (for the gallery element), and local
+ * device storage (for the gallery element save to device feature)
+ * -team number - user can set their team number at the get go if they want
+ * -tutorials & final welcome - welcome the user again and give them a quick link to tutorials
+ *
+ * @since 3.0.0
+ * @author Will Davies
+ */
 public class SetupActivity extends Activity implements View.OnClickListener {
+    // manages our horizontal swipe view thing, but we don't let the user swipe, they must press next buttons
     private DisableSwipeViewPager pager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_setup);
-
-
         if(getActionBar() != null) getActionBar().hide();
 
         pager = (DisableSwipeViewPager) findViewById(R.id.view_pager);

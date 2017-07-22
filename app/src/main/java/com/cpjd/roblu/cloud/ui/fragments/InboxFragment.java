@@ -37,10 +37,9 @@ public class InboxFragment extends Fragment {
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
-
         ArrayList<RCheckout> checkouts = new ArrayList<>();
         for(int i = 0; i < 5; i++) {
-            checkouts.add(new RCheckout(0, new Loader(getContext()).loadTeam(0, i), "Will Davies", System.currentTimeMillis()));
+            checkouts.add(new RCheckout(new Loader(getContext()).loadTeam(0, i), "Will Davies", System.currentTimeMillis()));
         }
         adapter.setCheckouts(checkouts);
 

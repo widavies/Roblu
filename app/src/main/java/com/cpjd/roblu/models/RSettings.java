@@ -34,22 +34,14 @@ public class RSettings implements Serializable {
      */
     private RUI rui;
     /**
-     * The team code, a top secret code using for connecting with the Roblu API
-     */
-    private String teamCode;
-
-    /**
      * Whether the user is signed in with their Google account or not
      */
     private boolean isSignedIn;
-
     /**
-     * The owner's email address. Very important
+     * Roblu Cloud API variables
      */
-    private String adminEmail;
-    private String adminDisplayName;
-
-    private String purchaseEmail;
+    private String auth; // the user's authentication token, links them with their Roblu Cloud API account
+    private String teamCode; // the team's authentication code, links the code with the Roblu Cloud Team profile
 
     /**
      * Sets the default values for the RSettings class
