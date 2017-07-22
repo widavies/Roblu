@@ -97,12 +97,16 @@ public class CloudRequest {
         return doRequest(false, "teams/leaveTeam", "?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
     }
 
-    /*public boolean pushForm(String content) {
-        Object response = POST("teams/pushForm", "&content="+encodeString(content)+
+    /**
+     * Attempts to push the form to the server
+     * @param content JSON representation of form
+     * @return object representing the servers response (either success or error)
+     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
+     */
+    public Object pushForm(String content) throws Exception {
+        return doRequest(true, "teams/pushForm", "&content="+encodeString(content)+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
-        System.out.println(response.toString());
-        return response != null && response.toString().equals("success");
-    }*/
+    }
 
     /**
      * Overwrites all old data on the server and pushes all the new checkouts
@@ -120,12 +124,15 @@ public class CloudRequest {
         Object response = POST("checkouts/pushCheckout", "?content="+encodeString(content)+"&status="+encodeString(status)+"&id="+encodeString(String.valueOf(id))+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
         return response != null && response.toString().equals("success");
-    }
-
-    public String pullCheckouts(int[] lastSyncs) {
-        Object response = GET("checkouts/pullReceivedCheckouts?code="+encodeString(teamCode));
-        return response.toString();
     }*/
+    /**
+     * Pulls checkouts from the InCheckouts database
+     * @return object representing the servers response (either success or error)
+     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
+     */
+    public Object pullCheckouts() throws Exception {
+        return doRequest(false, "checkouts/pullReceivedCheckouts","?code="+encodeString(teamCode));
+    }
 
 
     /**

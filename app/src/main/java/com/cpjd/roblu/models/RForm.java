@@ -17,6 +17,11 @@ import lombok.Data;
 @Data
 public class RForm implements Serializable {
 
+    /**
+     * If this variable is set to true, then it will be re-uploaded to the cloud
+     */
+    private boolean modified;
+
     private ArrayList<Element> pit;
     private ArrayList<Element> match;
 

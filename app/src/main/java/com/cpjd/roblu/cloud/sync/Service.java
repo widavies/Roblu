@@ -9,9 +9,15 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
-import android.widget.Toast;
 
+import com.cpjd.roblu.cloud.api.CloudRequest;
+import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.notifications.Notify;
+import com.cpjd.roblu.utils.Text;
+
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.List;
 
@@ -55,7 +61,7 @@ public class Service extends android.app.Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
         //TODO do something useful
         Message message = handler.obtainMessage();
         message.arg1 = startId;
@@ -77,13 +83,60 @@ public class Service extends android.app.Service {
 
         @Override
         public void handleMessage(Message msg) {
-            // Well calling mServiceHandler.sendMessage(message); from onStartCommand,
-            // this method will be called.
+            ObjectMapper mapper = new ObjectMapper();
+            Loader l = new Loader(getApplicationContext());
+            CloudRequest cr;
 
             // Add your cpu-blocking activity here
             while(true) {
+                // sleep a bit
                 try {
-                    Thread.sleep(5000);
+                    if(isAppOnForeground(getApplicationContext())) Thread.sleep(5000);
+                    else Thread.sleep(300);
+                } catch(Exception e) {}
+
+                // first, check if we have an internet connection, if we don't, the background service is useless
+                if(!Text.hasInternetConnection(getApplicationContext())) {
+                    continue;
+                }
+
+                /* UPDATES */
+                // first, find the active event
+                REvent[] events = l.getEvents();
+                REvent activeEvent = null;
+                for(int i = 0; events != null && events.length > 0 && i < events.length; i++) {
+                    if(events[i].isCloudEnabled()) {
+                        activeEvent = events[i];
+                        break;
+                    }
+                }
+                if(activeEvent == null) continue;
+
+                // check if the form needs to be uploaded
+                cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode());
+                RForm form = l.loadForm(activeEvent.getID());
+                if(form != null && form.isModified()) {
+                    try {
+                        System.out.println("[Roblu Background Service] Successfully pushed form: "+
+                                cr.pushForm(mapper.writeValueAsString(form)));
+                        form.setModified(false);
+                        l.saveForm(form, activeEvent.getID());
+                    } catch(Exception e) {
+                        System.out.println("[Roblu Background Service] Failed to push form: "+e);
+                    }
+                }
+
+                // check if their are any checkouts in RCheckouts
+                System.out.println("[Roblu Background Service] Pulling checkouts...");
+                try {
+                    System.out.println(cr.pullCheckouts());
+                    // notify the user here
+                    System.out.println("[Roblu Background Service] Successfully pulled checkouts");
+                } catch(Exception e) {
+                    System.out.println("[Roblu Background Service] Failed to pull checkouts");
+                }
+
+                try {
                     Notify.notify(getApplicationContext(), "IS Roblu Running? "+isAppOnForeground(getApplicationContext()), "Time: "+System.currentTimeMillis());
                 } catch(Exception e) {}
             }
