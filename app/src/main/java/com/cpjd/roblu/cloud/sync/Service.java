@@ -1,0 +1,108 @@
+package com.cpjd.roblu.cloud.sync;
+
+import android.app.ActivityManager;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.IBinder;
+import android.os.Looper;
+import android.os.Message;
+import android.os.Process;
+import android.widget.Toast;
+
+import com.cpjd.roblu.notifications.Notify;
+
+import java.util.List;
+
+/**
+ * This is the background service for the Roblu Cloud API.
+ *
+ * It performs the following:
+ *
+ * -Checking for RCheckouts in the InCheckouts database
+ * -Pushing any changes to the form
+ * -Pushing checkouts after they've been merged (either automatically or explicity)
+ *
+ * Requests are added to a stack, this service will continually attempt to upload them
+ * until it receives a successful response.
+ *
+ * Service timing:
+ * -Service will start on device startup
+ * -Service will run through the stack once every 3 minutes when unopened, once every 5 seconds when open
+ *
+ * Service can receive new jobs from the main app thread.
+ *
+ * Service should check for a connection before attempting to upload something
+ *
+ * @since 3.6.1
+ * @author Will Davies
+ *
+ */
+
+public class Service extends android.app.Service {
+
+    private Looper serviceLooper;
+    private ServiceHandler handler;
+
+    @Override
+    public void onCreate() {
+        HandlerThread thread = new HandlerThread("Roblu Service", Process.THREAD_PRIORITY_BACKGROUND);
+        thread.start();
+        serviceLooper = thread.getLooper();
+        handler = new ServiceHandler(serviceLooper);
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
+        //TODO do something useful
+        Message message = handler.obtainMessage();
+        message.arg1 = startId;
+        handler.sendMessage(message);
+        return Service.START_STICKY;
+    }
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        //TODO for communication return IBinder implementation
+        return null;
+    }
+
+    private final class ServiceHandler extends Handler {
+
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            // Well calling mServiceHandler.sendMessage(message); from onStartCommand,
+            // this method will be called.
+
+            // Add your cpu-blocking activity here
+            while(true) {
+                try {
+                    Thread.sleep(5000);
+                    Notify.notify(getApplicationContext(), "IS Roblu Running? "+isAppOnForeground(getApplicationContext()), "Time: "+System.currentTimeMillis());
+                } catch(Exception e) {}
+            }
+        }
+
+        private boolean isAppOnForeground(Context context) {
+            ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+            List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
+            if (appProcesses == null) {
+                return false;
+            }
+            final String packageName = context.getPackageName();
+            for (ActivityManager.RunningAppProcessInfo appProcess : appProcesses) {
+                if (appProcess.importance == ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND && appProcess.processName.equals(packageName)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+    }
+}

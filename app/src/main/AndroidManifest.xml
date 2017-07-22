@@ -9,11 +9,11 @@
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="com.android.vending.BILLING" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
     <uses-feature
         android:name="android.hardware.camera"
         android:required="false"/>
-
 
     <application
         android:name="android.support.multidex.MultiDexApplication"
@@ -21,6 +21,13 @@
         android:icon="@drawable/launcher"
         android:label= "Roblu Master"
         android:theme="@style/AppTheme">
+
+        <service android:name=".cloud.sync.Service"/>
+        <receiver android:name=".utils.BootBroadcastReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.cpjd.roblu"

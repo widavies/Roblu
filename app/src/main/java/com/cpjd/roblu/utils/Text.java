@@ -1,6 +1,7 @@
 package com.cpjd.roblu.utils;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ClipData;
@@ -55,6 +56,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static android.content.Context.ACTIVITY_SERVICE;
 
 /*******************************************************
  * Copyright (C) 2016 Will Davies wdavies973@gmail.com
@@ -387,7 +390,15 @@ public class Text {
         if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
         dialog.show();
     }
-
+    public static boolean isMyServiceRunning(Context context) {
+        ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if ("com.cpjd.roblu.cloud.sync.Service".equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
+    }
     private static void confirmRegenerate(final Context context, final RegenTokenListener listener) {
         final RSettings settings = new Loader(context).loadSettings();
 

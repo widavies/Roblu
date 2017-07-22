@@ -37,6 +37,7 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.activities.AdvSettings;
 import com.cpjd.roblu.activities.MyMatches;
 import com.cpjd.roblu.activities.SetupActivity;
+import com.cpjd.roblu.cloud.sync.Service;
 import com.cpjd.roblu.cloud.ui.Mailbox;
 import com.cpjd.roblu.events.CreateEventPicker;
 import com.cpjd.roblu.events.EventSettings;
@@ -236,6 +237,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
         // Launch UI manager
         new UIHandler(this, toolbar, fab, true).update();
+
+        // Start the service if it isn't running already
+        if(!Text.isMyServiceRunning(getApplicationContext())) {
+            System.out.println("Starting background service...");
+            Intent serviceIntent = new Intent(this, Service.class);
+            startService(serviceIntent);
+        }
     }
 
     // Init the material design drawer

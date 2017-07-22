@@ -1,6 +1,5 @@
 package com.cpjd.roblu.notifications;
 
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -22,7 +21,7 @@ import com.cpjd.roblu.teams.TeamsView;
  */
 
 public class Notify {
-    public static void notify(Activity activity, String title, String content) {
+    public static void notify(Context activity, String title, String content) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity).setSmallIcon(R.drawable.launcher)
                 .setContentTitle(title).setContentText(content);
 
@@ -31,6 +30,6 @@ public class Notify {
         builder.setContentIntent(pending);
 
         NotificationManager notifyMgr = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-        notifyMgr.notify(001, builder.build());
+        notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());
     }
 }
