@@ -21,6 +21,13 @@
     <string name="library_json_licenseId">apache_2_0</string>
     <string name="library_json_libraryWebsite">https://code.google.com/archive/p/json-simple/</string>
 
+    <string name="define_jackson"></string>
+    <string name="library_jackson_author">FasterXML</string>
+    <string name="library_jackson_libraryName">Jackson</string>
+    <string name="library_jackson_libraryDescription">The best Java JSON and data processing library.</string>
+    <string name="library_jackson_licenseId">apache_2_0</string>
+    <string name="library_jackson_libraryWebsite">https://github.com/FasterXML/jackson</string>
+
     <string name="define_bb"></string>
     <string name="library_bb_author">Iiro Krankka</string>
     <string name="library_bb_libraryName">BottomBar</string>

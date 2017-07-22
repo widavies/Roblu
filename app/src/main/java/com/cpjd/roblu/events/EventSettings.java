@@ -335,6 +335,7 @@ public class EventSettings extends AppCompatActivity {
                 if((boolean)o) {
                     new InitPacker(getActivity(), event.getID()).execute();
                     Text.showSnackbar(layout, getActivity(), "Cloud sync enabled for "+event.getName(), false, rui.getPrimaryColor());
+                    return true;
                 }
                 else {
                     try {

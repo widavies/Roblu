@@ -30,7 +30,7 @@ public class RCheckout implements Serializable {
      * required to this checkout. It might either include the PIT and PREDICTIONS tab, or one
      * match TAB. When merging, the correct tab will be merged back into the local RTeam model.
      */
-    private static RTeam team;
+    private RTeam team;
 
     /**
      * These variables are filled out ONLY when receiving a checkout.
@@ -63,12 +63,4 @@ public class RCheckout implements Serializable {
         this.completedTime = completedTime;
     }
 
-    public static RTeam getTeam() {
-        return team;
-    }
-
-    public static void setTeam(RTeam team1) {
-        team = team1;
-
-    }
 }

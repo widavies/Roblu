@@ -107,6 +107,7 @@ public class Loader extends IO {
     }
 
     public void saveForm(RForm form, long eventID) {
+        form.setModified(true);
         if(eventID == -1) serializeObject(form, PREFIX+File.separator+"master_form.ser");
 
         serializeObject(form, PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser");

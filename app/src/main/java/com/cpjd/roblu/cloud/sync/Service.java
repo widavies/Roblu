@@ -14,7 +14,6 @@ import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.notifications.Notify;
 import com.cpjd.roblu.utils.Text;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -137,7 +136,7 @@ public class Service extends android.app.Service {
                 }
 
                 try {
-                    Notify.notify(getApplicationContext(), "IS Roblu Running? "+isAppOnForeground(getApplicationContext()), "Time: "+System.currentTimeMillis());
+                  //  Notify.notify(getApplicationContext(), "IS Roblu Running? "+isAppOnForeground(getApplicationContext()), "Time: "+System.currentTimeMillis());
                 } catch(Exception e) {}
             }
         }
