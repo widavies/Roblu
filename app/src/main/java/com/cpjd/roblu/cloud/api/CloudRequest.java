@@ -102,16 +102,20 @@ public class CloudRequest {
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
         System.out.println(response.toString());
         return response != null && response.toString().equals("success");
-    }
+    }*/
 
-    // needs a sort of detection if it doesn't push correctly
-    public boolean initPushCheckouts(String content) {
-        Object response = POST("checkouts/initPushCheckouts", "&content="+encodeString(content)+
-                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
-        System.out.println(response);
-        return response != null && response.toString().equals("success");
+    /**
+     * Overwrites all old data on the server and pushes all the new checkouts
+     * @param content the serialized array of RCheckout models
+     * @param activeEventTitle the title of the currently being pushed event
+     * @return object representing the servers response (either success or error)
+     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
+     */
+    public Object initPushCheckouts(String activeEventTitle, String content) throws Exception {
+        return doRequest(true, "checkouts/initPushCheckouts", "?content="+encodeString(content)+
+                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&active="+encodeString(activeEventTitle));
     }
-
+/*
     public boolean pushCheckout(int id, String status, String content) {
         Object response = POST("checkouts/pushCheckout", "?content="+encodeString(content)+"&status="+encodeString(status)+"&id="+encodeString(String.valueOf(id))+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));

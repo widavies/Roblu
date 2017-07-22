@@ -401,6 +401,11 @@ public class Loader extends IO {
     /**
      * CHECKOUT CONFLICTS
      */
+    public void clearCheckouts() {
+        delete(new File(context.getFilesDir(), PREFIX+ File.separator+"checkoutsconflicts"+File.separator));
+        delete(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator));
+    }
+
     public void saveCheckoutConflict(RCheckout checkout) {
         serializeObject(checkout, PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkout.getID()+".ser");
     }

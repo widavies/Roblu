@@ -29,6 +29,7 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.cloud.sync.InitPacker;
 import com.cpjd.roblu.csv.ExportCSV;
 import com.cpjd.roblu.forms.EditForm;
 import com.cpjd.roblu.forms.elements.EGallery;
@@ -331,9 +332,10 @@ public class EventSettings extends AppCompatActivity {
                     return false;
                 }
 
-                event.setCloudEnabled((boolean)o);
-                new Loader(getActivity()).saveEvent(event);
-                if((boolean)o) Text.showSnackbar(layout, getActivity(), "Cloud sync enabled for "+event.getName(), false, rui.getPrimaryColor());
+                if((boolean)o) {
+                    new InitPacker(getActivity(), event.getID()).execute();
+                    Text.showSnackbar(layout, getActivity(), "Cloud sync enabled for "+event.getName(), false, rui.getPrimaryColor());
+                }
                 else Text.showSnackbar(layout, getActivity(), "Cloud sync disabled for "+event.getName(), false, rui.getPrimaryColor());
                 return true;
             }

@@ -1,17 +1,17 @@
 package com.cpjd.roblu.cloud.sync;
 
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Log;
+import android.widget.Toast;
 
+import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 
 import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.type.TypeFactory;
 
 import java.util.ArrayList;
 
@@ -48,12 +48,15 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
             team.verify(form);
             l.saveTeam(team, eventID);
         }
-
+        int id = 0;
         // Create pit checkouts first
         for(RTeam team : teams) {
             RTeam temp = team.duplicate();
             temp.removeAllTabsButPIT();
-            checkouts.add(new RCheckout(temp));
+            RCheckout check = new RCheckout(temp);
+            check.setID(id);
+            checkouts.add(check);
+            id++;
         }
 
         /*
@@ -65,40 +68,54 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
                 RTeam temp = team.duplicate();
                 temp.setPage(0);
                 temp.removeAllTabsBut(i);
-                checkouts.add(new RCheckout(temp));
+                RCheckout check = new RCheckout(temp);
+                check.setID(id);
+                checkouts.add(check);
             }
         }
 
         /*
-         * Process images
+         * Process images - todo
+         */
+
+
+        /*
+         * Convert into JSON and upload
          */
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(checkouts);
-            System.out.println("Exported: "+json);
-            RCheckout[] imported = mapper.readValue(json, TypeFactory.defaultInstance().constructArrayType(RCheckout.class));
-            System.out.println("Imported title: "+imported[0].getTeam().getTabs().get(0).getTitle());
-            System.out.println("Imported size: "+imported.length);
+            System.out.println(new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(l.getEvent(eventID).getName(), json));
+//            RCheckout[] imported = mapper.readValue(json, TypeFactory.defaultInstance().constructArrayType(RCheckout.class));
 
-            Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("message/rfc822");
-            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"wdavies973@gmail.com"});
-            i.putExtra(Intent.EXTRA_SUBJECT, "Roblu Bug Report");
-            i.putExtra(Intent.EXTRA_TEXT   , json);
-            context.startActivity(Intent.createChooser(i, "yeet"));
         } catch(Exception e) {
             System.out.println("An error occured: "+e.getMessage());
             e.printStackTrace();
         }
 
-
-        // begin uploading
-        Log.i("[*] ", "There are "+checkouts.size());
-        for(RCheckout checkout : checkouts) {
-            Log.i("[*] ",checkout.getTeam().getName()+" tab: "+ checkout.getTeam().getTabs().get(0).getTitle());
+        /*
+         * Disable all other events with cloud syncing enabled
+         */
+        REvent[] events = l.getEvents();
+        for(int i = 0; events != null && i < events.length; i++) {
+            events[i].setCloudEnabled(events[i].getID() == eventID);
+            l.saveEvent(events[i]);
         }
 
+        /*
+         * Clear conflicts & inbox here
+         */
+         l.clearCheckouts();
+
+        /*
+         * Clear tasks in background service
+         */
+
         return true;
+    }
+    @Override
+    protected void onPostExecute(Boolean result) {
+        Toast.makeText(context, "Successfully uploaded checkouts", Toast.LENGTH_LONG).show();
     }
 
 
