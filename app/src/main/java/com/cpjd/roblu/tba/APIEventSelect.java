@@ -107,6 +107,7 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
         sAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         showTeam.setAdapter(sAdapter);
         showTeam.setOnItemSelectedListener(this);
+        if(new Loader(getApplicationContext()).loadSettings().getTeamNumber() == 0) showTeam.setSelection(1);
 
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         //spinner.getBackground().setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
@@ -319,9 +320,13 @@ public class APIEventSelect extends AppCompatActivity implements AdapterView.OnI
             StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build(); StrictMode.setThreadPolicy(policy);
 
             Settings.disableAll();
-            Event[] events;
+            Event[] events = null;
             if(showEvents) events = new TBA().getEvents(year[0], false);
-            else events = new TBA().getTeamEvents(new Loader(getApplicationContext()).loadSettings().getTeamNumber(), year[0], false);
+            else {
+                try {
+                    events = new TBA().getTeamEvents(new Loader(getApplicationContext()).loadSettings().getTeamNumber(), year[0], false);
+                } catch (Exception e) {}
+            }
 
             // Clean names and dates
             try {

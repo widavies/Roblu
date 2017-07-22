@@ -16,6 +16,7 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -39,6 +40,7 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UICustomizer;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
+import com.cpjd.roblu.utils.RegenTokenListener;
 import com.cpjd.roblu.utils.Text;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -120,7 +122,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
     // The settings fragment manages the loading & updating of settings
     @SuppressWarnings("WeakerAccess")
-    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, RegenTokenListener {
         // text constants that will be accessible in the about libraries view
         private final String PRIVACY = "Roblu Privacy & Terms of Use\n" +
                 "\nData that Roblu stores and transfers:\n-Google email\n-Google display name\n-FRC Name and Number\n-Any and all form data, including scouters' data, local data, and more." +
@@ -136,6 +138,8 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 "\n\n3.5.0 - 3.5.1\n-Bug fixes\n\n3.0.0 - 3.4.9\n-Completed redesigned system\n-Redesigned file system\n-New form editor\n-New form elements\n-TBA-API improvements\n-Less restrictions on naming, editing, etc\n-New interface\n\n" +
                 "2.0.0-2.9.9\nRoblu Version 2, we don't talk about that anymore\n\n1.0.0-1.9.9\nRoblu Version 1 is where humans go to die";
 
+        private RUI rui;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -145,6 +149,8 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 getActivity().finish();
                 return;
             }
+
+            rui = new Loader(getActivity()).loadSettings().getRui();
 
             // Load the preferences specified in xml into the system, we only have to modify a couple of things manually
             addPreferencesFromResource(R.xml.preferences);
@@ -160,12 +166,9 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("customizer").setOnPreferenceClickListener(this);
             findPreference("sync_service").setOnPreferenceClickListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
-            Preference joinTeam = findPreference("join_team");
-            if(settings.getTeamCode() != null && !settings.getTeamCode().equals("")) {
-                joinTeam.setTitle("Display team code");
-                joinTeam.setSummary("Show the team code so teammates can join the team");
-                joinTeam.setDefaultValue(settings.getTeamCode());
-            }
+            findPreference("cloud_support").setOnPreferenceClickListener(this);
+
+            toggleJoinTeam(!(settings.getTeamCode() != null && !settings.getTeamCode().equals("")));
 
             // We want to update the UI to match if we're signed in or not (eg "sign-in" or "sign-out")
             toggleCloudControls(settings.isSignedIn());
@@ -177,32 +180,65 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("display_code").setEnabled(b);
         }
 
+        private void toggleJoinTeam(boolean b) {
+            Preference joinTeam = findPreference("display_code");
+            if(!b) {
+                joinTeam.setTitle("Display team code");
+                joinTeam.setSummary("Show the team code so teammates can join the team");
+            } else {
+                joinTeam.setTitle("Join team");
+                joinTeam.setSummary("Enter your team code to join a team");
+            }
+        }
+
+        private void handleSignOut() {
+            Auth.GoogleSignInApi.signOut(apiClient).setResultCallback(new ResultCallback<Status>() {
+                @Override
+                public void onResult(@NonNull Status status) {
+                    toggleCloudControls(!status.isSuccess());
+                    if (status.isSuccess()) {
+                        settings.setAuth("");
+                        settings.setTeamCode("");
+                        new Loader(getActivity()).saveSettings(settings);
+                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
+                    } else
+                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
+                }
+            });
+            updateUI(false);
+        }
+
         // Handles preference clicks
         @Override
         public boolean onPreferenceClick(Preference preference) {
             if(preference.getKey().equals("display_code")) { // user tapped display team code
-                if(settings.getTeamCode() != null && !settings.getTeamCode().equals("")) { // display code
-
-                } else joinTeam();
-                Text.showTeamCode(getActivity(), "234x99d");
+                if(settings.getTeamCode() != null && !settings.getTeamCode().equals("")) Text.showTeamCode(getActivity(), settings.getTeamCode(), this);
+                else joinTeam();
+                return true;
+            }
+            else if(preference.getKey().equals("cloud_support")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://roblu.weebly.com/support.html"));
+                startActivity(browserIntent);
                 return true;
             }
             else if(preference.getKey().equals("sync_service")) { // user tapped sign-in button, we have to decide whether to request sign-in, or sign out of Google
                 if(new Loader(getActivity()).loadSettings().isSignedIn()) { // If we're already signed in, let's make a request to sign out
-                    Auth.GoogleSignInApi.signOut(apiClient).setResultCallback(new ResultCallback<Status>() {
-                        @Override
-                        public void onResult(@NonNull Status status) {
-                            toggleCloudControls(!status.isSuccess());
-                            if(status.isSuccess()) {
-                                settings.setAuth("");
-                                settings.setTeamCode("");
-                                new Loader(getActivity()).saveSettings(settings);
-                                Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
+                    // attempt to leave team on the server
+                    try {
+                        if(settings.getTeamCode() == null || settings.getTeamCode().equalsIgnoreCase("")) {
+                            handleSignOut();
+                        } else {
+                            if(!Text.hasInternetConnection(getActivity())) {
+                                Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet.", true, 0);
+                                return false;
                             }
-                            else Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
+                            JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), settings.getTeamCode()).leaveTeam();
+                            if(response.get("status").toString().equalsIgnoreCase("success")) handleSignOut();
+                            else Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
                         }
-                    });
-                    updateUI(false);
+                    } catch(Exception e) {
+                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
+                    }
                 } else { // we're signing into Google, let's display the account picker dialog
                     Intent signIn = Auth.GoogleSignInApi.getSignInIntent(apiClient);
                     startActivityForResult(signIn, Constants.CLOUD_SIGN_IN);
@@ -250,7 +286,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         JSONObject response = (JSONObject) new CloudRequest().signIn(acct.getDisplayName(), acct.getEmail());
                         JSONObject response2 = (JSONObject) response.get("data");
                         settings.setAuth(response2.get("auth").toString());
-                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully signed in to Roblu Cloud with auth "+settings.getAuth(), true, 0);
+                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully signed in to Roblu Cloud with auth "+settings.getAuth(), false, rui.getPrimaryColor());
                         updateUI(true);
                     } catch(Exception e) {
                         System.out.println(e.getMessage());
@@ -271,7 +307,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 findPreference("sync_service").setSummary("Signing out of Roblu Cloud will disable cloud functionality");
             } else {
                 findPreference("sync_service").setTitle("Sign-in to Roblu Cloud");
-                findPreference("sync_service").setSummary("Sign-in to Roblu Cloud using your Google Account.");
+                findPreference("sync_service").setSummary("Sign-in to Roblu Cloud using your Google account.");
             }
             settings.setSignedIn(b);
             new Loader(getActivity()).saveSettings(settings);
@@ -310,7 +346,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             input.setHintTextColor(rui.getText());
             input.setTextColor(rui.getText());
             input.setInputType(InputType.TYPE_CLASS_TEXT);
-            input.setHint("Team code (provided with Roblu Cloud purchase)");
             InputFilter[] FilterArray = new InputFilter[1];
             FilterArray[0] = new InputFilter.LengthFilter(30);
             input.setFilters(FilterArray);
@@ -324,11 +359,13 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     // attempt to sign in with the provided team code
                     try {
                         JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString()).joinTeam();
+                        System.out.println(response);
                         if(response.get("status").toString().equalsIgnoreCase("success")) {
                             // it works
                             settings.setTeamCode(input.getText().toString());
                             new Loader(getActivity()).saveSettings(settings);
-                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team", true, 0);
+                            toggleJoinTeam(false);
+                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team", false, settings.getRui().getPrimaryColor());
                         } else { // didn't exist or already signed in
                             Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team doesn't exist or you're already signed in on another device. Please sign out and try again.", true, 0);
                         }
@@ -346,7 +383,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             TextView view = new TextView(getActivity());
             view.setTextSize(Text.DPToPX(getActivity(), 5));
             view.setPadding(Text.DPToPX(getActivity(), 18), Text.DPToPX(getActivity(), 18), Text.DPToPX(getActivity(), 18), Text.DPToPX(getActivity(), 18));
-            view.setText("Enter team code");
+            view.setText("Team code (provided with Roblu Cloud purchase): ");
             view.setTextColor(rui.getText());
             AlertDialog dialog = builder.create();
             dialog.setCustomTitle(view);
@@ -357,6 +394,11 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             dialog.show();
             dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
             dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
+        }
+
+        @Override
+        public void tokenRegenerated(String token) {
+            settings.setTeamCode(token);
         }
     }
 

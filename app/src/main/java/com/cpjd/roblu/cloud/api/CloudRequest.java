@@ -73,13 +73,11 @@ public class CloudRequest {
     /**
      * Regenerates the team's token, note, this will effectively kick all users on the team because their old
      * team code will no longer work for sending data.
-     * @param number the team's FRC Roblu Cloud number to attempt regenerate token
      * @return object representing the servers response (either success or error)
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
-    public String regenerateToken(int number) throws Exception {
-        Object response = doRequest(false, "teams/regenerateToken","?auth="+encodeString(auth)+"&code="+encodeString(teamCode)+"&number="+encodeString(String.valueOf(number)));
-        return response.toString();
+    public Object regenerateToken() throws Exception {
+        return doRequest(false, "teams/regenerateToken","?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
     }
 
     /**
@@ -95,9 +93,8 @@ public class CloudRequest {
      * @return object representing the servers response (either success or error)
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
-    public String leaveTeam() throws Exception {
-        Object response = doRequest(false, "teams/leaveTeam", "?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
-        return response.toString();
+    public Object leaveTeam() throws Exception {
+        return doRequest(false, "teams/leaveTeam", "?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
     }
 
     /*public boolean pushForm(String content) {

@@ -27,6 +27,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.forms.elements.EBoolean;
 import com.cpjd.roblu.forms.elements.ECheckbox;
 import com.cpjd.roblu.forms.elements.EChooser;
@@ -40,8 +41,12 @@ import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -355,7 +360,7 @@ public class Text {
         return string.contains(query);
     }
 
-    public static void showTeamCode(final Context context, final String teamCode) {
+    public static void showTeamCode(final Context context, final String teamCode, final RegenTokenListener listener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         builder.setTitle("Your team code is: ");
@@ -375,7 +380,7 @@ public class Text {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 dialog.dismiss();
-                confirmRegenerate(context);
+                confirmRegenerate(context, listener);
             }
         });
         AlertDialog dialog = builder.create();
@@ -383,18 +388,40 @@ public class Text {
         dialog.show();
     }
 
-    private static void confirmRegenerate(final Context context) {
+    private static void confirmRegenerate(final Context context, final RegenTokenListener listener) {
+        final RSettings settings = new Loader(context).loadSettings();
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
         builder.setTitle("Warning");
-        builder.setMessage("If you regenerate your team code, all of your team members must rejoin this team.");
+        builder.setMessage("If you regenerate your team code, all of your team members must rejoin this team with the new code.");
 
         builder.setPositiveButton("Regenerate", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String teamCode = "generateCode()";
-                showTeamCode(context, teamCode);
-                dialog.dismiss();
+                try {
+                    if(!Text.hasInternetConnection(context)) {
+                        Toast.makeText(context, "You are not connected to the internet.", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    CloudRequest cr = new CloudRequest(settings.getAuth(), settings.getTeamCode());
+                    // first, regenerate the token
+                    JSONObject response = (JSONObject) cr.regenerateToken();
+                    if(!response.get("status").toString().equalsIgnoreCase("success")) throw new Exception();
+                    JSONArray updates = (JSONArray) response.get("data");
+                    // get & set the new token
+                    String token = ((JSONObject)updates.get(0)).get("code").toString();
+                    settings.setTeamCode(token);
+                    new Loader(context).saveSettings(settings);
+                    showTeamCode(context, token, listener);
+                    dialog.dismiss();
+                    listener.tokenRegenerated(token);
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    System.out.println("error: "+e.getMessage());
+                    Toast.makeText(context, "Error occurred while contacting Roblu Server. Please try again later.", Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {

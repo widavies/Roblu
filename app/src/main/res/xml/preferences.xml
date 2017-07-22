@@ -38,8 +38,8 @@
             android:summary="Enter your team code to join a team"/>
         <com.cpjd.roblu.ui.MyPreference
             android:title="Support"
-            android:key="delete_team"
-            android:summary="Create, delete, recover team"/>
+            android:key="cloud_support"
+            android:summary="Create, delete, or recover team"/>
     </com.cpjd.roblu.ui.MyPreferenceCategory>
 
     <com.cpjd.roblu.ui.MyPreferenceCategory android:title="About">
