@@ -31,6 +31,9 @@ import java.util.List;
  *
  * Requests are added to a stack, this service will continually attempt to upload them
  * until it receives a successful response.
+ * -Items that are explicitly merged will be flagged with 'requestedExplicitMerge', this service will detect that and attempt to upload it
+ * from (/checkoutconflicts)
+ * -When we pull items, we'll instantly re-upload them if they auto merge. When we re-upload them, THATS when we delete them
  *
  * Service timing:
  * -Service will start on device startup
