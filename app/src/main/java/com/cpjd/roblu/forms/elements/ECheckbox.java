@@ -1,5 +1,7 @@
 package com.cpjd.roblu.forms.elements;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import java.util.ArrayList;
 
 import lombok.Data;
@@ -13,17 +15,20 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper=false)
+@JsonTypeName("ECheckbox")
 public class ECheckbox extends Element {
 
     private ArrayList<String> values;
     private ArrayList<Boolean> checked;
+
+    public ECheckbox() {}
 
     public ECheckbox(String title, ArrayList<String> values, ArrayList<Boolean> checked) {
         super(title);
         this.values = values;
         this.checked = checked;
     }
-
+    @Override
     public String getSubtitle() {
         String subtitle = "Type: Checkbox\nItems: ";
         if(values.size() == 0) return subtitle + "\nDefault values: ";

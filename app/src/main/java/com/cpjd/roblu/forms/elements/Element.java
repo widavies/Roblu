@@ -9,7 +9,9 @@ import lombok.Data;
 
 /**
  * The element model is the abstraction of what an element card should look like.
- * Elements can have a title, subtitle, modified, and a custom implementation of some value.
+ * Elements can have a title, subtitle, modified, and a custom implementation of some value defined
+ * in the child class. All the annotations all Jackson to correctly process children of this
+ * abstraction when serializing.
  *
  * @since 3.2.0
  * @author Will Davies
@@ -31,14 +33,15 @@ import lombok.Data;
 public abstract class Element implements Serializable {
 
     private String title;
+    private boolean modified; // if this is false, we can safely override the element's value with a form changes
     private int ID;
-    private boolean modified; // if this is false, we can safely override the element's value
 
-    // required for jackson de-serialization
     public Element() {}
 
-    Element(String title) {
-        this.title = title; modified = false;
+
+    public Element(String title) {
+        this.title = title;
+        modified = false;
     }
 
     public abstract String getSubtitle();

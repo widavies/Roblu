@@ -43,9 +43,9 @@ import com.cpjd.roblu.events.CreateEventPicker;
 import com.cpjd.roblu.events.EventSettings;
 import com.cpjd.roblu.forms.EditForm;
 import com.cpjd.roblu.forms.ElementsProcessor;
+import com.cpjd.roblu.forms.elements.ESTextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
-import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -66,8 +66,6 @@ import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonMethod;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -251,12 +249,17 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             Intent serviceIntent = new Intent(this, Service.class);
             startService(serviceIntent);
         }
-
         try {
-            ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false).setVisibility(JsonMethod.FIELD, JsonAutoDetect.Visibility.ANY);
-            RCheckout test = mapper.readValue("{\"completedBy\":null,\"completedTime\":0,\"conflictType\":null,\"images\":null,\"mergedTime\":0,\"team\":{\"edits\":null,\"fullName\":null,\"lastEdit\":0,\"location\":null,\"motto\":null,\"name\":\"Bionic Polars\",\"number\":2501,\"page\":1,\"rookieYear\":0,\"sortTip\":\"\",\"tabs\":[{\"edits\":null,\"elements\":[{\"modified\":true,\"title\":\"Team name\",\"numberOnly\":false,\"subtitle\":\"Type: Text field\\nMandatory field used for editing team name.\",\"id\":0},{\"modified\":true,\"title\":\"Team number\",\"numberOnly\":true,\"subtitle\":\"Type: Text field\\nMandatory field used for editing team number.\",\"id\":1}],\"redAlliance\":false,\"time\":0,\"title\":\"PIT\",\"won\":false,\"opponents\":null,\"teammates\":null},{\"edits\":null,\"elements\":[],\"redAlliance\":false,\"time\":0,\"title\":\"PREDICTIONS\",\"won\":false,\"opponents\":null,\"teammates\":null}],\"website\":null,\"filter\":0,\"id\":5,\"numMatches\":0,\"searchRelevance\":0,\"searchTip\":null,\"sortRelevance\":0},\"id\":5}", RCheckout.class);
-            System.out.println("Team contained: "+test.getTeam().getName());
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+            RForm read = new Loader(getApplicationContext()).loadForm(0);
+            System.out.println("Read: "+read.getPit().get(0).getTitle());
+            String json = mapper.writeValueAsString(read);
+            System.out.println(("Serialized form, attempting to deserialize: "+json));
+            RForm form = mapper.readValue(json, RForm.class);
+            System.out.println("Deserialized: "+form.getPit().get(0).getTitle());
+            System.out.println(form.getPit().get(0) instanceof ESTextfield);
         } catch(Exception e) {
+            e.printStackTrace();
             System.out.println("Failed: "+e.getMessage());
         }
     }

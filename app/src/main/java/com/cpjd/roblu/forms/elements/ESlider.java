@@ -1,6 +1,8 @@
 package com.cpjd.roblu.forms.elements;
 
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -12,17 +14,20 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper=false)
+@JsonTypeName("ESlider")
 public class ESlider extends Element{
 
     private int max;
     private int current;
+
+    public ESlider() {}
 
     public ESlider(String title, int max, int current) {
         super(title);
         this.max = max;
         this.current = current;
     }
-
+    @Override
     public String getSubtitle() {
         return "Type: Slider\nMax: "+max+"\nDefault value: "+current;
     }

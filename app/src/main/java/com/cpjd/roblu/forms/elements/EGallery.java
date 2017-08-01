@@ -6,6 +6,8 @@ import android.content.Context;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import java.io.File;
 import java.util.ArrayList;
 
@@ -22,9 +24,12 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
+@JsonTypeName("EGallery")
 public class EGallery extends Element {
 
     private ArrayList<Long> imageIDs;
+
+    public EGallery() {}
 
     public EGallery(String title) {
         super(title);

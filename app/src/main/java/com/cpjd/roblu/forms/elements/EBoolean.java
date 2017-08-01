@@ -1,5 +1,7 @@
 package com.cpjd.roblu.forms.elements;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import java.io.Serializable;
 
 import lombok.Data;
@@ -12,11 +14,14 @@ import lombok.EqualsAndHashCode;
  * @author Will Davies
  */
 @Data
+@JsonTypeName("EBoolean")
 @EqualsAndHashCode(callSuper=false)
 public class EBoolean extends Element implements Serializable {
 
     private int value;
     private boolean usingNA;
+
+    public EBoolean() {}
 
     public EBoolean(String title, int value) {
         super(title);

@@ -25,6 +25,10 @@ public class RForm implements Serializable {
     private ArrayList<Element> pit;
     private ArrayList<Element> match;
 
+    public RForm() {
+
+    }
+
     public RForm(ArrayList<Element> pit, ArrayList<Element> match) {
         this.pit = pit;
         this.match = match;

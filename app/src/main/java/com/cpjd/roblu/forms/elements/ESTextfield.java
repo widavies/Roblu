@@ -1,5 +1,7 @@
 package com.cpjd.roblu.forms.elements;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 
 /**
@@ -9,10 +11,12 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
-
+@JsonTypeName("ESTextfield")
 public class ESTextfield extends Element {
 
     private boolean numberOnly;
+
+    public ESTextfield() {}
 
     public ESTextfield(String title, boolean numberOnly) {
         super(title);
@@ -20,6 +24,7 @@ public class ESTextfield extends Element {
         setModified(true);
     }
 
+    @Override
     public String getSubtitle() {
         String suffix = "Mandatory field used for editing team ";
         if(numberOnly) suffix += "number.";
