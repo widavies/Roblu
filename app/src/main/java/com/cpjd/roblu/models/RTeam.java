@@ -533,7 +533,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     @Data
-    private class RCheckoutEdit {
+    private static class RCheckoutEdit {
         /**
          * The Google email address of the user who completed the checkout.
          * This will be filled out when the RCheckout model is uploaded by

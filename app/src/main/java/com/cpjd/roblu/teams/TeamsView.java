@@ -45,6 +45,7 @@ import com.cpjd.roblu.forms.EditForm;
 import com.cpjd.roblu.forms.ElementsProcessor;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -64,6 +65,11 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
+
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+import org.codehaus.jackson.annotate.JsonMethod;
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -235,7 +241,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         loadEvents();
         selectEvent(settings.getLastEventID());
 
-        // Launch UI manager
+        // Launch UI ma
+        // ager
         new UIHandler(this, toolbar, fab, true).update();
 
         // Start the service if it isn't running already
@@ -243,6 +250,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             System.out.println("Starting background service...");
             Intent serviceIntent = new Intent(this, Service.class);
             startService(serviceIntent);
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false).setVisibility(JsonMethod.FIELD, JsonAutoDetect.Visibility.ANY);
+            RCheckout test = mapper.readValue("{\"completedBy\":null,\"completedTime\":0,\"conflictType\":null,\"images\":null,\"mergedTime\":0,\"team\":{\"edits\":null,\"fullName\":null,\"lastEdit\":0,\"location\":null,\"motto\":null,\"name\":\"Bionic Polars\",\"number\":2501,\"page\":1,\"rookieYear\":0,\"sortTip\":\"\",\"tabs\":[{\"edits\":null,\"elements\":[{\"modified\":true,\"title\":\"Team name\",\"numberOnly\":false,\"subtitle\":\"Type: Text field\\nMandatory field used for editing team name.\",\"id\":0},{\"modified\":true,\"title\":\"Team number\",\"numberOnly\":true,\"subtitle\":\"Type: Text field\\nMandatory field used for editing team number.\",\"id\":1}],\"redAlliance\":false,\"time\":0,\"title\":\"PIT\",\"won\":false,\"opponents\":null,\"teammates\":null},{\"edits\":null,\"elements\":[],\"redAlliance\":false,\"time\":0,\"title\":\"PREDICTIONS\",\"won\":false,\"opponents\":null,\"teammates\":null}],\"website\":null,\"filter\":0,\"id\":5,\"numMatches\":0,\"searchRelevance\":0,\"searchTip\":null,\"sortRelevance\":0},\"id\":5}", RCheckout.class);
+            System.out.println("Team contained: "+test.getTeam().getName());
+        } catch(Exception e) {
+            System.out.println("Failed: "+e.getMessage());
         }
     }
 

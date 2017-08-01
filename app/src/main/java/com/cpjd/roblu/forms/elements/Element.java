@@ -1,5 +1,8 @@
 package com.cpjd.roblu.forms.elements;
 
+import org.codehaus.jackson.annotate.JsonSubTypes;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+
 import java.io.Serializable;
 
 import lombok.Data;
@@ -13,16 +16,30 @@ import lombok.Data;
  */
 
 @Data
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = EBoolean.class, name = "EBoolean"),
+        @JsonSubTypes.Type(value = ECheckbox.class, name = "ECheckbox"),
+        @JsonSubTypes.Type(value = EChooser.class, name = "EChooser"),
+        @JsonSubTypes.Type(value = ECounter.class, name = "ECounter"),
+        @JsonSubTypes.Type(value = EGallery.class, name = "EGallery"),
+        @JsonSubTypes.Type(value = ESlider.class, name = "ESlider"),
+        @JsonSubTypes.Type(value = ESTextfield.class, name = "ESTextfield"),
+        @JsonSubTypes.Type(value = EStopwatch.class, name = "EStopwatch"),
+        @JsonSubTypes.Type(value = ETextfield.class, name = "ETextfield")
+})
 public abstract class Element implements Serializable {
 
     private String title;
     private int ID;
     private boolean modified; // if this is false, we can safely override the element's value
 
+    // required for jackson de-serialization
+    public Element() {}
+
     Element(String title) {
         this.title = title; modified = false;
     }
 
     public abstract String getSubtitle();
-
 }

@@ -23,12 +23,15 @@ public class RTab implements Serializable, Comparable<RTab> {
     private String title;
     private ArrayList<Element> elements;
     private ArrayList<String> edits;
-    private final boolean redAlliance;
+    private boolean redAlliance;
     private boolean won;
     private long time;
 
     private transient ArrayList<RTeam> teammates;
     private transient ArrayList<RTeam> opponents;
+
+    // jackson requires an empty constructor
+    public RTab() {}
 
     public RTab(ArrayList<Element> elements, String title, boolean redAlliance, boolean won, long time) {
         this.elements = elements;

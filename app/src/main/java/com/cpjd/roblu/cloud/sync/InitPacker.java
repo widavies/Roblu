@@ -72,6 +72,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
                 check.setID(id);
                 checkouts.add(check);
             }
+            id++;
         }
 
         /*
@@ -85,6 +86,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(checkouts);
+
             System.out.println(new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(l.getEvent(eventID).getName(), json));
 //            RCheckout[] imported = mapper.readValue(json, TypeFactory.defaultInstance().constructArrayType(RCheckout.class));
 
