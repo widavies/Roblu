@@ -20,6 +20,7 @@ import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
 import com.etiennelawlor.imagegallery.library.R;
@@ -136,7 +137,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
 
         setUpViewPager();
 
-
+        new UIHandler(this, toolbar).update();
     }
 
     @Override

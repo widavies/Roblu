@@ -26,6 +26,7 @@ import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
 import com.etiennelawlor.imagegallery.library.R;
@@ -123,6 +124,8 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
         }
 
         setUpRecyclerView();
+
+        new UIHandler(this, toolbar).update();
     }
     private void launchParent() {
         if(images == null) images = new ArrayList<>();

@@ -14,6 +14,8 @@ import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Text;
 
 import org.codehaus.jackson.map.ObjectMapper;
@@ -101,6 +103,23 @@ public class Service extends android.app.Service {
                 if(!Text.hasInternetConnection(getApplicationContext())) {
                     continue;
                 }
+                cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode());
+
+                // check if the UI needs to be uploaded
+                System.out.println("here");
+                RSettings settings = l.loadSettings();
+                RUI rui = settings.getRui();
+                if(rui != null && rui.isModified()) {
+                    try {
+                        System.out.println("[Roblu Background Service] Pushed UI with return message: "+cr.pushUI(mapper.writeValueAsString(rui)));
+                        rui.setModified(false);
+                        l.saveSettings(settings);
+                    } catch(Exception e) {
+                        System.out.println("error: "+e.getMessage());
+                    }
+                } else {
+                    System.out.println("RUI is null or not modified"+ rui == null);
+                }
 
                 /* UPDATES */
                 // first, find the active event
@@ -115,7 +134,7 @@ public class Service extends android.app.Service {
                 if(activeEvent == null) continue;
 
                 // check if the form needs to be uploaded
-                cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode());
+
                 RForm form = l.loadForm(activeEvent.getID());
                 if(form != null  && form.isModified()) {
                     try {
@@ -137,6 +156,8 @@ public class Service extends android.app.Service {
                 } catch(Exception e) {
                     System.out.println("[Roblu Background Service] Failed to pull checkouts");
                 }
+
+
 
                 try {
                   //  Notify.notify(getApplicationContext(), "IS Roblu Running? "+isAppOnForeground(getApplicationContext()), "Time: "+System.currentTimeMillis());

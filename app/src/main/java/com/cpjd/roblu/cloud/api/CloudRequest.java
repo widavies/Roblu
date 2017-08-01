@@ -146,6 +146,15 @@ public class CloudRequest {
         return doRequest(false, "checkouts/pullReceivedCheckouts","?code="+encodeString(teamCode));
     }
 
+    /**
+     * Pushes the UI model to the Teams database
+     * @return object representing the servers response (either success or error)
+     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
+     */
+    public Object pushUI(String content) throws Exception {
+        return doRequest(true, "teams/pushUI", "?content="+encodeString(content)+
+                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
+    }
 
     /**
      * Performs a request to the server.

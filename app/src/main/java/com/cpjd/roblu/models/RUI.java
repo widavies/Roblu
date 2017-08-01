@@ -18,6 +18,9 @@ import lombok.Data;
  */
 @Data
 public class RUI implements Serializable {
+
+    public boolean modified;
+
     /**
      * primaryColor - toolbar color, some background colors (like floating action button)
      * accent - categories, text fields, highlight color
@@ -44,6 +47,7 @@ public class RUI implements Serializable {
 
     public RUI() {
         defaults();
+        modified = true;
     }
 
     /**

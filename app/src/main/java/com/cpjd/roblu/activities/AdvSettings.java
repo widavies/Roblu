@@ -384,7 +384,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             TextView view = new TextView(getActivity());
             view.setTextSize(Text.DPToPX(getActivity(), 5));
             view.setPadding(Text.DPToPX(getActivity(), 18), Text.DPToPX(getActivity(), 18), Text.DPToPX(getActivity(), 18), Text.DPToPX(getActivity(), 18));
-            view.setText("Team code (provided with Roblu Cloud purchase): ");
+            view.setText("Team code:\n(provided with Roblu Cloud purchase) ");
             view.setTextColor(rui.getText());
             AlertDialog dialog = builder.create();
             dialog.setCustomTitle(view);

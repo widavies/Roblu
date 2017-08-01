@@ -53,4 +53,12 @@ public class RSettings implements Serializable {
         updateLevel = 0;
         isSignedIn = false;
     }
+
+    public void setRui(RUI rui) {
+        rui.setModified(true);
+        this.rui = rui;
+    }
+
+
+
 }
