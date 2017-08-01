@@ -204,7 +204,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
                         if(pos < 3) ID = checkout.getTeam().getTabs().get(0).getTeammates().get(pos).getID();
                         else ID = checkout.getTeam().getTabs().get(0).getOpponents().get(pos - 3).getID();
                         Intent intent = new Intent(MyMatches.this, TeamViewer.class);
-                        intent.putExtra("team", new Loader(getApplicationContext()).loadTeam(eventID, ID));
+                        intent.putExtra("team", new Loader(getApplicationContext()).loadTeam(eventID, ID).getID());
                         intent.putExtra("event", new Loader(getApplicationContext()).getEvent(eventID));
                         startActivity(intent);
                         d.dismiss();

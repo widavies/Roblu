@@ -3,9 +3,13 @@ package com.cpjd.roblu.forms;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -48,9 +52,7 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
-import com.squareup.picasso.Picasso;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -259,6 +261,11 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
             @Override
             public void onClick(View view) {
+                if(number.getText().toString().equals("N.O.")) {
+                    number.setText(String.valueOf(value));
+                    listener.counterUpdated(ID, value);
+                    return;
+                }
                 int value = Integer.parseInt(number.getText().toString());
                 if(modifyMode) {
                     value -= increment;
@@ -664,7 +671,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getGallery(final int ID, final String name, final ArrayList<File> files , final boolean demo, final REvent event, final RTeam team, final int tabID) {
+    public CardView getGallery(final int ID, final String name, final boolean demo, final REvent event, final RTeam team, final int tabID) {
         listener.nameInited(name);
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
@@ -687,11 +694,10 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                 FullScreenImageGalleryActivity.setFullScreenImageLoader(Elements.this);
                 Intent intent = new Intent(activity, ImageGalleryActivity.class);
                 Bundle bundle = new Bundle();
-                if(files != null) bundle.putSerializable(ImageGalleryActivity.KEY_IMAGES, files);
                 bundle.putString(ImageGalleryActivity.KEY_TITLE, name);
                 bundle.putInt("ID", ID);
                 bundle.putSerializable("event", event);
-                bundle.putSerializable("team", team);
+                bundle.putLong("team", team.getID());
                 bundle.putInt("tabID", tabID);
                 bundle.putBoolean("readOnly", readOnly);
                 intent.putExtras(bundle);
@@ -711,11 +717,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         TextView tip = new TextView(activity);
         tip.setTag("tip");
-        if(files != null){
-            if(files.size() == 1) tip.setText(R.string.contains_one_image);
-            else tip.setText("Contains "+files.size()+" images");
-        }
-        else tip.setText(R.string.contains_no_images);
+        tip.setText(R.string.contains_no_images);
         tip.setId(Text.generateViewId());
         tip.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -878,20 +880,57 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
     }
 
     @Override
-    public void loadImageThumbnail(ImageView iv, File imageUrl, int dimension) {
-        if(imageUrl != null) {
-            Picasso.with(iv.getContext()).load(imageUrl).resize(dimension, dimension).centerCrop().into(iv);
+    public void loadImageThumbnail(ImageView iv, byte[] image, int dimension) {
+        Bitmap bitmap = scaleCenterCrop(BitmapFactory.decodeByteArray(image, 0, image.length), dimension, dimension);
+
+        if(bitmap != null) {
+            iv.setImageBitmap(bitmap);
         } else {
             iv.setImageDrawable(null);
         }
     }
 
     @Override
-    public void loadFullScreenImage(ImageView iv, File imageUrl, int width, LinearLayout bglinearLayout) {
-        if(imageUrl != null) {
-            Picasso.with(iv.getContext()).load(imageUrl).resize(width, 0).into(iv);
+    public void loadFullScreenImage(ImageView iv, byte[] image, int width, LinearLayout bglinearLayout) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+
+        if(bitmap != null) {
+            iv.setImageBitmap(bitmap);
         } else {
             iv.setImageDrawable(null);
         }
+    }
+
+    private Bitmap scaleCenterCrop(Bitmap source, int newHeight, int newWidth) {
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+
+        // Compute the scaling factors to fit the new height and width, respectively.
+        // To cover the final image, the final scaling will be the bigger
+        // of these two.
+        float xScale = (float) newWidth / sourceWidth;
+        float yScale = (float) newHeight / sourceHeight;
+        float scale = Math.max(xScale, yScale);
+
+        // Now get the size of the source bitmap when scaled
+        float scaledWidth = scale * sourceWidth;
+        float scaledHeight = scale * sourceHeight;
+
+        // Let's find out the upper left coordinates if the scaled bitmap
+        // should be centered in the new size give by the parameters
+        float left = (newWidth - scaledWidth) / 2;
+        float top = (newHeight - scaledHeight) / 2;
+
+        // The target rectangle for the new, scaled version of the source bitmap will now
+        // be
+        RectF targetRect = new RectF(left, top, left + scaledWidth, top + scaledHeight);
+
+        // Finally, we create a new bitmap of the specified size and draw our new,
+        // scaled bitmap onto it.
+        Bitmap dest = Bitmap.createBitmap(newWidth, newHeight, source.getConfig());
+        Canvas canvas = new Canvas(dest);
+        canvas.drawBitmap(source, null, targetRect, null);
+
+        return dest;
     }
 }

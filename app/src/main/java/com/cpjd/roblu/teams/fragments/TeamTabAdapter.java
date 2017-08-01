@@ -53,7 +53,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     public Fragment getItem(int i) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putSerializable("team", team);
+        bundle.putLong("team", team.getID());
         bundle.putSerializable("position", 0);
 
         if (i == 0 && !readOnly) {
@@ -103,7 +103,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private Fragment loadMatch(int position) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putSerializable("team", team);
+        bundle.putLong("team", team.getID());
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", readOnly);
         bundle.putInt("position", position);
@@ -120,7 +120,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putSerializable("team", team);
+        bundle.putLong("team", team.getID());
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", false);
         bundle.putInt("position", position);

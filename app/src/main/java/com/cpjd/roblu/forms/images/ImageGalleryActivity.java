@@ -32,6 +32,7 @@ import com.etiennelawlor.imagegallery.library.R;
 import com.etiennelawlor.imagegallery.library.activities.FullScreenImageGalleryActivity;
 import com.etiennelawlor.imagegallery.library.utilities.DisplayUtility;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.util.ArrayList;
 
@@ -64,7 +65,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     private Toolbar toolbar;
     private RecyclerView recyclerView;
 
-    private ArrayList<File> images;
+    private ArrayList<byte[]> images;
     private String title;
     private static ImageGalleryAdapter.ImageThumbnailLoader imageThumbnailLoader;
 
@@ -94,13 +95,21 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
         if (intent != null) {
             Bundle extras = intent.getExtras();
             if (extras != null) {
-                images = (ArrayList<File>) extras.getSerializable(KEY_IMAGES);
                 title = extras.getString(KEY_TITLE);
                 ID = extras.getInt("ID");
                 event = (REvent) extras.getSerializable("event");
-                team = (RTeam) extras.getSerializable("team");
+                team = new Loader(getApplicationContext()).loadTeam(event.getID(), extras.getLong("team"));
                 tabID = extras.getInt("tabID");
                 readOnly = extras.getBoolean("readOnly");
+            }
+        }
+
+        // Load images
+        for(int i = 0; i < team.getTabs().get(tabID).getElements().size(); i++) {
+            if(team.getTabs().get(tabID).getElements().get(i).getID() == ID) {
+                EGallery gallery = (EGallery) team.getTabs().get(tabID).getElements().get(i);
+                images = gallery.getImages();
+                break;
             }
         }
 
@@ -119,7 +128,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
         if(images == null) images = new ArrayList<>();
         Intent intent = new Intent();
         intent.putExtra("tabID", tabID);
-        intent.putExtra("team", team);
+        intent.putExtra("team", team.getID());
         setResult(Constants.GALLERY_EXIT, intent);
         finish();
     }
@@ -150,12 +159,11 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     public void onImageClick(int position) {
         Intent intent = new Intent(ImageGalleryActivity.this, com.cpjd.roblu.forms.images.FullScreenImageGalleryActivity.class);
         Bundle bundle = new Bundle();
-        bundle.putSerializable("files", imageGalleryAdapter.getAllImages());
         bundle.putInt(FullScreenImageGalleryActivity.KEY_POSITION, position);
         bundle.putLong("eventID", event.getID());
         bundle.putInt("tab", tabID);
         bundle.putInt("galleryID", ID);
-        bundle.putSerializable("team", team);
+        bundle.putLong("team", team.getID());
         bundle.putBoolean("readOnly", readOnly);
         intent.putExtras(bundle);
         startActivityForResult(intent, Constants.GENERAL);
@@ -164,11 +172,6 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     private void bindViews() {
         recyclerView = (RecyclerView) findViewById(R.id.rv);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-    }
-
-    private void refresh(File file) {
-        imageGalleryAdapter.addImage(file);
-        imageGalleryAdapter.notifyDataSetChanged();
     }
 
     private void setUpRecyclerView() {
@@ -216,8 +219,17 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == Constants.IMAGE_EDITED) {
-            refresh((File)data.getExtras().getSerializable("file"));
-            team = (RTeam) data.getExtras().getSerializable("team");
+            team = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getExtras().getLong("team"));
+            // reload images
+            for(int i = 0; i < team.getTabs().get(tabID).getElements().size(); i++) {
+                if(team.getTabs().get(tabID).getElements().get(i).getID() == ID) {
+                    EGallery gallery = (EGallery) team.getTabs().get(tabID).getElements().get(i);
+                    images = gallery.getImages();
+                    break;
+                }
+            }
+            imageGalleryAdapter.notifyDataSetChanged();
+            setUpRecyclerView();
             return;
         }
         if (requestCode == Constants.CAMERA_REQUEST && resultCode == FragmentActivity.RESULT_OK) {
@@ -246,14 +258,20 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
             }
 
             // get the actual file path and add that to the gallery!
-            File path = new Loader(getApplicationContext()).getImagePath(event.getID(), save(bitmap));
-            refresh(path);
+            save(bitmap);
+            imageGalleryAdapter.notifyDataSetChanged();
         }
         else if(resultCode == Constants.IMAGE_DELETED) {
-            team = (RTeam) data.getSerializableExtra("team");
-            File file = (File) data.getSerializableExtra("file");
-            imageGalleryAdapter.remove(file);
-            imageGalleryAdapter.notifyDataSetChanged();
+            team = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getLongExtra("team", 0));
+            // Load images
+            for(int i = 0; i < team.getTabs().get(tabID).getElements().size(); i++) {
+                if(team.getTabs().get(tabID).getElements().get(i).getID() == ID) {
+                    EGallery gallery = (EGallery) team.getTabs().get(tabID).getElements().get(i);
+                    images = gallery.getImages();
+                    break;
+                }
+            }
+            setUpRecyclerView();
         }
     }
     private static Bitmap rotateImage(Bitmap source, float angle) {
@@ -262,26 +280,30 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
         return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(),
                 matrix, true);
     }
-    private long save(Bitmap bitmap) {
-        long imageID = new Loader(getApplicationContext()).newImage(bitmap, event.getID());
+    private void save(Bitmap bitmap) {
+        // Convert the bitmap to a byte array
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        byte[] array = stream.toByteArray();
 
-        // save the ID to the gallery
+        // Find the gallery element and add the picture to it
         for(int i = 0; i < team.getTabs().get(tabID).getElements().size(); i++) {
             if(team.getTabs().get(tabID).getElements().get(i).getID() == ID) {
                 EGallery gallery = (EGallery) team.getTabs().get(tabID).getElements().get(i);
-                gallery.addImageID(imageID);
+                gallery.addImage(array);
                 team.getTabs().get(tabID).getElements().set(i, gallery);
+                images = gallery.getImages();
                 break;
             }
         }
+
+        // Save all changes
         team.updateEdit();
         new Loader(getApplicationContext()).saveTeam(team, event.getID());
-
-        return imageID;
     }
 
     @Override
-    public void loadImageThumbnail(ImageView iv, File imageUrl, int dimension) {
-        imageThumbnailLoader.loadImageThumbnail(iv, imageUrl, dimension);
+    public void loadImageThumbnail(ImageView iv, byte[] image, int dimension) {
+        imageThumbnailLoader.loadImageThumbnail(iv, image, dimension);
     }
 }

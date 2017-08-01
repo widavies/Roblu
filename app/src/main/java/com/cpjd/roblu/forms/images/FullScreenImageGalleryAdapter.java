@@ -11,7 +11,6 @@ import android.widget.LinearLayout;
 import com.etiennelawlor.imagegallery.library.R;
 import com.etiennelawlor.imagegallery.library.utilities.DisplayUtility;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -35,14 +34,14 @@ import java.util.ArrayList;
  */
 public class FullScreenImageGalleryAdapter extends PagerAdapter {
 
-    private final ArrayList<File> images;
+    private final ArrayList<byte[]> images;
     private FullScreenImageLoader fullScreenImageLoader;
 
     public interface FullScreenImageLoader {
-        void loadFullScreenImage(ImageView iv, File imageUrl, int width, LinearLayout bglinearLayout);
+        void loadFullScreenImage(ImageView iv, byte[] image, int width, LinearLayout bglinearLayout);
     }
 
-    FullScreenImageGalleryAdapter(ArrayList<File> images) {
+    FullScreenImageGalleryAdapter(ArrayList<byte[]> images) {
         this.images = images;
     }
 
@@ -56,7 +55,7 @@ public class FullScreenImageGalleryAdapter extends PagerAdapter {
         ImageView imageView = (ImageView) view.findViewById(R.id.iv);
         final LinearLayout linearLayout = (LinearLayout) view.findViewById(R.id.ll);
 
-        File image = images.get(position);
+        byte[] image = images.get(position);
 
         Context context = imageView.getContext();
         int width = DisplayUtility.getScreenWidth(context);

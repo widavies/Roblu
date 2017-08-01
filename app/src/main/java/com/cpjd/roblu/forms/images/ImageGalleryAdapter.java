@@ -11,7 +11,6 @@ import android.widget.ImageView;
 import com.etiennelawlor.imagegallery.library.R;
 import com.etiennelawlor.imagegallery.library.utilities.DisplayUtility;
 
-import java.io.File;
 import java.util.ArrayList;
 
 /**
@@ -35,7 +34,7 @@ import java.util.ArrayList;
  */
 public class ImageGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private ArrayList<File> images;
+    private ArrayList<byte[]> images;
     private final int gridItemWidth;
     private OnImageClickListener onImageClickListener;
     private ImageThumbnailLoader imageThumbnailLoader;
@@ -45,10 +44,10 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     }
 
     public interface ImageThumbnailLoader {
-        void loadImageThumbnail(ImageView iv, File imageUrl, int dimension);
+        void loadImageThumbnail(ImageView iv, byte[] image, int dimension);
     }
 
-    ImageGalleryAdapter(Context context, ArrayList<File> images) {
+    ImageGalleryAdapter(Context context, ArrayList<byte[]> images) {
         this.images = images;
 
         int screenWidth = DisplayUtility.getScreenWidth(context);
@@ -61,22 +60,6 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
         gridItemWidth = screenWidth / numOfColumns;
     }
-
-    public void remove(File file) {
-        // remove from view pager
-        for(int i = 0; i < images.size(); i++) {
-            if(images.get(i).getAbsolutePath().equals(file.getAbsolutePath())) {
-                images.remove(i);
-                break;
-            }
-        }
-    }
-
-    void addImage(File file) {
-        if(images == null) images = new ArrayList<>();
-        this.images.add(file);
-    }
-
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.image_thumbnail, viewGroup, false);
@@ -89,7 +72,7 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         final ImageViewHolder holder = (ImageViewHolder) viewHolder;
 
-        File image = images.get(position);
+        byte[] image = images.get(position);
 
         imageThumbnailLoader.loadImageThumbnail(holder.imageView, image, gridItemWidth);
 
@@ -113,10 +96,6 @@ public class ImageGalleryAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         } else {
             return 0;
         }
-    }
-
-    ArrayList<File> getAllImages() {
-        return images;
     }
 
     void setOnImageClickListener(OnImageClickListener listener) {

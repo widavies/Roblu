@@ -37,7 +37,7 @@ import com.cpjd.roblu.utils.Text;
 import com.jrummyapps.android.colorpicker.ColorPickerDialog;
 import com.jrummyapps.android.colorpicker.ColorPickerDialogListener;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
 
 /**
  * A utility for drawing on Bitmaps!
@@ -71,9 +71,9 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         eventID = getIntent().getLongExtra("eventID", 0);
-        File file = (File) getIntent().getSerializableExtra("file");
         tabID = getIntent().getIntExtra("tabID", 0);
-        team = (RTeam) getIntent().getSerializableExtra("team");
+        team = new Loader(getApplicationContext()).loadTeam(eventID, getIntent().getLongExtra("team", 0));
+        int position = getIntent().getIntExtra("position", 0);
         ID = getIntent().getIntExtra("ID", 0);
 
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -81,13 +81,20 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         View content = getWindow().findViewById(Window.ID_ANDROID_CONTENT);
         int temp = 0;
         if(content != null) temp = content.getHeight();
-        Bitmap bitmap = Bitmap.createScaledBitmap(BitmapFactory.decodeFile(file.getAbsolutePath(), options), displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
 
-        this.canvas = (CanvasView) this.findViewById(R.id.canvas);
-        this.canvas.setBaseColor(rui.getBackground());
-        if(bitmap != null) this.canvas.drawBitmap(bitmap);
-
-        this.canvas.setPaintStrokeWidth(3F);
+        // Load images
+        for(int i = 0; i < team.getTabs().get(tabID).getElements().size(); i++) {
+            if(team.getTabs().get(tabID).getElements().get(i).getID() == ID) {
+                EGallery gallery = (EGallery) team.getTabs().get(tabID).getElements().get(i);
+                Bitmap b = BitmapFactory.decodeByteArray(gallery.getImages().get(position), 0, gallery.getImages().get(position).length);
+                Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
+                this.canvas = (CanvasView) this.findViewById(R.id.canvas);
+                this.canvas.setBaseColor(rui.getBackground());
+                if(bitmap != null) this.canvas.drawBitmap(bitmap);
+                this.canvas.setPaintStrokeWidth(3F);
+                break;
+            }
+        }
     }
 
     @Override
@@ -112,13 +119,17 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         else if(item.getItemId() == R.id.confirm) {
             // save bitmap back to file system
             Bitmap bitmap = canvas.getBitmap();
-            long imageID = new Loader(getApplicationContext()).newImage(bitmap, eventID);
+
+            // convert to byte array
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+            byte[] array = stream.toByteArray();
 
             // save the ID to the gallery
             for(int i = 0; i < team.getTabs().get(tabID).getElements().size(); i++) {
                 if(team.getTabs().get(tabID).getElements().get(i).getID() == ID) {
                     EGallery gallery = (EGallery) team.getTabs().get(tabID).getElements().get(i);
-                    gallery.addImageID(imageID);
+                    gallery.addImage(array);
                     team.getTabs().get(tabID).getElements().set(i, gallery);
                     break;
                 }
@@ -127,8 +138,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
             new Loader(getApplicationContext()).saveTeam(team, eventID);
 
             Bundle b = new Bundle();
-            b.putSerializable("file", new Loader(getApplicationContext()).getImagePath(eventID, imageID));
-            b.putSerializable("team", team);
+            b.putLong("team", team.getID());
             Intent result = new Intent();
             result.putExtras(b);
             setResult(Constants.IMAGE_EDITED, result);

@@ -54,8 +54,8 @@ public class Match extends Fragment implements ElementsListener {
         layout = (LinearLayoutCompat) view.findViewById(R.id.match_layout);
 
         Bundle bundle = this.getArguments();
-        team = (RTeam) bundle.getSerializable("team");
         event = (REvent) bundle.getSerializable("event");
+        team = new Loader(view.getContext()).loadTeam(event.getID(), bundle.getLong("team"));
         form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
         readOnly = bundle.getBoolean("readOnly");
@@ -111,7 +111,7 @@ public class Match extends Fragment implements ElementsListener {
             layout.addView(els.getStopwatch(e.getID(), e.getTitle(), Text.round(((EStopwatch) e).getTime(), 1), !e.isModified()));
         } else if (e instanceof ETextfield)
             layout.addView(els.getTextfield(e.getID(), e.getTitle(), ((ETextfield) e).getText()));
-        else if(e instanceof EGallery) layout.addView(els.getGallery(e.getID(), e.getTitle(), ((EGallery) e).getImagePaths(view.getContext(), event), false, event, team, position));
+        else if(e instanceof EGallery) layout.addView(els.getGallery(e.getID(), e.getTitle(), false, event, team, position));
     }
 
     public void setTeam(RTeam team) {

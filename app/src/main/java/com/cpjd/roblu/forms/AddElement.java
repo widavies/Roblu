@@ -541,9 +541,9 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
                 break;
             case GALLERY:
                 if(e != null) {
-                    tl.addView(elements.getGallery(-1, e.getTitle(), null, true, null, null, -1));
+                    tl.addView(elements.getGallery(-1, e.getTitle(), true, null, null, -1));
                 }
-                else tl.addView(elements.getGallery(-1, "Gallery", null, true, null, null, -1));
+                else tl.addView(elements.getGallery(-1, "Gallery", true, null, null, -1));
                 addBasic();
                 break;
         }

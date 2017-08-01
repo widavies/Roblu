@@ -33,7 +33,6 @@ import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.cloud.sync.InitPacker;
 import com.cpjd.roblu.csv.ExportCSV;
 import com.cpjd.roblu.forms.EditForm;
-import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RBackup;
@@ -137,9 +136,6 @@ public class EventSettings extends AppCompatActivity {
             Preference teams = findPreference("delete_teams");
             teams.setSummary("Delete "+new Loader(getActivity()).getNumberTeams(event.getID())+" teams");
             teams.setOnPreferenceClickListener(this);
-            Preference images = findPreference("delete_images");
-            images.setSummary("Delete "+new Loader(getActivity()).getNumberImages(event.getID())+" images");
-            images.setOnPreferenceClickListener(this);
             Preference deleteEvent = findPreference("delete_event");
             deleteEvent.setSummary("Delete ["+event.getName()+"] event");
             deleteEvent.setOnPreferenceClickListener(this);
@@ -217,35 +213,6 @@ public class EventSettings extends AppCompatActivity {
                             new Loader(getActivity()).deleteAllTeams(event.getID());
                             preference.setSummary("Delete 0 teams");
                             Text.showSnackbar(layout, getActivity(), "Teams successfully deleted", false, rui.getPrimaryColor());
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    if (dialog.getWindow() != null)
-                        dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
-                    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
-                    dialog.show();
-                    dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
-                    dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
-                } else if (preference.getKey().equals("delete_images")) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-
-                    builder.setTitle("Delete all images?");
-                    builder.setMessage("Are you sure you want to delete ALL image within this event? Cannot be undone!");
-
-                    builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            preference.setSummary("Delete 0 images");
-                            new Loader(getActivity()).deleteImages(event.getID());
-                            Text.showSnackbar(layout, getActivity(), "Images successfully deleted", false, rui.getPrimaryColor());
-                            new DeleteImageIDs(event.getID()).execute();
                             dialog.dismiss();
                         }
                     });
@@ -386,46 +353,11 @@ public class EventSettings extends AppCompatActivity {
             }
         }
 
-        public class DeleteImageIDs extends AsyncTask<Void, Void, Void> {
-            private final long eventID;
-
-            public DeleteImageIDs(long eventID) {
-                this.eventID = eventID;
-            }
-
-            protected Void doInBackground(Void... params) {
-                Loader l = new Loader(getActivity());
-                RTeam[] teams = l.getTeams(eventID);
-                RForm form = l.loadForm(eventID);
-                if(teams == null || teams.length == 0) return null;
-
-                for(RTeam team : teams) {
-                    team.verify(form);
-                    for(int j = 0; j < team.getTabs().size(); j++) {
-                        for(int k = 0; k < team.getTabs().get(j).getElements().size(); k++) {
-                            if(team.getTabs().get(j).getElements().get(k) instanceof EGallery) {
-                                EGallery gallery = (EGallery) team.getTabs().get(j).getElements().get(k);
-                                gallery.removeAllIds();
-                                team.getTabs().get(j).getElements().set(k, gallery);
-                            }
-                        }
-                    }
-                    l.saveTeam(team, eventID);
-                }
-                return null;
-            }
-
-        }
-
         public class BackupEvent extends AsyncTask<Void, Void, RBackup> {
             protected RBackup doInBackground(Void... params) {
                 RTeam[] teams = new Loader(getActivity()).getTeams(event.getID());
                 RForm form = new Loader(getActivity()).loadForm(event.getID());
-                RBackup backup = new RBackup(event, teams, form);
-                backup.setImages(new Loader(getActivity()).getImages(event.getID()));
-
-
-                return backup;
+                return new RBackup(event, teams, form);
             }
 
             protected void onPostExecute(RBackup result) {

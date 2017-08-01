@@ -24,11 +24,12 @@ import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
 import com.etiennelawlor.imagegallery.library.R;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Locale;
 
 import pub.devrel.easypermissions.EasyPermissions;
+
+import static android.R.attr.path;
 
 /**
  * Copyright 2015 Etienne Lawlor
@@ -64,7 +65,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
     private Toolbar toolbar;
     private ViewPager viewPager;
 
-    private ArrayList<File> images;
+    private ArrayList<byte[]> images;
     private int position;
     private static FullScreenImageGalleryAdapter.FullScreenImageLoader fullScreenImageLoader;
 
@@ -113,19 +114,29 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
         if (intent != null) {
             Bundle extras = intent.getExtras();
             if (extras != null) {
-                images = (ArrayList<File>) extras.getSerializable("files");
                 position = extras.getInt(KEY_POSITION);
                 eventID = extras.getLong("eventID");
-                team = (RTeam) extras.getSerializable("team");
+                team = new Loader(getApplicationContext()).loadTeam(eventID, extras.getLong("team"));
                 galleryID = extras.getInt("galleryID");
                 tab = extras.getInt("tab");
                 readOnly = extras.getBoolean("readOnly");
             }
         }
 
+        // Load images
+        for(int i = 0; i < team.getTabs().get(tab).getElements().size(); i++) {
+            if(team.getTabs().get(tab).getElements().get(i).getID() == galleryID) {
+                EGallery gallery = (EGallery) team.getTabs().get(tab).getElements().get(i);
+                images = gallery.getImages();
+                break;
+            }
+        }
+
         rui = new Loader(getApplicationContext()).loadSettings().getRui();
 
         setUpViewPager();
+
+
     }
 
     @Override
@@ -162,18 +173,18 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
         }
         else if(item.getItemId() == com.cpjd.roblu.R.id.edit && !readOnly) {
             Intent intent = new Intent(this, Drawing.class);
-            intent.putExtra("file", images.get(position));
             intent.putExtra("eventID", eventID);
             intent.putExtra("tabID", tab);
             intent.putExtra("ID", galleryID);
-            intent.putExtra("team", team);
+            intent.putExtra("team", team.getID());
+            intent.putExtra("position", position);
             startActivityForResult(intent, Constants.GENERAL);
             return true;
         }
         else if(item.getItemId() == com.cpjd.roblu.R.id.save_to_device) {
             if(EasyPermissions.hasPermissions(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
-                File path = images.get(viewPager.getCurrentItem());
-                Bitmap bitmap = BitmapFactory.decodeFile(path.getPath());
+                byte[] path = images.get(viewPager.getCurrentItem());
+                Bitmap bitmap = BitmapFactory.decodeByteArray(path, 0, path.length);
                 MediaStore.Images.Media.insertImage(getContentResolver(), bitmap, String.valueOf(System.currentTimeMillis()), "");
                 Text.showSnackbar(layout, getApplicationContext(), "Saved image to device", false, rui.getPrimaryColor());
             } else {
@@ -184,26 +195,17 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
             return true;
         }
         else if(item.getItemId() == com.cpjd.roblu.R.id.delete_image && !readOnly) {
-            // get path and delete from system
-            File path = images.get(viewPager.getCurrentItem());
-
             for(int i = 0; i < team.getTabs().get(tab).getElements().size(); i++) {
                 if(team.getTabs().get(tab).getElements().get(i).getID() == galleryID) {
                     EGallery gal = (EGallery) team.getTabs().get(tab).getElements().get(i);
-                    gal.removeID(viewPager.getCurrentItem());
+                    gal.removeImage(viewPager.getCurrentItem());
                     team.getTabs().get(tab).getElements().set(i, gal);
                     new Loader(getApplicationContext()).saveTeam(team, eventID);
                     break;
                 }
             }
-            boolean success = path.delete();
-            if(!success) {
-                Text.showSnackbar(layout, getApplicationContext(), "Failed to delete image", true, 0);
-                return false;
-            }
-
             Intent result = new Intent();
-            result.putExtra("team", team);
+            result.putExtra("team", team.getID());
             result.putExtra("file", path);
             setResult(Constants.IMAGE_DELETED, result);
             finish();
@@ -216,8 +218,8 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
 
     // region FullScreenImageGalleryAdapter.FullScreenImageLoader Methods
     @Override
-    public void loadFullScreenImage(ImageView iv, File imageUrl, int width, LinearLayout bglinearLayout) {
-        fullScreenImageLoader.loadFullScreenImage(iv, imageUrl, width, bglinearLayout);
+    public void loadFullScreenImage(ImageView iv, byte[] image, int width, LinearLayout bglinearLayout) {
+        fullScreenImageLoader.loadFullScreenImage(iv, image, width, bglinearLayout);
     }
     // endregion
 
@@ -228,7 +230,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
     }
 
     private void setUpViewPager() {
-        ArrayList<File> imageList = new ArrayList<>();
+        ArrayList<byte[]> imageList = new ArrayList<>();
         imageList.addAll(images);
 
         FullScreenImageGalleryAdapter fullScreenImageGalleryAdapter = new FullScreenImageGalleryAdapter(imageList);

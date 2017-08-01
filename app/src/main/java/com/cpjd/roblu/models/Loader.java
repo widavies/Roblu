@@ -1,19 +1,15 @@
 package com.cpjd.roblu.models;
 
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 
 import com.cpjd.roblu.utils.Text;
 
 import org.apache.poi.util.IOUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
-import java.util.ArrayList;
 
 public class Loader extends IO {
 
@@ -95,7 +91,6 @@ public class Loader extends IO {
         return new File(context.getFilesDir(), PREFIX+File.separator+"events"+ File.separator+eventID).exists();
     }
     public void deleteTeam(RTeam team, long eventID) {
-        for(Long imageID : team.getAllImagesID()) deleteImage(eventID, imageID);
         File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+team.getID()+".ser");
         delete(file);
     }
@@ -212,13 +207,8 @@ public class Loader extends IO {
 
 
     public void deleteEvent(long eventID) {
-        deleteImages(eventID);
-
         File dir = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator);
         delete(dir);
-
-        // Don't forget images!
-        deleteImages(eventID);
     }
 
     public REvent[] getEvents() {
@@ -239,150 +229,6 @@ public class Loader extends IO {
             teams[i] = loadTeam(eventID, Integer.parseInt(files[i].getName().replace(".ser", "")));
         }
         return teams;
-    }
-
-    /*
-     * Image loading.
-     *
-     * Here's the jist:
-     *
-     * -It's not really convienent to save bitmaps within the RTeam model
-     * here's where they will be stored: /v7/events/0/0/images/id
-     * format: PREFIX/events/eventID/images
-     *
-     * That means that when we save the gallery element, we just need to save a list of IDs
-     *
-     *
-     */
-
-    public long newImage(Bitmap bitmap, long eventID) {
-        // First, verify that we have the correct directory
-        File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
-        if(!directory.exists()) {
-            if(!directory.mkdir()) System.out.println("Failed to create images directory");
-        }
-
-        long ID = getNewImageID(eventID);
-
-        // Get directory
-        File toSave = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator+ID+".jpg");
-
-        // Save the image
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(toSave);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-        } catch(Exception e) {
-            System.out.println("Failed to save a newImage()");
-        } finally {
-            try {
-                if(fos != null) fos.close();
-            } catch(Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-        return ID;
-    }
-
-    private void saveImage(Bitmap bitmap, long eventID, long imageID) {
-
-        // First, verify that we have the correct directory
-        File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
-        if(!directory.exists()) {
-            if(!directory.mkdir()) System.out.println("Failed to create images directory");
-        }
-
-        // Get directory
-        File toSave = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator+imageID+".jpg");
-
-        System.out.println("Svaing image"+toSave.getAbsolutePath());
-
-        // Save the image
-        FileOutputStream fos = null;
-        try {
-            fos = new FileOutputStream(toSave);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-        } catch(Exception e) {
-            System.out.println("Failed to save a image from backup"+e.getMessage());
-        } finally {
-            try {
-                if(fos != null) fos.close();
-            } catch(Exception ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    public File getImagePath(long eventID, long imageID) {
-        return new File(context.getFilesDir(), PREFIX + File.separator + "events" + File.separator + eventID + File.separator + "images" + File.separator + imageID + ".jpg");
-    }
-
-    public ArrayList<RImage> getImages(long eventID) {
-        File dir = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
-        File[] children = dir.listFiles();
-        if(children == null || children.length == 0) return null;
-        ArrayList<RImage> temp = new ArrayList<>();
-        for(File f : children) {
-            Bitmap bmp = BitmapFactory.decodeFile(f.getPath());
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            temp.add(new RImage(Long.parseLong(f.getName().replace(".jpg","")), stream.toByteArray()));
-        }
-        return temp;
-    }
-
-    public ArrayList<RImage> getImages(long eventID, ArrayList<Long> IDs) {
-        if(IDs == null || IDs.size() == 0) return null;
-        File[] children = new File[IDs.size()];
-        for(int i = 0; i < IDs.size(); i++) children[i] = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+IDs.get(i)+File.separator+"images"+File.separator);
-        ArrayList<RImage> temp = new ArrayList<>();
-        for(File f : children) {
-            Bitmap bmp = BitmapFactory.decodeFile(f.getPath());
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bmp.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            temp.add(new RImage(Long.parseLong(f.getName().replace(".jpg","")), stream.toByteArray()));
-        }
-        return temp;
-    }
-
-    public void saveImages(long eventID, ArrayList<RImage> images) {
-        if(images == null || images.size() == 0) return;
-        for(int i = 0; i < images.size(); i++) {
-            saveImage(BitmapFactory.decodeByteArray(images.get(i).getBytes(), 0, images.get(i).getBytes().length), eventID, images.get(i).getID());
-        }
-    }
-
-    private void deleteImage(long eventID, long imageID) {
-        File directory = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"images"+ File.separator+imageID+".jpg");
-        delete(directory);
-    }
-
-    private long getNewImageID(long eventID) {
-        File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
-
-        File[] children = directory.listFiles();
-
-        if(children == null || children.length == 0) return 0;
-
-        long maxID = 0;
-        for(File f : children) {
-            if(Integer.parseInt(f.getName().replace(".jpg", "")) > maxID) maxID = Integer.parseInt(f.getName().replace(".jpg" ,""));
-        }
-
-        return maxID + 1;
-    }
-
-    public int getNumberImages(long eventID) {
-        File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
-        if(!directory.exists()) return 0;
-        File[] children = directory.listFiles();
-        if(children == null) return 0;
-        return children.length;
-    }
-
-    public void deleteImages(long eventID) {
-        File directory = new File(context.getFilesDir(), PREFIX + File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
-        delete(directory);
     }
 
     public File getTempPictureFile() {

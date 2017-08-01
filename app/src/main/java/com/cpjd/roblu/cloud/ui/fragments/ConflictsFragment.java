@@ -85,13 +85,13 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
 
             Intent intent = new Intent(getActivity(), TeamViewer.class);
             intent.putExtra("event", new Loader(getActivity()).getEvent(eventID));
-            intent.putExtra("team", temp);
+            intent.putExtra("team", temp.getID());
             intent.putExtra("readOnly", true);
             startActivity(intent);
         } else {
             Intent intent = new Intent(getActivity(), TeamViewer.class);
             intent.putExtra("event", new Loader(getActivity()).getEvent(eventID));
-            intent.putExtra("team", checkout.getTeam());
+            intent.putExtra("team", checkout.getTeam().getID());
             intent.putExtra("readOnly", true);
             startActivity(intent);
         }

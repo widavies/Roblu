@@ -99,8 +99,8 @@ public class ElementsProcessor {
                     relevance += ((ETextfield)element).getText().length();
                 }
                 else if(element instanceof EGallery) {
-                    text = "Gallery: "+element.getTitle()+" contains "+((EGallery)element).getImageIDs().size()+" images";
-                    relevance += ((EGallery)element).getImageIDs().size();
+                    text = "Gallery: "+element.getTitle()+" contains "+((EGallery)element).getImages().size()+" images";
+                    relevance += ((EGallery)element).getImages().size();
                 }
                 else if(element instanceof ECheckbox) {
                     text = "Checkbox: "+element.getTitle()+ " values: "+friendlyCheckbox((ECheckbox)element);
@@ -190,7 +190,7 @@ public class ElementsProcessor {
                         if(i == team.getTabs().size() - 1) text = "Textfield: "+element.getTitle()+" Average chars: "+ Text.round(average, 2)+" Min: "+min+" Max: "+max+"\nRaw data: "+text;
                     }
                     else if(element instanceof EGallery) {
-                        int value = ((EGallery)element).getImageIDs().size();
+                        int value = ((EGallery)element).getImages().size();
                         if(i == set) {
                             min = value;
                             max = value;

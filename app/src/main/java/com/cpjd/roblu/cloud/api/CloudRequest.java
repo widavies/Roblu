@@ -100,7 +100,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object pushForm(String content) throws Exception {
-        return doRequest(true, "teams/pushForm", "&content="+encodeString(content)+
+        return doRequest(true, "teams/pushForm", "?content="+encodeString(content)+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
     }
 

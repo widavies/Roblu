@@ -1,23 +1,20 @@
 package com.cpjd.roblu.forms.elements;
 
 
-import android.content.Context;
-
-import com.cpjd.roblu.models.Loader;
-import com.cpjd.roblu.models.REvent;
-
 import org.codehaus.jackson.annotate.JsonTypeName;
 
-import java.io.File;
 import java.util.ArrayList;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * EGallery supports an array of images. Note, the gallery only stores the IDs, the IDs reference
- * images stored on the file system. Images have to be packaged before being uploaded to anything.
+ * EGallery supports the storing of images as byte[] arrays.
+ * The old system used to use files containing bitmaps, but we're now going to use byte[] so that images
+ * don't have to be saved and referenced with IDs. This always makes this model more consistent with
+ * other models and easier to send over the Roblu Cloud server.
  *
+ * @version 2
  * @since 3.4.0
  * @author Will Davies
  */
@@ -27,7 +24,7 @@ import lombok.EqualsAndHashCode;
 @JsonTypeName("EGallery")
 public class EGallery extends Element {
 
-    private ArrayList<Long> imageIDs;
+    private ArrayList<byte[]> images;
 
     public EGallery() {}
 
@@ -35,43 +32,19 @@ public class EGallery extends Element {
         super(title);
     }
 
-    public void addImageID(long ID) {
-        if(imageIDs == null) imageIDs = new ArrayList<>();
-        imageIDs.add(ID);
-    }
-    public ArrayList<Long> getImageIDs() {
-        if(imageIDs == null) imageIDs = new ArrayList<>();
-        return imageIDs;
+    public void addImage(byte[] image) {
+        if(images == null) images = new ArrayList<>();
+
+        images.add(image);
     }
 
-    public void removeAllIds() {
-        if(imageIDs != null) imageIDs.clear();
-        imageIDs = null;
+    public void removeImage(int position) {
+        if(images != null) images.remove(position);
     }
 
-    public void removeID(long ID) {
-        if(imageIDs == null) return;
-
-        for(int i = 0; i < imageIDs.size(); i++) {
-            if(imageIDs.get(i) == ID) {
-                imageIDs.remove(i);
-                break;
-            }
-        }
-    }
-
-
-    public ArrayList<File> getImagePaths(Context context, REvent event) {
-        if(imageIDs == null || imageIDs.size() == 0) return null;
-
-        Loader l = new Loader(context);
-        ArrayList<File> files = new ArrayList<>();
-
-        for(int i = 0; i < imageIDs.size(); i++) {
-            files.add(l.getImagePath(event.getID(), imageIDs.get(i)));
-        }
-
-        return files;
+    public ArrayList<byte[]> getImages() {
+        if(images == null) images = new ArrayList<>();
+        return images;
     }
 
     @Override

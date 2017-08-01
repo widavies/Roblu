@@ -34,8 +34,8 @@ public class Overview extends Fragment implements StatsListener {
         els = new Elements(getActivity(), new Loader(getActivity()).loadSettings().getRui(), null, false);
 
         Bundle bundle = this.getArguments();
-        team = (RTeam) bundle.getSerializable("team");
         event = (REvent) bundle.getSerializable("event");
+        team = new Loader(view.getContext()).loadTeam(event.getID(), bundle.getLong("team"));
 
         if(team.hasTBAInfo()) new DATThread(team.getNumber(), this);
         else {

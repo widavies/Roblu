@@ -346,7 +346,6 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
             REvent event = backup.getEvent();
             event.setID(l.getNewEventID());
             l.saveEvent(event);
-            new Loader(getApplicationContext()).saveImages(event.getID(), backup.getImages());
             l.saveForm(backup.getForm(), event.getID());
             if(backup.getTeams() != null) for(RTeam team : backup.getTeams()) l.saveTeam(team, event.getID());
             return event;

@@ -324,7 +324,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
                         else if(e instanceof ESlider) value = String.valueOf(((ESlider) e).getCurrent());
                         else if(e instanceof ETextfield) value = ((ETextfield) e).getText();
                         else if(e instanceof EStopwatch) value = String.valueOf(((EStopwatch) e).getTime());
-                        else if(e instanceof EGallery) value = String.valueOf(((EGallery)e).getImageIDs().size());
+                        else if(e instanceof EGallery) value = String.valueOf(((EGallery)e).getImages().size());
 
                         Cell cellValue = row.createCell(match + 1 + ((element) * sorting.size()));
                         cellValue.setCellValue(value);
@@ -427,7 +427,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
                     else if(e instanceof ESlider) value = String.valueOf(((ESlider) e).getCurrent());
                     else if(e instanceof ETextfield) value = ((ETextfield) e).getText();
                     else if(e instanceof EStopwatch) value = String.valueOf(((EStopwatch) e).getTime());
-                    else if(e instanceof EGallery) value = String.valueOf(((EGallery)e).getImageIDs().size());
+                    else if(e instanceof EGallery) value = String.valueOf(((EGallery)e).getImages().size());
 
                     Cell cellValue = r.createCell(j + 1);
                     cellValue.setCellValue(value);
@@ -517,7 +517,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
                         if(((ESTextfield)e).isNumberOnly()) value = String.valueOf(teams[i].getNumber());
                         else value = String.valueOf(teams[i].getName());
                     }
-                    else if(e instanceof EGallery) value = String.valueOf(((EGallery)e).getImageIDs().size());
+                    else if(e instanceof EGallery) value = String.valueOf(((EGallery)e).getImages().size());
 
                     Cell cellValue = r.createCell(form.getMatch().size() + j + 1);
                     cellValue.setCellValue(value);

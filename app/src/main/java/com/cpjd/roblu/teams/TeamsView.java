@@ -558,7 +558,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         if(resultCode == Constants.TEAM_EDITED) {
             if(teams == null || teams.size() == 0) return;
-            RTeam temp = (RTeam) data.getSerializableExtra("team");
+            RTeam temp = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getLongExtra("team", 0));
             for(int i = 0; i < teams.size(); i++) {
                 if(teams.get(i).getID() == temp.getID()) {
                     teams.set(i, temp);
@@ -825,7 +825,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         int itemPosition = rv.getChildLayoutPosition(v);
         RTeam team = adapter.getTeam(itemPosition);
         Intent startView = new Intent(this, TeamViewer.class);
-        startView.putExtra("team", team);
+        startView.putExtra("team", team.getID());
         startView.putExtra("event", event);
         startView.putExtra("readOnly", false);
         startActivityForResult(startView, Constants.GENERAL);

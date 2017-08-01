@@ -1,7 +1,6 @@
 package com.cpjd.roblu.models;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 
 import lombok.Data;
 
@@ -17,7 +16,6 @@ public class RBackup implements Serializable {
     private REvent event;
     private RTeam[] teams;
     private RForm form;
-    private ArrayList<RImage> images;
     private final String fileVersion;
 
     public RBackup(REvent event, RTeam[] teams, RForm form) {

@@ -6,7 +6,6 @@ import com.cpjd.roblu.forms.elements.EBoolean;
 import com.cpjd.roblu.forms.elements.ECheckbox;
 import com.cpjd.roblu.forms.elements.EChooser;
 import com.cpjd.roblu.forms.elements.ECounter;
-import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.forms.elements.ESlider;
 import com.cpjd.roblu.forms.elements.EStopwatch;
 import com.cpjd.roblu.forms.elements.ETextfield;
@@ -286,24 +285,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             }
         }
     }
-
-    /**
-     * Gets all the image IDs for every single EGallery element and compiles them
-     * into one big list
-     * @return the compiled list of image IDs for all images in this team
-     */
-    ArrayList<Long> getAllImagesID() {
-        ArrayList<Long> ids = new ArrayList<>();
-        if(tabs == null || tabs.size() == 0) return ids;
-
-        for(RTab tab : tabs) {
-            for(Element e : tab.getElements()) {
-                if(e instanceof EGallery) ids.addAll(((EGallery) e).getImageIDs());
-            }
-        }
-        return ids;
-    }
-
 
     /**
      * Adds the tab to the team.

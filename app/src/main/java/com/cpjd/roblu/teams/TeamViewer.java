@@ -78,7 +78,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         event = (REvent) getIntent().getSerializableExtra("event");
-        team = (RTeam) getIntent().getSerializableExtra("team");
+        team = new Loader(getApplicationContext()).loadTeam(event.getID(), getIntent().getLongExtra("team", 0));
         readOnly = getIntent().getBooleanExtra("readOnly", false);
 
         if(readOnly) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Read only mode is enabled when resolving conflicts", false, new Loader(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
@@ -120,7 +120,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         if (item.getItemId() == android.R.id.home) {
             Intent result = new Intent();
             // reload team
-            result.putExtra("team", team);
+            result.putExtra("team", team.getID());
             setResult(Constants.TEAM_EDITED, result);
             finish();
             return true;
@@ -205,7 +205,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     @Override
     public void onBackPressed() {
         Intent result = new Intent();
-        result.putExtra("team", team);
+        result.putExtra("team", team.getID());
         setResult(Constants.TEAM_EDITED, result);
         finish();
     }
@@ -346,7 +346,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Constants.GALLERY_EXIT) {
-            team = (RTeam) data.getSerializableExtra("team");
+            team = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getLongExtra("team", 0));
             tabAdapter.setTeam(team);
             tabAdapter.notifyDataSetChanged();
         }

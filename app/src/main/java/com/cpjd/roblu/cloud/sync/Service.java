@@ -117,7 +117,7 @@ public class Service extends android.app.Service {
                 // check if the form needs to be uploaded
                 cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode());
                 RForm form = l.loadForm(activeEvent.getID());
-                if(form != null && form.isModified()) {
+                if(form != null  && form.isModified()) {
                     try {
                         System.out.println("[Roblu Background Service] Successfully pushed form: "+
                                 cr.pushForm(mapper.writeValueAsString(form)));

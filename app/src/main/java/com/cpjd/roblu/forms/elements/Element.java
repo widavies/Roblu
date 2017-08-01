@@ -38,7 +38,6 @@ public abstract class Element implements Serializable {
 
     public Element() {}
 
-
     public Element(String title) {
         this.title = title;
         modified = false;

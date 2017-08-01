@@ -104,7 +104,6 @@ dependencies {
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
     compile 'pub.devrel:easypermissions:0.2.1'
     compile 'com.github.lawloretienne:imagegallery:0.1.0'
-    compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.google.guava:guava:22.0-android'
     compile 'com.jrummyapps:colorpicker:2.1.6'
     compile "org.projectlombok:lombok:1.16.16"

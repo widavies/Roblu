@@ -45,10 +45,6 @@
     </com.cpjd.roblu.ui.MyPreferenceCategory>
     <com.cpjd.roblu.ui.DangerCategory android:title="DANGER ZONE">
         <Preference
-            android:title="Delete images"
-            android:key="delete_images"
-            android:summary="Delete all images" />
-        <Preference
             android:title="Delete teams"
             android:key="delete_teams"
             android:summary="Delete all teams"/>
