@@ -39,7 +39,7 @@ public class InboxFragment extends Fragment {
         helper.attachToRecyclerView(rv);
 
         RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
-        adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
+        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
 
         return view;
     }

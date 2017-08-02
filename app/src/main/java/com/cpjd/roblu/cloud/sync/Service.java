@@ -21,6 +21,7 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Text;
 
+import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -91,7 +92,7 @@ public class Service extends android.app.Service {
 
         @Override
         public void handleMessage(Message msg) {
-            ObjectMapper mapper = new ObjectMapper();
+            ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             Loader l = new Loader(getApplicationContext());
             CloudRequest cr;
 
@@ -159,6 +160,7 @@ public class Service extends android.app.Service {
                 try {
                     Log.d("RBS", "Checking for ReceivedCheckouts...");
                     JSONArray checkouts = (JSONArray) ((JSONObject)cr.pullCheckouts()).get("data");
+                    Log.d("RBS", checkouts.toString());
                     for(int i = 0; i < checkouts.size(); i++) {
                         JSONObject object = (JSONObject) checkouts.get(i);
                         RCheckout checkout = mapper.readValue(object.get("content").toString(), RCheckout.class);

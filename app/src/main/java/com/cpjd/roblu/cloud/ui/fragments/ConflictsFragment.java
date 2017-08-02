@@ -49,7 +49,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         helper.attachToRecyclerView(rv);
 
         RCheckout[] conflicts = new Loader(getActivity()).loadCheckoutConflicts();
-        adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
+        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
         return view;
     }
 

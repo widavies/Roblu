@@ -143,7 +143,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object pullCheckouts() throws Exception {
-        return doRequest(false, "checkouts/pullReceivedCheckouts","?code="+encodeString(teamCode));
+        return doRequest(false, "checkouts/pullReceivedCheckouts","?code="+encodeString(teamCode)+"&auth="+encodeString(auth));
     }
 
     /**
