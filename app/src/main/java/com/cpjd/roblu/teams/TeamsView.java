@@ -557,15 +557,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             selectEvent(d.getLong("eventID"));
         }
         if(resultCode == Constants.TEAM_EDITED) {
-            if(teams == null || teams.size() == 0) return;
+            if(teams == null || teams.size() == 0 || event == null) return;
             RTeam temp = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getLongExtra("team", 0));
             for(int i = 0; i < teams.size(); i++) {
-                if(teams.get(i) != null && teams.get(i).getID() == temp.getID()) {
+                if(teams.get(i).getID() == temp.getID()) {
                     teams.set(i, temp);
                     break;
                 }
             }
-            System.out.println(lastQuery+","+lastSortToken+","+lastFilter+","+temp.getSortTip());
             LoadTeams lt = new LoadTeams(false, lastQuery, lastSortToken, lastFilter);
             lt.enableForceReload();
             lt.execute();

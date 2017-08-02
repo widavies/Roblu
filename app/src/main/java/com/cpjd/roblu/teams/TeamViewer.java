@@ -93,6 +93,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
             new Loader(getApplicationContext()).saveTeam(team, event.getID());
         }
 
+        System.out.println("Team page was: 0"+team.getPage());
+
         tabLayout = (TabLayout) findViewById(R.id.tab_layout);
         tabLayout.setTabGravity(TabLayout.GRAVITY_FILL);
 
@@ -173,6 +175,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                         pager.setCurrentItem(pos);
                         popup.dismiss();
                         Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), title+" was successfully deleted.", false, rui.getPrimaryColor());
+                        team.updateEdit();
+                        new SaveThread(getApplicationContext(), event.getID(), team);
                     }
                     return true;
                 }
@@ -186,6 +190,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                         if(won) Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), title+" marked as won.", false, rui.getPrimaryColor());
                         else Text.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), title+" marked as lost.", false, rui.getPrimaryColor());
                         popup.dismiss();
+                        team.updateEdit();
+                        new SaveThread(getApplicationContext(), event.getID(), team);
                     }
                 }
                 return true;
@@ -203,6 +209,14 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     }
 
     @Override
+    public void onStop() {
+        super.onStop();
+        team = new Loader(getApplicationContext()).loadTeam(event.getID(), team.getID());
+        team.setPage(pager.getCurrentItem());
+        new SaveThread(getApplicationContext(), event.getID(), team);
+    }
+
+    @Override
     public void onBackPressed() {
         Intent result = new Intent();
         result.putExtra("team", team.getID());
@@ -211,11 +225,6 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     }
     @Override
     public void onPageSelected(int page) {
-        if(!readOnly) {
-            team.setPage(page);
-            new SaveThread(getApplicationContext(), event.getID(), team);
-        }
-
         if(page < 3) setColorScheme(rui.getPrimaryColor(), rui.darker(rui.getPrimaryColor(), 0.85f));
         else {
             if(tabAdapter.isPageRed(page)) setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.red), ContextCompat.getColor(getApplicationContext(), R.color.darkRed));

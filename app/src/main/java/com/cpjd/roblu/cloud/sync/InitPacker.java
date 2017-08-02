@@ -55,6 +55,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
             temp.removeAllTabsButPIT();
             RCheckout check = new RCheckout(temp);
             check.setID(id);
+            check.setStatus("Available");
             checkouts.add(check);
             id++;
         }
@@ -70,15 +71,11 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
                 temp.removeAllTabsBut(i);
                 RCheckout check = new RCheckout(temp);
                 check.setID(id);
+                check.setStatus("Available");
                 checkouts.add(check);
+                id++;
             }
-            id++;
         }
-
-        /*
-         * Process images - todo
-         */
-
 
         /*
          * Convert into JSON and upload

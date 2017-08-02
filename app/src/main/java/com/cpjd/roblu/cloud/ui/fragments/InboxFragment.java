@@ -16,6 +16,7 @@ import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class InboxFragment extends Fragment {
 
@@ -37,11 +38,8 @@ public class InboxFragment extends Fragment {
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
-        ArrayList<RCheckout> checkouts = new ArrayList<>();
-        for(int i = 0; i < 5; i++) {
-            checkouts.add(new RCheckout(new Loader(getContext()).loadTeam(0, i), "Will Davies", System.currentTimeMillis()));
-        }
-        adapter.setCheckouts(checkouts);
+        RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
+        adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
 
         return view;
     }

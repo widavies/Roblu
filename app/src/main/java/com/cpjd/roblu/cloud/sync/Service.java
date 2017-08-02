@@ -9,16 +9,21 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.util.Log;
 
 import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Text;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import java.util.List;
 
@@ -65,8 +70,7 @@ public class Service extends android.app.Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        //Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
-        //TODO do something useful
+        Log.d("RBS", "Service started at "+Text.convertTime(System.currentTimeMillis()));
         Message message = handler.obtainMessage();
         message.arg1 = startId;
         handler.sendMessage(message);
@@ -91,12 +95,17 @@ public class Service extends android.app.Service {
             Loader l = new Loader(getApplicationContext());
             CloudRequest cr;
 
-            // Add your cpu-blocking activity here
             while(true) {
                 // sleep a bit
                 try {
-                    if(isAppOnForeground(getApplicationContext())) Thread.sleep(5000);
-                    else Thread.sleep(300000);
+                    if(isAppOnForeground(getApplicationContext())) {
+                        Log.d("RBS", "Sleeping for 5 seconds...");
+                        Thread.sleep(5000);
+                    }
+                    else {
+                        Log.d("RBS", "Sleeping for 15 seconds...");
+                        Thread.sleep(15000);
+                    }
                 } catch(Exception e) {}
 
                 // first, check if we have an internet connection, if we don't, the background service is useless
@@ -106,19 +115,18 @@ public class Service extends android.app.Service {
                 cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode());
 
                 // check if the UI needs to be uploaded
-                System.out.println("here");
                 RSettings settings = l.loadSettings();
                 RUI rui = settings.getRui();
                 if(rui != null && rui.isModified()) {
                     try {
-                        System.out.println("[Roblu Background Service] Pushed UI with return message: "+cr.pushUI(mapper.writeValueAsString(rui)));
+                        Log.d("RBS", "UI was modified, pushing changes...");
+                        cr.pushUI(mapper.writeValueAsString(rui));
                         rui.setModified(false);
                         l.saveSettings(settings);
+                        Log.d("RBS", "Form synced");
                     } catch(Exception e) {
-                        System.out.println("error: "+e.getMessage());
+                        Log.d("RBS", "Error pushing UI to the server.");
                     }
-                } else {
-                    System.out.println("RUI is null or not modified"+ rui == null);
                 }
 
                 /* UPDATES */
@@ -134,34 +142,60 @@ public class Service extends android.app.Service {
                 if(activeEvent == null) continue;
 
                 // check if the form needs to be uploaded
-
                 RForm form = l.loadForm(activeEvent.getID());
                 if(form != null  && form.isModified()) {
                     try {
-                        System.out.println("[Roblu Background Service] Successfully pushed form: "+
-                                cr.pushForm(mapper.writeValueAsString(form)));
+                        Log.d("RBS", "Form was modified, pushing changes...");
+                        cr.pushForm(mapper.writeValueAsString(form));
                         form.setModified(false);
                         l.saveForm(form, activeEvent.getID());
+                        Log.d("RBS", "Form synced.");
                     } catch(Exception e) {
-                        System.out.println("[Roblu Background Service] Failed to push form: "+e);
+                        Log.d("RBS", "Error pushing form to the server.");
                     }
                 }
 
                 // check if their are any checkouts in RCheckouts
-                System.out.println("[Roblu Background Service] Pulling checkouts...");
                 try {
-                    System.out.println(cr.pullCheckouts());
+                    Log.d("RBS", "Checking for ReceivedCheckouts...");
+                    JSONArray checkouts = (JSONArray) ((JSONObject)cr.pullCheckouts()).get("data");
+                    for(int i = 0; i < checkouts.size(); i++) {
+                        JSONObject object = (JSONObject) checkouts.get(i);
+                        RCheckout checkout = mapper.readValue(object.get("content").toString(), RCheckout.class);
+                        checkout.setSyncRequired(false);
+                        /*
+                         * We need to check for conflicts (does a team already exist that's been edited, or does the team not exist)
+                         */
+                        RTeam temp = l.loadTeam(activeEvent.getID(), checkout.getTeam().getID());
+                        if(temp == null) checkout.setConflictType("not-found");
+                        else if(temp.getLastEdit() > 0) checkout.setConflictType("edited");
+                        else {
+                            l.saveCheckoutConflict(checkout);
+                        }
+
+                        // no conflicts, merge automatically
+                        if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) {
+                            for(int j = 0; j < temp.getTabs().size(); j++) {
+                                if(temp.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
+                                    for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
+                                        temp.getTabs().set(j, checkout.getTeam().getTabs().get(k));
+                                    }
+                                    l.saveTeam(temp, activeEvent.getID());
+                                    // save the checkout in the merge history
+                                    checkout.setMergedTime(System.currentTimeMillis());
+                                    l.saveCheckout(checkout);
+                                    Log.d("RBS", "Merged checkout "+checkout.getTeam().getName());
+                                    break;
+                                }
+                            }
+                        }
+
+                    }
                     // notify the user here
-                    System.out.println("[Roblu Background Service] Successfully pulled checkouts");
                 } catch(Exception e) {
-                    System.out.println("[Roblu Background Service] Failed to pull checkouts");
+                    Log.d("RBS", "Error checking for completed checkouts. Error: "+e.getMessage());
                 }
 
-
-
-                try {
-                  //  Notify.notify(getApplicationContext(), "IS Roblu Running? "+isAppOnForeground(getApplicationContext()), "Time: "+System.currentTimeMillis());
-                } catch(Exception e) {}
             }
         }
 

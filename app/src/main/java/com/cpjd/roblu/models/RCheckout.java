@@ -1,7 +1,8 @@
 package com.cpjd.roblu.models;
 
+import android.support.annotation.NonNull;
+
 import java.io.Serializable;
-import java.util.ArrayList;
 
 import lombok.Data;
 
@@ -9,20 +10,18 @@ import lombok.Data;
  *
  * The newer model for transferring checkout data, a successor to RAssignment.
  *
+ * Version 2 Features:
+ * -Images are included within elements, instead of in a separate array
+ * -Simplified status variables and conflict variables
+ *
+ * @version 2
  * @since 3.5.9
  * @author Will Davies
  */
 @Data
-public class RCheckout implements Serializable {
+public class RCheckout implements Serializable, Comparable<RCheckout> {
 
     private long ID;
-
-    /**
-     * All the images that are associated with the RTab in this checkout
-     * must be converted to a byte[] array so they can be transferred.
-     * New ideas be will reassigned when the checkout is depackaged.
-     */
-    private ArrayList<byte[]> images;
 
     /**
      * If you look in the RTeam model, it contains an ArrayList of RTab.
@@ -33,17 +32,31 @@ public class RCheckout implements Serializable {
     private RTeam team;
 
     /**
-     * These variables are filled out ONLY when receiving a checkout.
-     *
+     * "Available", "Currently checked out to <name>", "Completed by <name>"
      */
-    private String completedBy;
+    private String status;
+
+    /**
+     * If status = Completed by, then this is the time in milliseconds that it was completed
+     */
     private long completedTime;
 
     /**
-     * The time that this checkout was merged into the master repo.
+     * The time that this checkout was merged into the master repo., either set automatically
+     * when auto-merged, or set explicitly when a conflict is resolved
      */
     private long mergedTime;
+    /**
+     * Either "no-local" or "edited-local"
+     *
+     * Essentially, we don't want to auto merge a checkout if the local copy has already been edited or if the local copy doesn't exist
+     */
     private String conflictType;
+    /**
+     * Set to true if status or content of this class was changed,
+     * if true, it will be uploaded to the server when a connection is available.
+     */
+    private boolean syncRequired;
 
     public RCheckout() {}
 
@@ -54,13 +67,8 @@ public class RCheckout implements Serializable {
         this.team = team;
     }
 
-    /**
-     * Constructor for de-packaging a checkout
-     */
-    public RCheckout(RTeam team, String completedBy, long completedTime) {
-        this.team = team;
-        this.completedBy = completedBy;
-        this.completedTime = completedTime;
+    @Override
+    public int compareTo(@NonNull RCheckout o) {
+        return new Long(completedTime).compareTo(o.getCompletedTime());
     }
-
 }

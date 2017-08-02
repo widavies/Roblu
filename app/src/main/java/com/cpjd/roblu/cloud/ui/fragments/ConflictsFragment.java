@@ -21,6 +21,7 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.TeamViewer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class ConflictsFragment extends Fragment implements CheckoutListener {
 
@@ -47,15 +48,8 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
-        ArrayList<RCheckout> checkouts = new ArrayList<>();
-        for(int i = 0; i < 5; i++) {
-            RCheckout checkout = new RCheckout(new Loader(getActivity()).loadTeam(0, i), "Will Davies", System.currentTimeMillis());
-            if(i == 1 || i == 3) checkout.setConflictType("Local copy already edited");
-            else checkout.setConflictType("Not found in local repository");
-            checkouts.add(checkout);
-        }
-        adapter.setCheckouts(checkouts);
-
+        RCheckout[] conflicts = new Loader(getActivity()).loadCheckoutConflicts();
+        adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
         return view;
     }
 

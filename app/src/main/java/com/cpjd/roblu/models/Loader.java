@@ -74,6 +74,7 @@ public class Loader extends IO {
         if(files == null || files.length == 0) return 0;
         return files.length;
     }
+
     public void saveTeam(RTeam team, long eventID) {
         team.resetSortRelevance(); // this need to be serializable for switching between activites, but we don't really care about saving them
         File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+ File.separator+eventID+ File.separator+"teams"+File.separator);
@@ -102,7 +103,6 @@ public class Loader extends IO {
     }
 
     public void saveForm(RForm form, long eventID) {
-        form.setModified(true);
         if(eventID == -1) serializeObject(form, PREFIX+File.separator+"master_form.ser");
 
         serializeObject(form, PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser");

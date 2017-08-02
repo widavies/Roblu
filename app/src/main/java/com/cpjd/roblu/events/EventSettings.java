@@ -349,6 +349,7 @@ public class EventSettings extends AppCompatActivity {
                 ArrayList<Element> tempMatch = (ArrayList<Element>) bundle.getSerializable("tempMatch");
                 RForm form = new RForm(tempPit, tempMatch);
                 Loader loader = new Loader(getActivity());
+                form.setModified(true);
                 loader.saveForm(form, event.getID());
             }
         }

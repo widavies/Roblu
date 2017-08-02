@@ -176,7 +176,6 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
         maxInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         if(e != null) {
             maxInput.setText(String.valueOf(s.getMax()));
-            maxLayout.setHint("");
         }
         maxInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -226,7 +225,6 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
 
         if(e != null) {
             minInput.setText(String.valueOf(c.getMin()));
-            minLayout.setHint("");
         }
         minInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         minInput.addTextChangedListener(new TextWatcher() {
@@ -268,7 +266,6 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
         maxInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         if(e != null) {
             maxInput.setText(String.valueOf(c.getMax()));
-            maxLayout.setHint("");
         }
         maxInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -315,7 +312,6 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
         incInput.setInputType(InputType.TYPE_CLASS_NUMBER);
         if(e != null) {
             incInput.setText(String.valueOf(c.getIncrement()));
-            incLayout.setHint("");
         }
         incInput.addTextChangedListener(new TextWatcher() {
             @Override
@@ -362,7 +358,6 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
                 else values = ((ECheckbox)e).getValues();
                 this.values = values;
 
-                itemLayout.setHint("");
                 String text = "";
                 for(String s : values) {
                     text += s + ",";
@@ -626,7 +621,6 @@ public class AddElement extends AppCompatActivity implements AdapterView.OnItemS
         nameInput.setId(Text.generateViewId());
         if(e != null) {
             nameInput.setText(e.getTitle());
-            inputLayout.setHint("");
         }
 
         nameInput.addTextChangedListener(new TextWatcher() {

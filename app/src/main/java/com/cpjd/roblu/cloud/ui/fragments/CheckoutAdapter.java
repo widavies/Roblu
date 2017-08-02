@@ -11,7 +11,6 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.cloud.ui.CheckoutListener;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Text;
 
@@ -128,18 +127,6 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 subtitle.setText("Match scheduled for "+Text.convertTime(checkout.getTeam().getTabs().get(0).getTime())+"\nYou are on the "+alliance+"\nTeammates: "+Text.concantenteTeams(checkout.getTeam().getTabs().get(0).getTeammates())
                         +"\nOpponents: "+Text.concantenteTeams(checkout.getTeam().getTabs().get(0).getOpponents()));
                 return;
-            }
-
-            if(mode == CONFLICTS) {
-                RTeam team = new Loader(getContext()).loadTeam(eventID, checkout.getTeam().getID());
-                String subtitleText = "";
-                subtitleText += "Completed by "+checkout.getCompletedBy()+"\nMerge conflict: "+checkout.getConflictType()+"\nCheckout last edit: "+ Text.convertTime(checkout.getCompletedTime());
-                if(checkout.getConflictType().equals("Local copy already edited")) subtitleText += "\nLocal last edit: "+Text.convertTime(team.getLastEdit());
-                subtitleText += "\nTap to view";
-                subtitle.setText(subtitleText);
-
-            } else {
-                subtitle.setText("Completed by "+checkout.getCompletedBy()+"\nCheckout completed on "+Text.convertTime(checkout.getCompletedTime())+"\nMerged on "+Text.convertTime(checkout.getMergedTime()));
             }
             title.setText(checkout.getTeam().getName());
             String numberText = "#"+checkout.getTeam().getNumber();

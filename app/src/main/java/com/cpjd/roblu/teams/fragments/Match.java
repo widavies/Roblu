@@ -73,8 +73,6 @@ public class Match extends Fragment implements ElementsListener {
     public void load() {
         if(layout != null && layout.getChildCount() > 0) layout.removeAllViews();
 
-        if(layout != null && layout.getChildCount() > 0) layout.removeAllViews();
-
         ArrayList<Element> elements;
         if(position == 0) elements = form.getPit();
         else elements = form.getMatch();
@@ -177,7 +175,9 @@ public class Match extends Fragment implements ElementsListener {
 
     // Start a save thread and save everything to the file system
     private void save() {
-        if(!readOnly) new SaveThread(view.getContext(), event.getID(), team);
+        if(!readOnly) {
+            new SaveThread(view.getContext(), event.getID(), team);
+        }
     }
 
     public int getPosition() {
