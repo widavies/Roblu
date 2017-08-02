@@ -298,7 +298,7 @@ public class Loader extends IO {
         if(files == null || files.length == 0) return null;
         RCheckout[] checkouts = new RCheckout[files.length];
         for(int i = 0; i < checkouts.length; i++) {
-            checkouts[i] = loadCheckout(Integer.parseInt(files[i].getName().replace(".ser", "")));
+            checkouts[i] = loadCheckout(Long.parseLong(files[i].getName().replace(".ser", "")));
         }
         return checkouts;
     }

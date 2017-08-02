@@ -7,6 +7,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.helper.ItemTouchHelper;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,7 +40,10 @@ public class InboxFragment extends Fragment {
         helper.attachToRecyclerView(rv);
 
         RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
+        Log.d("RBS", "Loaded "+conflicts.length+" items in checkout merge history");
         if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
+
+
 
         return view;
     }

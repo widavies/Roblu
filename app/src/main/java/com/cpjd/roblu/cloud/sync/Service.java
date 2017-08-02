@@ -160,18 +160,23 @@ public class Service extends android.app.Service {
                 try {
                     Log.d("RBS", "Checking for ReceivedCheckouts...");
                     JSONArray checkouts = (JSONArray) ((JSONObject)cr.pullCheckouts()).get("data");
-                    Log.d("RBS", checkouts.toString());
                     for(int i = 0; i < checkouts.size(); i++) {
                         JSONObject object = (JSONObject) checkouts.get(i);
                         RCheckout checkout = mapper.readValue(object.get("content").toString(), RCheckout.class);
                         checkout.setSyncRequired(false);
+
+                        Log.d("RBS", "ReceivedCheckout with "+checkout.getTeam().getTabs().get(1).getElements().size());
+
                         /*
                          * We need to check for conflicts (does a team already exist that's been edited, or does the team not exist)
                          */
                         RTeam temp = l.loadTeam(activeEvent.getID(), checkout.getTeam().getID());
-                        if(temp == null) checkout.setConflictType("not-found");
-                        else if(temp.getLastEdit() > 0) checkout.setConflictType("edited");
-                        else {
+                        if(temp == null) {
+                            checkout.setConflictType("not-found");
+                            l.saveCheckoutConflict(checkout);
+                        }
+                        else if(temp.getLastEdit() > 0) {
+                            checkout.setConflictType("edited");
                             l.saveCheckoutConflict(checkout);
                         }
 
@@ -180,7 +185,7 @@ public class Service extends android.app.Service {
                             for(int j = 0; j < temp.getTabs().size(); j++) {
                                 if(temp.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
                                     for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
-                                        temp.getTabs().set(j, checkout.getTeam().getTabs().get(k));
+                                        temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
                                     }
                                     l.saveTeam(temp, activeEvent.getID());
                                     // save the checkout in the merge history

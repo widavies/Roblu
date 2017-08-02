@@ -41,6 +41,8 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         RTeam[] teams = l.getTeams(eventID);
         if(teams == null || teams.length == 0) return false;
 
+        form.setModified(true); // form needs to be synced the first time
+
         ArrayList<RCheckout> checkouts = new ArrayList<>();
 
         // Verify everything
