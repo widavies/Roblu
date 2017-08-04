@@ -3,6 +3,7 @@ package com.cpjd.roblu.models;
 // Serializes the objects
 
 import android.content.Context;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,7 +30,7 @@ class IO {
             File mycheckouts = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"checkoutsconflicts");
             mycheckouts.mkdir();
 
-            File checkouts = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"checkouts");
+            File checkouts = new File(context.getFilesDir(), Loader.PREFIX+File.separator+"checkouts"+File.separator);
             checkouts.mkdir();
         }
 
@@ -50,6 +51,7 @@ class IO {
             out.close();
             fos.close();
         } catch(Exception e) {
+            Log.d("RBS", "Failed to serialize file! "+e.getMessage());
             e.printStackTrace();
         }
     }

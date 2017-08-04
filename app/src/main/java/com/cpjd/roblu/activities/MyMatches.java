@@ -19,7 +19,7 @@ import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.cloud.ui.CheckoutListener;
-import com.cpjd.roblu.cloud.ui.fragments.AssignmentsTouchHelper;
+import com.cpjd.roblu.cloud.ui.fragments.CheckoutsTouchHelper;
 import com.cpjd.roblu.cloud.ui.fragments.CheckoutAdapter;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
@@ -150,7 +150,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
         rv.setAdapter(adapter);
 
         // manages the gestures that are available to us (recyclerview supports a lot of gestures, we only need the click gesture for this scenario)
-        ItemTouchHelper.Callback callback = new AssignmentsTouchHelper(adapter, CheckoutAdapter.MYMATCHES);
+        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.MYMATCHES);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 

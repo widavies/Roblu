@@ -254,6 +254,10 @@ public class Loader extends IO {
     }
 
     public void saveCheckoutConflict(RCheckout checkout) {
+        File file = new File(context.getFilesDir(), PREFIX+File.separator+"checkoutsconflicts"+File.separator);
+        if(!file.exists()) {
+            if(!file.mkdir()) System.out.println("Failed to create directory for teams");
+        }
         serializeObject(checkout, PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkout.getID()+".ser");
     }
 
@@ -286,10 +290,14 @@ public class Loader extends IO {
      * MERGED CHECKOUTS
      */
     public void saveCheckout(RCheckout checkout) {
+        File file = new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator);
+        if(!file.exists()) {
+            if(!file.mkdir()) System.out.println("Failed to create directory for teams");
+        }
         serializeObject(checkout, PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser");
     }
 
-    private RCheckout loadCheckout(long checkoutID) {
+    public RCheckout loadCheckout(long checkoutID) {
         return (RCheckout) deserializeObject(PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser");
     }
 

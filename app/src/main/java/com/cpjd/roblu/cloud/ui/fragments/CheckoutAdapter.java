@@ -128,6 +128,13 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         +"\nOpponents: "+Text.concantenteTeams(checkout.getTeam().getTabs().get(0).getOpponents()));
                 return;
             }
+            if(mode == INBOX) {
+                if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nAutomatically merged on "+Text.convertTime(checkout.getMergedTime()));
+                else {
+                    if(checkout.getConflictType().startsWith("not-found")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (not found) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
+                    else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (already edited) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
+                }
+            }
             title.setText(checkout.getTeam().getName());
             String numberText = "#"+checkout.getTeam().getNumber();
             number.setText(numberText);

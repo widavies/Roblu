@@ -319,6 +319,13 @@ public class Text {
 
 	}
 
+	public static String convertTimeOnly(long timeMillis) {
+        if(timeMillis == 0) return "Never";
+        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a", Locale.getDefault());
+        Date resultdate = new Date(timeMillis);
+        return sdf.format(resultdate);
+    }
+
 	public static ArrayList<RTab> createNewTabs(ArrayList<RTab> tabs) {
         if(tabs == null || tabs.size() == 0) return tabs;
         ArrayList<RTab> toReturn = new ArrayList<>();

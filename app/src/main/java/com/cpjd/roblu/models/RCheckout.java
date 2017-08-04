@@ -71,4 +71,10 @@ public class RCheckout implements Serializable, Comparable<RCheckout> {
     public int compareTo(@NonNull RCheckout o) {
         return new Long(completedTime).compareTo(o.getCompletedTime());
     }
+
+    public boolean equals(RCheckout checkout) {
+        return ((team == null && checkout.getTeam() == null) || team.equals(checkout.getTeam()))
+                && ID == checkout.getID() && completedTime == checkout.getCompletedTime() && mergedTime == checkout.getMergedTime() &&
+                ((conflictType == null && checkout.getConflictType() == null) || conflictType.equals(checkout.getConflictType()));
+    }
 }

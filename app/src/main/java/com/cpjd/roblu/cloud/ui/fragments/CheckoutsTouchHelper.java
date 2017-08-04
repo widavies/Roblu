@@ -21,14 +21,14 @@ import com.cpjd.roblu.models.RUI;
  * @since 3.5.9
  * @author Will Davies
  */
-public class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
+public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     // Helpers
     private final Drawable xMark, editMark;
     private final int xMarkMargin;
     private final int mode;
 
-    public AssignmentsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
+    public CheckoutsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mode = mode;
 
@@ -51,6 +51,8 @@ public class AssignmentsTouchHelper extends ItemTouchHelper.SimpleCallback {
         if(mode == CheckoutAdapter.CONFLICTS) {
             if(direction == ItemTouchHelper.LEFT) {
                 // Merge the checkout
+
+
             } else {
                 // Discard the checkout
             }

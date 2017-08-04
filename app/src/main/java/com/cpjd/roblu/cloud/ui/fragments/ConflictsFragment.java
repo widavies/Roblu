@@ -44,7 +44,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         adapter = new CheckoutAdapter(view.getContext(), eventID, CheckoutAdapter.CONFLICTS, this);
         rv.setAdapter(adapter);
 
-        ItemTouchHelper.Callback callback = new AssignmentsTouchHelper(adapter, CheckoutAdapter.CONFLICTS);
+        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.CONFLICTS);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 

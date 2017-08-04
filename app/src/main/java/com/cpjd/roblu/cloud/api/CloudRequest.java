@@ -117,14 +117,12 @@ public class CloudRequest {
     }
 
     /**
-     * Pushes the checkout to the Checkouts database and overwrites the old one
-     * @param id the checkout to overwrite
-     * @param status the status of the checkout ('completed')
+     * Pushes the checkouts to the Checkouts database and overwrites the old one
      * @return object representing the servers response (either success or error)
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
-    public Object pushCheckout(int id, String status, String content) throws Exception {
-        return doRequest(true, "checkouts/pushCheckout", "?content="+encodeString(content)+"&status="+encodeString(status)+"&id="+encodeString(String.valueOf(id))+
+    public Object pushCheckouts(String content) throws Exception {
+        return doRequest(true, "checkouts/pushCheckout", "?content="+encodeString(content)+
                 "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
     }
 

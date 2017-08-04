@@ -35,15 +35,13 @@ public class InboxFragment extends Fragment {
         CheckoutAdapter adapter = new CheckoutAdapter(view.getContext(), bundle.getLong("eventID"));
         rv.setAdapter(adapter);
 
-        ItemTouchHelper.Callback callback = new AssignmentsTouchHelper(adapter, CheckoutAdapter.INBOX);
+        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.INBOX);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
         RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
-        Log.d("RBS", "Loaded "+conflicts.length+" items in checkout merge history");
+        if(conflicts != null) Log.d("RBS", "Loaded "+conflicts.length+" items in checkout merge history");
         if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
-
-
 
         return view;
     }

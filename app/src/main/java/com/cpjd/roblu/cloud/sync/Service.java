@@ -12,6 +12,7 @@ import android.os.Process;
 import android.util.Log;
 
 import com.cpjd.roblu.cloud.api.CloudRequest;
+import com.cpjd.roblu.forms.elements.ECounter;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
@@ -19,6 +20,7 @@ import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.notifications.Notify;
 import com.cpjd.roblu.utils.Text;
 
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -26,6 +28,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -163,6 +166,7 @@ public class Service extends android.app.Service {
                     for(int i = 0; i < checkouts.size(); i++) {
                         JSONObject object = (JSONObject) checkouts.get(i);
                         RCheckout checkout = mapper.readValue(object.get("content").toString(), RCheckout.class);
+                        Log.d("RBS", object.toString());
                         checkout.setSyncRequired(false);
 
                         Log.d("RBS", "ReceivedCheckout with "+checkout.getTeam().getTabs().get(1).getElements().size());
@@ -185,24 +189,49 @@ public class Service extends android.app.Service {
                             for(int j = 0; j < temp.getTabs().size(); j++) {
                                 if(temp.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
                                     for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
+                                        Log.d("RBS", "Updating tabs... Value: "+((ECounter)checkout.getTeam().getTabs().get(1).getElements().get(0)).getCurrent());
                                         temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
                                     }
                                     l.saveTeam(temp, activeEvent.getID());
                                     // save the checkout in the merge history
                                     checkout.setMergedTime(System.currentTimeMillis());
-                                    l.saveCheckout(checkout);
+                                    checkout.setSyncRequired(true); // update the master checkouts repo
+                                    checkout.setID(new Loader(getApplicationContext()).getNewCheckoutID());
+                                    new Loader(getApplicationContext()).saveCheckout(checkout);
                                     Log.d("RBS", "Merged checkout "+checkout.getTeam().getName());
                                     break;
                                 }
                             }
                         }
-
                     }
                     // notify the user here
+                    Notify.notify(getApplicationContext(), "Merged "+checkouts.size()+" checkouts.", checkouts.size()+" were automatically merged at "+Text.convertTimeOnly(System.currentTimeMillis()));
                 } catch(Exception e) {
                     Log.d("RBS", "Error checking for completed checkouts. Error: "+e.getMessage());
                 }
 
+                // Check if there are any checkouts (explicitly or automatically merged) that need to be uploaded
+                Log.d("RBS", "Checking for any checkouts to upload...");
+                try {
+                    ArrayList<RCheckout> toUpload = new ArrayList<>();
+                    RCheckout[] checkouts = l.loadCheckouts();
+                    for(RCheckout checkout : checkouts) {
+                        if(checkout.isSyncRequired()) toUpload.add(checkout);
+                    }
+                    if(toUpload.size() > 0) {
+                        String json = mapper.writeValueAsString(toUpload);
+                        JSONObject object = (JSONObject) cr.pushCheckouts(json);
+                        if(object.get("status").equals("success")) {
+                            for(RCheckout checkout : toUpload) {
+                                checkout.setSyncRequired(false);
+                                l.saveCheckout(checkout);
+                            }
+                        }
+                        Log.d("RBS", "Uploaded "+toUpload.size()+" checkouts.");
+                    }
+                } catch(Exception e) {
+                    Log.d("RBS", "Failed to upload checkouts.");
+                }
             }
         }
 
