@@ -7,7 +7,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.helper.ItemTouchHelper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,6 +20,8 @@ import java.util.Arrays;
 
 public class InboxFragment extends Fragment {
 
+    private CheckoutAdapter adapter;
+
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.assignments_tab, container, false);
@@ -32,18 +33,20 @@ public class InboxFragment extends Fragment {
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
-        CheckoutAdapter adapter = new CheckoutAdapter(view.getContext(), bundle.getLong("eventID"));
+        adapter = new CheckoutAdapter(view.getContext(), bundle.getLong("eventID"));
         rv.setAdapter(adapter);
 
         ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.INBOX);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
-        RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
-        if(conflicts != null) Log.d("RBS", "Loaded "+conflicts.length+" items in checkout merge history");
-        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
-
         return view;
+    }
+
+    public void forceUpdate() {
+        RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
+        adapter.setCheckouts(null);
+        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
     }
 
 }

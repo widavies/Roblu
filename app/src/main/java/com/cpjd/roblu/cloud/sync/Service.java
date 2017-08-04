@@ -161,6 +161,9 @@ public class Service extends android.app.Service {
 
                 // check if their are any checkouts in RCheckouts
                 try {
+                    int auto = 0;
+                    int conflicts = 0;
+
                     Log.d("RBS", "Checking for ReceivedCheckouts...");
                     JSONArray checkouts = (JSONArray) ((JSONObject)cr.pullCheckouts()).get("data");
                     for(int i = 0; i < checkouts.size(); i++) {
@@ -178,10 +181,12 @@ public class Service extends android.app.Service {
                         if(temp == null) {
                             checkout.setConflictType("not-found");
                             l.saveCheckoutConflict(checkout);
+                            conflicts++;
                         }
                         else if(temp.getLastEdit() > 0) {
                             checkout.setConflictType("edited");
                             l.saveCheckoutConflict(checkout);
+                            conflicts++;
                         }
 
                         // no conflicts, merge automatically
@@ -198,14 +203,35 @@ public class Service extends android.app.Service {
                                     checkout.setSyncRequired(true); // update the master checkouts repo
                                     checkout.setID(new Loader(getApplicationContext()).getNewCheckoutID());
                                     new Loader(getApplicationContext()).saveCheckout(checkout);
-                                    Log.d("RBS", "Merged checkout "+checkout.getTeam().getName());
+                                    auto++;
                                     break;
                                 }
                             }
                         }
                     }
                     // notify the user here
-                    Notify.notify(getApplicationContext(), "Merged "+checkouts.size()+" checkouts.", checkouts.size()+" were automatically merged at "+Text.convertTimeOnly(System.currentTimeMillis()));
+                    if(auto > 0) {
+                        Notify.notify(getApplicationContext(), "Merged "+auto+" checkouts.", checkouts.size()+" were automatically merged at "+Text.convertTimeOnly(System.currentTimeMillis()));
+                        Intent broadcast = new Intent();
+                        broadcast.setAction("com.cpjd.roblu.broadcast");
+                        broadcast.putExtra("mode", 1);
+                        sendBroadcast(broadcast);
+
+                        // Updates the main list
+                        Intent broadcast2 = new Intent();
+                        broadcast2.setAction("com.cpjd.roblu.broadcast.main");
+                        sendBroadcast(broadcast2);
+                    }
+
+                    if(conflicts > 0) {
+                        Notify.notify(getApplicationContext(), conflicts+" conflicts could not be merged", conflicts+" conflicts could not be merged due to merge conflicts. Resolve them in Mailbox.");
+                        Intent broadcast = new Intent();
+                        broadcast.setAction("com.cpjd.roblu.broadcast");
+                        broadcast.putExtra("mode", 0);
+                        sendBroadcast(broadcast);
+                    }
+
+
                 } catch(Exception e) {
                     Log.d("RBS", "Error checking for completed checkouts. Error: "+e.getMessage());
                 }

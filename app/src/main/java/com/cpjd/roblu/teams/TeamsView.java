@@ -2,8 +2,11 @@ package com.cpjd.roblu.teams;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
@@ -43,7 +46,6 @@ import com.cpjd.roblu.events.CreateEventPicker;
 import com.cpjd.roblu.events.EventSettings;
 import com.cpjd.roblu.forms.EditForm;
 import com.cpjd.roblu.forms.ElementsProcessor;
-import com.cpjd.roblu.forms.elements.ESTextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
@@ -65,9 +67,6 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
-
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -96,6 +95,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
     private RecyclerView rv;
     private TeamsAdapter adapter;
+    private IntentFilter serviceFilter;
 
     // Filter & searching
     private int lastFilter;
@@ -236,31 +236,19 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             new Loader(getApplicationContext()).saveSettings(settings);
         }
 
+        // locate the background service
+        serviceFilter = new IntentFilter();
+        serviceFilter.addAction("com.cpjd.roblu.broadcast.main");
+
         loadEvents();
         selectEvent(settings.getLastEventID());
 
-        // Launch UI ma
-        // ager
         new UIHandler(this, toolbar, fab, true).update();
 
         // Start the service if it isn't running already
         if(!Text.isMyServiceRunning(getApplicationContext())) {
-            System.out.println("Starting background service...");
             Intent serviceIntent = new Intent(this, Service.class);
             startService(serviceIntent);
-        }
-        try {
-            ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-            RForm read = new Loader(getApplicationContext()).loadForm(0);
-            System.out.println("Read: "+read.getPit().get(0).getTitle());
-            String json = mapper.writeValueAsString(read);
-            System.out.println(("Serialized form, attempting to deserialize: "+json));
-            RForm form = mapper.readValue(json, RForm.class);
-            System.out.println("Deserialized: "+form.getPit().get(0).getTitle());
-            System.out.println(form.getPit().get(0) instanceof ESTextfield);
-        } catch(Exception e) {
-            e.printStackTrace();
-            System.out.println("Failed: "+e.getMessage());
         }
     }
 
@@ -474,6 +462,25 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         d.show();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(serviceReceiver, serviceFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(serviceReceiver);
+    }
+
+    private BroadcastReceiver serviceReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            new LoadTeams(true, lastQuery, lastSortToken, lastFilter).execute();
+        }
+    };
 
     private void createTeam() {
         if(event == null) return;

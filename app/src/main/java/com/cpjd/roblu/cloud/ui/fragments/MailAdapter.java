@@ -9,6 +9,9 @@ public class MailAdapter extends FragmentPagerAdapter {
 
     private final long eventID;
 
+    private ConflictsFragment conflicts;
+    private InboxFragment inbox;
+
     public MailAdapter(FragmentManager fm, long eventID) {
         super(fm);
         this.eventID = eventID;
@@ -18,14 +21,19 @@ public class MailAdapter extends FragmentPagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putLong("eventID", eventID);
         if(i == 0) {
-            ConflictsFragment conflicts = new ConflictsFragment();
+            conflicts = new ConflictsFragment();
             conflicts.setArguments(bundle);
             return conflicts;
         } else {
-            InboxFragment inbox = new InboxFragment();
+            inbox = new InboxFragment();
             inbox.setArguments(bundle);
             return inbox;
         }
+    }
+
+    public void forceUpdate(boolean updateConflicts) {
+        if(updateConflicts) conflicts.forceUpdate();
+        else inbox.forceUpdate();
     }
 
     @Override

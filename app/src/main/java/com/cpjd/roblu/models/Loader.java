@@ -261,7 +261,7 @@ public class Loader extends IO {
         serializeObject(checkout, PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkout.getID()+".ser");
     }
 
-    private RCheckout loadCheckoutConflict(long checkoutID) {
+    public RCheckout loadCheckoutConflict(long checkoutID) {
         return (RCheckout) deserializeObject(PREFIX+File.separator+"checkoutsconflicts"+File.separator+checkoutID+".ser");
     }
 
@@ -275,16 +275,10 @@ public class Loader extends IO {
         return checkouts;
     }
 
-    public long getNewCheckoutConflictID() {
-        File[] files = getChildFiles(PREFIX+ File.separator+"checkoutsconflicts"+File.separator);
-        if(files == null || files.length == 0) return 0;
-        long topID = 0;
-        for(File f : files) {
-            long newID = Long.parseLong(f.getName().replaceAll(".ser", ""));
-            if(newID > topID) topID = newID;
-        }
-        return topID + 1;
+    public void deleteCheckoutConflict(long ID) {
+        delete(new File(context.getFilesDir(), PREFIX+File.separator+"checkoutsconflicts"+File.separator+ID+".ser"));
     }
+
 
     /**
      * MERGED CHECKOUTS

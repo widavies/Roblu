@@ -48,16 +48,22 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
-        RCheckout[] conflicts = new Loader(getActivity()).loadCheckoutConflicts();
-        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
+        forceUpdate();
+
         return view;
+    }
+
+    public void forceUpdate() {
+        RCheckout[] conflicts = new Loader(getActivity()).loadCheckoutConflicts();
+        adapter.setCheckouts(null);
+        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
     }
 
     @Override
     public void checkoutClicked(View v) {
         RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
         RForm form = new Loader(getActivity()).loadForm(eventID);
-        if(checkout.getConflictType().equals("Local copy already edited")) {
+        if(checkout.getConflictType().equals("edited")) {
             RTeam conflict = checkout.getTeam().duplicate();
             conflict.verify(form);
 

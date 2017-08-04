@@ -1,5 +1,6 @@
 package com.cpjd.roblu.cloud.ui.fragments;
 
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -10,6 +11,7 @@ import android.view.View;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RUI;
 
 /**
@@ -28,9 +30,12 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final int xMarkMargin;
     private final int mode;
 
+    private CheckoutAdapter elementsAdapter;
+
     public CheckoutsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mode = mode;
+        this.elementsAdapter = elementsAdapter;
 
         RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
 
@@ -49,12 +54,31 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
     @Override
     public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
         if(mode == CheckoutAdapter.CONFLICTS) {
+            Loader l = new Loader(elementsAdapter.getContext());
+            RCheckout checkout = l.loadCheckout(elementsAdapter.getCheckout(viewHolder.getAdapterPosition()).getID());
             if(direction == ItemTouchHelper.LEFT) {
                 // Merge the checkout
+                checkout.setMergedTime(System.currentTimeMillis());
+                checkout.setSyncRequired(true);
+                checkout.setID(l.getNewCheckoutID());
+                l.deleteCheckoutConflict(checkout.getID());
+                l.saveCheckout(checkout);
+                elementsAdapter.remove(viewHolder.getAdapterPosition());
+                elementsAdapter.notifyDataSetChanged();
+                Intent broadcast = new Intent();
+                broadcast.setAction("com.cpjd.roblu.broadcast");
+                broadcast.putExtra("mode", 2);
+                elementsAdapter.getContext().sendBroadcast(broadcast);
 
-
+                // Updates the main list
+                Intent broadcast2 = new Intent();
+                broadcast2.setAction("com.cpjd.roblu.broadcast.main");
+                elementsAdapter.getContext().sendBroadcast(broadcast2);
             } else {
                 // Discard the checkout
+                l.deleteCheckoutConflict(checkout.getID());
+                elementsAdapter.remove(viewHolder.getAdapterPosition());
+                elementsAdapter.notifyDataSetChanged();
             }
         }
     }

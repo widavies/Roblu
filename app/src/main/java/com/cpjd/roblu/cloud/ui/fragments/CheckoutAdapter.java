@@ -96,9 +96,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if(checkouts == null) checkouts = new ArrayList<>();
         return checkouts.size();
     }
-
     public void remove(final int position) {
-        RCheckout assignment = checkouts.get(position);
         notifyItemRemoved(position);
     }
     private class MyViewHolder extends RecyclerView.ViewHolder{
@@ -135,10 +133,13 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (already edited) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
                 }
             }
+            if(mode == CONFLICTS) {
+                if(checkout.getConflictType().startsWith("not-found")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nDoesn't exist in local repository");
+                else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nLocal copy is already edited");
+            }
             title.setText(checkout.getTeam().getName());
             String numberText = "#"+checkout.getTeam().getNumber();
             number.setText(numberText);
-
         }
     }
 
