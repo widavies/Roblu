@@ -1,15 +1,19 @@
 package com.cpjd.roblu.cloud.sync;
 
-import android.content.Context;
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.os.AsyncTask;
-import android.widget.Toast;
+import android.util.Log;
 
+import com.cpjd.roblu.R;
 import com.cpjd.roblu.cloud.api.CloudRequest;
+import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.utils.Text;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -25,16 +29,20 @@ import java.util.ArrayList;
  */
 public class InitPacker extends AsyncTask<Void, Void, Boolean> {
 
-    private final Context context;
+    private final Activity activity;
     private final long eventID;
 
-    public InitPacker(Context context, long eventID) {
-        this.context = context;
+    private ProgressDialog d;
+
+    public InitPacker(Activity activity, long eventID) {
+        this.activity = activity;
         this.eventID = eventID;
+
+        d = ProgressDialog.show(activity, "Uploading...", "Please wait while Roblu uploads the event to the server.", true);
     }
 
     protected Boolean doInBackground(Void... params) {
-        Loader l = new Loader(context);
+        Loader l = new Loader(activity);
 
         // loading
         RForm form = l.loadForm(eventID);
@@ -42,6 +50,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         if(teams == null || teams.length == 0) return false;
 
         form.setModified(true); // form needs to be synced the first time
+        l.saveForm(form, eventID);
 
         ArrayList<RCheckout> checkouts = new ArrayList<>();
 
@@ -53,11 +62,19 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         int id = 0;
         // Create pit checkouts first
         for(RTeam team : teams) {
+            if(team.getName().startsWith("Team RUSH")) {
+                Log.d("RBS", "There are "+((EGallery)team.getTabs().get(0).getElements().get(3)).getImages().size()+" images");
+            }
+
             RTeam temp = team.duplicate();
+            if(temp.getName().startsWith("Team RUSH")) {
+                Log.d("RBS", "Thasdfasdfere are "+((EGallery)temp.getTabs().get(0).getElements().get(3)).getImages().size()+" images");
+            }
             temp.removeAllTabsButPIT();
             RCheckout check = new RCheckout(temp);
             check.setID(id);
             check.setStatus("Available");
+
             checkouts.add(check);
             id++;
         }
@@ -85,10 +102,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(checkouts);
-
-            System.out.println(new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(l.getEvent(eventID).getName(), json));
-//            RCheckout[] imported = mapper.readValue(json, TypeFactory.defaultInstance().constructArrayType(RCheckout.class));
-
+            new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(l.getEvent(eventID).getName(), json);
         } catch(Exception e) {
             System.out.println("An error occured: "+e.getMessage());
             e.printStackTrace();
@@ -108,15 +122,12 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
          */
          l.clearCheckouts();
 
-        /*
-         * Clear tasks in background service
-         */
-
         return true;
     }
     @Override
     protected void onPostExecute(Boolean result) {
-        Toast.makeText(context, "Successfully uploaded checkouts", Toast.LENGTH_LONG).show();
+        d.dismiss();
+        Text.showSnackbar(activity.findViewById(R.id.event_settings), activity, "Event successfully synced", false, new Loader(activity).loadSettings().getRui().getPrimaryColor());
     }
 
 

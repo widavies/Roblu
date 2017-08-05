@@ -77,13 +77,33 @@ public class Text {
 
     private static int width;
 
+    /**
+     * The width variable is used for controlling a maximum size for certain
+     * UI elements. We have to set the width video at startup by reading it
+     * from the display.
+     * @param activity
+     */
     public static void initWidth(Activity activity) {
+        // these lines of code get the width of the phone's screen, in pixels.
         Display display = activity.getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
         width = size.x;
     }
 
+    /**
+     * Gets the width set by initWidth()
+     * @return
+     */
+    public static int getWidth() {
+        return width;
+    }
+
+    /**
+     * Checks if the device has an active WiFi or Data connection
+     * @param context
+     * @return true if a connection is available
+     */
     public static boolean hasInternetConnection(Context context) {
         ConnectivityManager cm =
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
@@ -93,6 +113,14 @@ public class Text {
                 activeNetwork.isConnectedOrConnecting();
     }
 
+    /**
+     * Sets TextInputLayout colors to match the scheme set in RUI. (RUI is the UI model in /models that stores
+     * all the UI attributes)
+     * @param accent the accent color
+     * @param text the text color
+     * @param textInputLayout the element to set colors to, layout
+     * @param edit the actual edit text element
+     */
     public static void setInputTextLayoutColor(final int accent, final int text, TextInputLayout textInputLayout, final AppCompatEditText edit) {
         edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -131,6 +159,12 @@ public class Text {
         }
     }
 
+    /**
+     * If you look in a text field, there is usually a vertical line that blinks.
+     * This is the CURSOR, and we can change it's color here.
+     * @param view The edit text to change the cursor color of
+     * @param color the color to change it to
+     */
     public static void setCursorColor(AppCompatEditText view, @ColorInt int color) {
         try {
             // Get the cursor resource id
@@ -156,6 +190,11 @@ public class Text {
         }
     }
 
+    /**
+     * Takes a string arraylist and concatenates it into a comma seperated string
+     * @param data
+     * @return
+     */
     public static String concatenateArraylist(ArrayList<String> data) {
         if(data == null || data.size() == 0) return "";
         String temp = "";
@@ -163,15 +202,26 @@ public class Text {
         return temp;
     }
 
-    public static int getWidth() {
-        return width;
-    }
-
-    public static double round (double value, int precision) {
+    /**
+     * Rounds a decimal to the specified number of digits (right of decimal point)
+     * @param value the value to round
+     * @param precision the amount of digits to keep
+     * @return rounded double
+     */
+    public static double round(double value, int precision) {
         int scale = (int) Math.pow(10, precision);
         return (double) Math.round(value * scale) / scale;
     }
 
+    /**
+     * A snackbar is a neat little UI element, it's that horizontal banner that
+     * can display messages at the bottom of the screen
+     * @param layout the anchor layout to display the snackbar on
+     * @param context
+     * @param text the text to display
+     * @param error true if this is an error message
+     * @param primary the color of the snackbar, if it's not an error message
+     */
     public static void showSnackbar(View layout, Context context, String text, boolean error, int primary) {
         Snackbar s = Snackbar.make(layout, text, Snackbar.LENGTH_LONG);
         if(error) s.getView().setBackgroundColor(ContextCompat.getColor(context, R.color.red));
@@ -179,6 +229,13 @@ public class Text {
         s.show();
     }
 
+    /**
+     * Creates an empty form for an event (not technically empty).
+     *
+     * Makes sure that nothing is null and that we have the required
+     * team name and team number fields
+     * @return
+     */
     public static RForm createEmpty() {
         ArrayList<Element> pit = new ArrayList<>();
         ArrayList<Element> matches = new ArrayList<>();
@@ -190,6 +247,12 @@ public class Text {
         return new RForm(pit, matches);
     }
 
+    /**
+     * We can almost always determine the match key of a match based off
+     * it's name.
+     * @param matchName
+     * @return
+     */
     public static String guessMatchKey(String matchName) {
         matchName = matchName.toLowerCase();
         if(matchName.startsWith("quals")) return "qm"+matchName.split("\\s+")[1];
@@ -199,8 +262,12 @@ public class Text {
         return "";
     }
 
-    /*
-     * Used for sorting matches
+    /**
+     * This is a really, really bad way of sorting matches. This should be updated
+     * at some point, but currently the developer has more important things to work on,
+     * and if it ain't broke, why fix it?
+     * @param name the match's name (e.g. Quarters 1 Match 2)
+     * @return the score representing this matches name, good for sorting
      */
     public static long getMatchScore(String name) {
         long score = 0;
@@ -232,6 +299,12 @@ public class Text {
         return score;
     }
 
+    /**
+     * In certain cases, we need to duplicate elements to avoid using the same references.
+     * In Java, we have to do this by manually creating new items and setting equal attributes.
+     * @param elements
+     * @return
+     */
     public static ArrayList<Element> createNew(ArrayList<Element> elements) {
         ArrayList<Element> newElements = new ArrayList<>();
         for(Element e : elements) {
@@ -240,6 +313,12 @@ public class Text {
         return newElements;
     }
 
+    /**
+     * In certain cases, we need to duplicate elements to avoid using the same references.
+     * In Java, we have to do this by manually creating new items and setting equal attributes.
+     * @param e
+     * @return
+     */
     public static Element createNew(Element e) {
         Element t = null;
         if(e instanceof EBoolean) {
@@ -267,10 +346,17 @@ public class Text {
         }
         else if(e instanceof EGallery) {
             t = new EGallery(e.getTitle());
+            ((EGallery)t).setImages(((EGallery) e).getImages());
         }
         if(t != null) t.setID(e.getID());
         return t;
     }
+
+    /**
+     * Used for displaying a list of teams in a comma seperated string
+     * @param teams
+     * @return
+     */
     public static String concantenteTeams(ArrayList<RTeam> teams) {
         if(teams == null || teams.size() == 0) return "";
 
@@ -281,6 +367,15 @@ public class Text {
         }
         return temp;
     }
+
+    /**
+     * For certain things, the user may need to select an event from a list of locally stored event,
+     * this method does just that! The EventSelectListener method will trigger when an event is successfully
+     * selected.
+     * @param context
+     * @param listener
+     * @return
+     */
 	public static boolean launchEventPicker(Context context, final EventSelectListener listener) {
         final Dialog d = new Dialog(context);
         d.setTitle("Pick event:");
@@ -310,7 +405,14 @@ public class Text {
         return true;
     }
 
-	// Converts unix millisecond time into a human readable time
+    /**
+     * Time in Roblu is stored as milliseconds, or "Unix" time, this is the amount of time that has passed since
+     * January 1, 1970. This is because computers are good at keeping track of simple numbers, but things get a bit more
+     * tricky when we have to account for hours, minutes, days, timezones, day light savings, etc. Any who, this method
+     * converts those milliseconds into a nice friendly string like "Aug 1, 2017 8:23 am"
+     * @param timeMillis
+     * @return
+     */
 	public static String convertTime(long timeMillis) {
         if(timeMillis == 0) return "Never";
 		SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy h:mm a", Locale.getDefault());    
@@ -319,6 +421,11 @@ public class Text {
 
 	}
 
+    /**
+     * Same as the above method, except that it only shows time, not date.
+     * @param timeMillis
+     * @return
+     */
 	public static String convertTimeOnly(long timeMillis) {
         if(timeMillis == 0) return "Never";
         SimpleDateFormat sdf = new SimpleDateFormat("h:mm a", Locale.getDefault());
@@ -326,6 +433,11 @@ public class Text {
         return sdf.format(resultdate);
     }
 
+    /**
+     * Duplicates tabs to prevent the "hated reference error"
+     * @param tabs
+     * @return
+     */
 	public static ArrayList<RTab> createNewTabs(ArrayList<RTab> tabs) {
         if(tabs == null || tabs.size() == 0) return tabs;
         ArrayList<RTab> toReturn = new ArrayList<>();
@@ -333,16 +445,30 @@ public class Text {
         return toReturn;
     }
 
+    /**
+     * Gets the current day of the week, as a string like "Sunday"
+     * @param dayOfWeek
+     * @return
+     */
 	public static String getDay(int dayOfWeek) {
 		return Constants.daysOfWeek[dayOfWeek];
 	}
-	
+
+    /**
+     * Gets the string of the month, like "January"
+     * @param month
+     * @return
+     */
 	public static String getMonth(int month) {
 		return Constants.monthsOfYear[month];
 	}
 
+    /**
+     * This is actually not my code as cool as an AtomicInteger sounds, essentially, we really like
+     * using Android's generateViewId method, but we want to also support sdk 16, so we manually
+     * implement this method for differentiating ui elements
+     */
     private static final AtomicInteger sNextGeneratedId = new AtomicInteger(1);
-
     public static int generateViewId() {
         for (;;) {
             final int result = sNextGeneratedId.get();
@@ -355,12 +481,27 @@ public class Text {
         }
     }
 
+    /**
+     * Converts DP to pixels. Look it up, its hard to explain.
+     * @param context
+     * @param dp
+     * @return
+     */
     public static int DPToPX(Context context, int dp) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int)(dp * scale + 0.5f);
     }
 
-    // with whitespace
+    /**
+     * This is not just any run of the mill "contains" method, it's a contains method that makes our
+     * search algorithms a bit better. For example, if we were to search "rush"
+     * and we had the local teams "Team RUSH" and "Team CRUSH", Team CRUSH would actually be ranked
+     * higher in search results that "Team RUSH". So, this method gives items a bit more relevance
+     * points if, like in 'Team RUSH", the query has whitespace before or after it.
+     * @param string
+     * @param query
+     * @return
+     */
     public static boolean contains(String string, String query) {
         if(string.equals(query)) return false;
         if(!string.contains(query)) return false;
@@ -370,6 +511,13 @@ public class Text {
         return string.contains(query);
     }
 
+    /**
+     * Displays the locally stored team code for Roblu Cloud, also allows the user to copy it to their clipboard
+     * automatically or regenerate it.
+     * @param context
+     * @param teamCode
+     * @param listener
+     */
     public static void showTeamCode(final Context context, final String teamCode, final RegenTokenListener listener) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
 
@@ -397,6 +545,12 @@ public class Text {
         if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
         dialog.show();
     }
+
+    /**
+     * Checks if the Roblu background service is running
+     * @param context
+     * @return true if the background sevice is running
+     */
     public static boolean isMyServiceRunning(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
@@ -406,6 +560,13 @@ public class Text {
         }
         return false;
     }
+
+    /**
+     * Confirms a Roblu Cloud team code regenerate, if yes, then contacts the server
+     * and requests and team code regeneration.
+     * @param context
+     * @param listener
+     */
     private static void confirmRegenerate(final Context context, final RegenTokenListener listener) {
         final RSettings settings = new Loader(context).loadSettings();
 
@@ -452,5 +613,4 @@ public class Text {
         if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getDialogDirection();
         dialog.show();
     }
-
 }

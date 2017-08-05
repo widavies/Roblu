@@ -287,7 +287,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         JSONObject response2 = (JSONObject) response.get("data");
                         settings.setAuth(response2.get("auth").toString());
                         new Loader(getActivity()).saveSettings(settings);
-                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully signed in to Roblu Cloud with auth "+settings.getAuth(), false, rui.getPrimaryColor());
+                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully signed in to Roblu Cloud", false, rui.getPrimaryColor());
                         updateUI(true);
                     } catch(Exception e) {
                         System.out.println(e.getMessage());

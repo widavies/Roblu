@@ -1,6 +1,7 @@
 package com.cpjd.roblu.cloud.ui.fragments;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -28,10 +29,11 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
     private RecyclerView rv;
     private CheckoutAdapter adapter;
     private long eventID;
+    private View view;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.assignments_tab, container, false);
+        view = inflater.inflate(R.layout.assignments_tab, container, false);
 
         Bundle bundle = this.getArguments();
         eventID = bundle.getLong("eventID");
@@ -54,9 +56,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
     }
 
     public void forceUpdate() {
-        RCheckout[] conflicts = new Loader(getActivity()).loadCheckoutConflicts();
-        adapter.setCheckouts(null);
-        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
+        new LoadCheckouts().execute();
     }
 
     @Override
@@ -94,6 +94,31 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
             intent.putExtra("team", checkout.getTeam().getID());
             intent.putExtra("readOnly", true);
             startActivity(intent);
+        }
+    }
+
+    private class LoadCheckouts extends AsyncTask<Void, Void, ArrayList<RCheckout>> {
+
+        private Loader l;
+
+        public LoadCheckouts() {
+            l = new Loader(view.getContext());
+        }
+
+        @Override
+        public ArrayList<RCheckout> doInBackground(Void... params) {
+            RCheckout[] conflicts = l.loadCheckoutConflicts();
+            if(conflicts == null || conflicts.length == 0) return null;
+
+            return new ArrayList<>(Arrays.asList(conflicts));
+        }
+
+        @Override
+        public void onPostExecute(ArrayList<RCheckout> checkouts) {
+            if(adapter != null) {
+                adapter.removeAll();
+                adapter.setCheckouts(checkouts);
+            }
         }
     }
 }

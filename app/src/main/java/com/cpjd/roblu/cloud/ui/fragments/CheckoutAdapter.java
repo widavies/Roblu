@@ -96,6 +96,10 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         if(checkouts == null) checkouts = new ArrayList<>();
         return checkouts.size();
     }
+    public void removeAll() {
+       if(checkouts != null) checkouts.clear();
+    }
+
     public void remove(final int position) {
         notifyItemRemoved(position);
     }
@@ -116,7 +120,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             title.setTextColor(rui.getText());
             number.setTextColor(rui.getText());
             subtitle.setTextColor(rui.getText());
-
+            this.title.setMaxWidth((int)(Text.getWidth()* 0.85));
             if(mode == MYMATCHES) {
                 title.setText(checkout.getTeam().getTabs().get(0).getTitle());
                 number.setText("");

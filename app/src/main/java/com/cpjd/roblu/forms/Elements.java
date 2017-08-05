@@ -399,9 +399,14 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
             spinner.setSelection(selected);
         }
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            boolean first;
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                listener.chooserUpdated(ID, i);
+                if(!first) {
+                    first = true;
+                    return;
+                }
+                if(first) listener.chooserUpdated(ID, i);
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
@@ -681,6 +686,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         textView.setMaxWidth(width);
         textView.setWidth(width);
         textView.setMaxLines(1);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
 
         Button open = new Button(activity);
         open.setText(R.string.open);
@@ -714,26 +720,9 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         textView.setPadding(Text.DPToPX(activity, 8), textView.getPaddingTop(),textView.getPaddingRight(), textView.getPaddingBottom());
         textView.setLayoutParams(params);
-
-        TextView tip = new TextView(activity);
-        tip.setTag("tip");
-        tip.setText(R.string.contains_no_images);
-        tip.setId(Text.generateViewId());
-        tip.setTextColor(rui.getText());
-        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-        textView.setLayoutParams(params);
-        params.addRule(RelativeLayout.BELOW, textView.getId());
-        tip.setLayoutParams(params);
-        tip.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-        tip.setPadding(Text.DPToPX(activity, 8), Text.DPToPX(activity, 30), tip.getPaddingRight(), tip.getPaddingBottom());
-        textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22);
-        tip.setMaxLines(1);
-
         layout.setTag(ID);
 
         layout.addView(textView);
-        layout.addView(tip);
         layout.addView(open);
         return getCard(layout);
     }

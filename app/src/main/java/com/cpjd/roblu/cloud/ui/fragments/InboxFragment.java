@@ -1,5 +1,6 @@
 package com.cpjd.roblu.cloud.ui.fragments;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -21,10 +22,11 @@ import java.util.Arrays;
 public class InboxFragment extends Fragment {
 
     private CheckoutAdapter adapter;
+    private View view;
 
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.assignments_tab, container, false);
+        view = inflater.inflate(R.layout.assignments_tab, container, false);
 
         Bundle bundle = this.getArguments();
 
@@ -40,13 +42,38 @@ public class InboxFragment extends Fragment {
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
+        forceUpdate();
+
         return view;
     }
 
     public void forceUpdate() {
-        RCheckout[] conflicts = new Loader(getActivity()).loadCheckouts();
-        adapter.setCheckouts(null);
-        if(conflicts != null) adapter.setCheckouts(new ArrayList<>(Arrays.asList(conflicts)));
+        new LoadCheckouts().execute();
+    }
+
+    private class LoadCheckouts extends AsyncTask<Void, Void, ArrayList<RCheckout>> {
+
+        private Loader l;
+
+        public LoadCheckouts() {
+            l = new Loader(view.getContext());
+        }
+
+        @Override
+        public ArrayList<RCheckout> doInBackground(Void... params) {
+            RCheckout[] conflicts = l.loadCheckouts();
+            if(conflicts == null || conflicts.length == 0) return null;
+
+            return new ArrayList<>(Arrays.asList(conflicts));
+        }
+
+        @Override
+        public void onPostExecute(ArrayList<RCheckout> checkouts) {
+            if(adapter != null) {
+                adapter.removeAll();
+                adapter.setCheckouts(checkouts);
+            }
+        }
     }
 
 }

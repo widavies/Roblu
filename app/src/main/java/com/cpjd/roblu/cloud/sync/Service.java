@@ -211,7 +211,7 @@ public class Service extends android.app.Service {
                     }
                     // notify the user here
                     if(auto > 0) {
-                        Notify.notify(getApplicationContext(), "Merged "+auto+" checkouts.", checkouts.size()+" were automatically merged at "+Text.convertTimeOnly(System.currentTimeMillis()));
+                        Notify.notify(getApplicationContext(), "Merged "+auto+" checkouts.", checkouts.size()+" checkout(s) were automatically merged at "+Text.convertTimeOnly(System.currentTimeMillis()));
                         Intent broadcast = new Intent();
                         broadcast.setAction("com.cpjd.roblu.broadcast");
                         broadcast.putExtra("mode", 1);
