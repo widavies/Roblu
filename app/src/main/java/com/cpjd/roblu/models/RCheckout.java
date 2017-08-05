@@ -24,6 +24,12 @@ public class RCheckout implements Serializable, Comparable<RCheckout> {
     private long ID;
 
     /**
+     * The historical ID is simply used for storing multiple merges
+     * of the same team
+     */
+    private long historyID;
+
+    /**
      * If you look in the RTeam model, it contains an ArrayList of RTab.
      * This team should be filtered upon packaging to only include the tabs
      * required to this checkout. It might either include the PIT and PREDICTIONS tab, or one

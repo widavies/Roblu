@@ -30,6 +30,12 @@ public class RTab implements Serializable, Comparable<RTab> {
     private transient ArrayList<RTeam> teammates;
     private transient ArrayList<RTeam> opponents;
 
+    /**
+     * This boolean will be flagged to true if this tab
+     * was modified and needs to be pushed to the server
+     */
+    private boolean modified;
+
     // jackson requires an empty constructor
     public RTab() {}
 
@@ -48,5 +54,9 @@ public class RTab implements Serializable, Comparable<RTab> {
     @Override
     public int compareTo(RTab tab) {
         return ((Long)Text.getMatchScore(title)).compareTo(Text.getMatchScore(tab.getTitle()));
+    }
+
+    public void setModified(REvent event) {
+        if(event.isCloudEnabled()) modified = true;
     }
 }

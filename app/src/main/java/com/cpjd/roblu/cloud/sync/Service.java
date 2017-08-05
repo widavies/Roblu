@@ -169,7 +169,7 @@ public class Service extends android.app.Service {
                     for(int i = 0; i < checkouts.size(); i++) {
                         JSONObject object = (JSONObject) checkouts.get(i);
                         RCheckout checkout = mapper.readValue(object.get("content").toString(), RCheckout.class);
-                        Log.d("RBS", object.toString());
+                        checkout.setStatus(checkout.getStatus().replace("\nWaiting to upload", ""));
                         checkout.setSyncRequired(false);
 
                         Log.d("RBS", "ReceivedCheckout with "+checkout.getTeam().getTabs().get(1).getElements().size());
@@ -197,11 +197,12 @@ public class Service extends android.app.Service {
                                         Log.d("RBS", "Updating tabs... Value: "+((ECounter)checkout.getTeam().getTabs().get(1).getElements().get(0)).getCurrent());
                                         temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
                                     }
+                                    temp.updateEdit();
                                     l.saveTeam(temp, activeEvent.getID());
                                     // save the checkout in the merge history
                                     checkout.setMergedTime(System.currentTimeMillis());
                                     checkout.setSyncRequired(true); // update the master checkouts repo
-                                    checkout.setID(new Loader(getApplicationContext()).getNewCheckoutID());
+                                    checkout.setHistoryID(new Loader(getApplicationContext()).getNewCheckoutID());
                                     new Loader(getApplicationContext()).saveCheckout(checkout);
                                     auto++;
                                     break;

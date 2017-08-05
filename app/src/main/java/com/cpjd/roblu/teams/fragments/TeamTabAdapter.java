@@ -9,6 +9,7 @@ import android.support.v4.view.PagerAdapter;
 
 import com.cpjd.roblu.forms.SaveThread;
 import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
@@ -35,6 +36,9 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private boolean removing;
     private final boolean readOnly;
 
+    private final boolean isConflict;
+    private final RCheckout checkout;
+
     public TeamTabAdapter(FragmentManager fm, REvent event, RTeam team, RForm form, Context context, boolean readOnly) {
         super(fm);
         this.event = event;
@@ -42,6 +46,19 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         this.form = form;
         this.context = context;
         this.readOnly = readOnly;
+        this.isConflict = false;
+        this.checkout = null;
+    }
+
+    public TeamTabAdapter(FragmentManager fm, REvent event, RCheckout checkout, RForm form, Context context) {
+        super(fm);
+        this.form = form;
+        this.context = context;
+        this.readOnly = true;
+        this.team = checkout.getTeam();
+        this.event = event;
+        this.isConflict = true;
+        this.checkout = checkout;
     }
 
     public boolean isPageRed(int page) {
@@ -55,6 +72,10 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         bundle.putSerializable("event", event);
         bundle.putLong("team", team.getID());
         bundle.putSerializable("position", 0);
+        if(isConflict) {
+            bundle.putBoolean("isConflict", true);
+            bundle.putLong("checkout", checkout.getID());
+        }
 
         if (i == 0 && !readOnly) {
             Overview overview = new Overview();
@@ -107,7 +128,10 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", readOnly);
         bundle.putInt("position", position);
-
+        if(isConflict) {
+            bundle.putBoolean("isConflict", true);
+            bundle.putLong("checkout", checkout.getID());
+        }
         Match match = new Match();
         match.setArguments(bundle);
         return match;

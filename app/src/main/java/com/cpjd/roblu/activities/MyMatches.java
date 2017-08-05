@@ -150,7 +150,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
         rv.setAdapter(adapter);
 
         // manages the gestures that are available to us (recyclerview supports a lot of gestures, we only need the click gesture for this scenario)
-        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.MYMATCHES);
+        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.MYMATCHES, eventID);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 

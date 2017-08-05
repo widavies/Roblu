@@ -55,7 +55,8 @@ public class Match extends Fragment implements ElementsListener {
 
         Bundle bundle = this.getArguments();
         event = (REvent) bundle.getSerializable("event");
-        team = new Loader(view.getContext()).loadTeam(event.getID(), bundle.getLong("team"));
+        if(bundle.getBoolean("isConflict", false)) team = new Loader(view.getContext()).loadCheckoutConflict(bundle.getLong("checkout")).getTeam();
+        else team = new Loader(view.getContext()).loadTeam(event.getID(), bundle.getLong("team"));
         form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
         readOnly = bundle.getBoolean("readOnly");
@@ -176,6 +177,7 @@ public class Match extends Fragment implements ElementsListener {
     // Start a save thread and save everything to the file system
     private void save() {
         if(!readOnly) {
+            team.getTabs().get(position).setModified(event);
             new SaveThread(view.getContext(), event.getID(), team);
         }
     }

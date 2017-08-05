@@ -38,7 +38,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         this.activity = activity;
         this.eventID = eventID;
 
-        d = ProgressDialog.show(activity, "Uploading...", "Please wait while Roblu uploads the event to the server.", true);
+        d = ProgressDialog.show(activity, "Uploading...", "Please wait while Roblu uploads the event to Roblu Cloud.", true);
     }
 
     protected Boolean doInBackground(Void... params) {
@@ -102,7 +102,10 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
         ObjectMapper mapper = new ObjectMapper();
         try {
             String json = mapper.writeValueAsString(checkouts);
-            new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(l.getEvent(eventID).getName(), json);
+            String eventName = l.getEvent(eventID).getName();
+            if(eventName.equals("null")) eventName = "nnull";
+
+            new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(eventName, json);
         } catch(Exception e) {
             System.out.println("An error occured: "+e.getMessage());
             e.printStackTrace();

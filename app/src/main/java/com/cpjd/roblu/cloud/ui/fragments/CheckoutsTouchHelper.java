@@ -12,6 +12,7 @@ import android.view.View;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 
 /**
@@ -29,10 +30,11 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final Drawable xMark, editMark;
     private final int xMarkMargin;
     private final int mode;
+    private long eventID;
 
     private CheckoutAdapter elementsAdapter;
 
-    public CheckoutsTouchHelper(CheckoutAdapter elementsAdapter, int mode) {
+    public CheckoutsTouchHelper(CheckoutAdapter elementsAdapter, int mode, long eventID) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mode = mode;
         this.elementsAdapter = elementsAdapter;
@@ -44,6 +46,8 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
         xMarkMargin = 100;
         editMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.clear);
         editMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
+
+        this.eventID = eventID;
     }
 
     @Override
@@ -55,30 +59,48 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
     public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
         if(mode == CheckoutAdapter.CONFLICTS) {
             Loader l = new Loader(elementsAdapter.getContext());
-            RCheckout checkout = l.loadCheckout(elementsAdapter.getCheckout(viewHolder.getAdapterPosition()).getID());
-            if(direction == ItemTouchHelper.LEFT) {
+            RCheckout checkout = l.loadCheckoutConflict(elementsAdapter.getCheckout(viewHolder.getAdapterPosition()).getID());
+            if(direction == ItemTouchHelper.LEFT && checkout.getConflictType().equals("edited")) {
                 // Merge the checkout
                 checkout.setMergedTime(System.currentTimeMillis());
                 checkout.setSyncRequired(true);
-                checkout.setID(l.getNewCheckoutID());
                 l.deleteCheckoutConflict(checkout.getID());
+                checkout.setHistoryID(l.getNewCheckoutID());
                 l.saveCheckout(checkout);
                 elementsAdapter.remove(viewHolder.getAdapterPosition());
-                elementsAdapter.notifyDataSetChanged();
-                Intent broadcast = new Intent();
-                broadcast.setAction("com.cpjd.roblu.broadcast");
-                broadcast.putExtra("mode", 2);
-                elementsAdapter.getContext().sendBroadcast(broadcast);
-
                 // Updates the main list
                 Intent broadcast2 = new Intent();
                 broadcast2.setAction("com.cpjd.roblu.broadcast.main");
                 elementsAdapter.getContext().sendBroadcast(broadcast2);
-            } else {
+
+                if(checkout.getConflictType().equals("edited")) {
+                    // Merge into master repo
+                    RTeam team = l.loadTeam(eventID, checkout.getTeam().getID());
+                    for(int j = 0; j < team.getTabs().size(); j++) {
+                        if(team.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
+                            for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
+                                team.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
+                            }
+                            team.updateEdit();
+                            l.saveTeam(team, eventID);
+                            break;
+                        }
+                    }
+                } else {
+                    RTeam team = checkout.getTeam();
+                    team.updateEdit();
+                    team.setID(l.getNewTeamID(eventID));
+                    l.saveTeam(team, eventID);
+                }
+
+            }  else {
                 // Discard the checkout
                 l.deleteCheckoutConflict(checkout.getID());
                 elementsAdapter.remove(viewHolder.getAdapterPosition());
-                elementsAdapter.notifyDataSetChanged();
+                Intent broadcast = new Intent();
+                broadcast.setAction("com.cpjd.roblu.broadcast");
+                broadcast.putExtra("mode", 2);
+                elementsAdapter.getContext().sendBroadcast(broadcast);
             }
         }
     }

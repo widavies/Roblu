@@ -95,7 +95,10 @@ public class Loader extends IO {
         File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+team.getID()+".ser");
         delete(file);
     }
-
+    public void deleteTeam(long teamID, long eventID) {
+        File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+teamID+".ser");
+        delete(file);
+    }
     public RForm loadForm(long ID) {
         if(ID == -1) return (RForm) deserializeObject(PREFIX+File.separator+"master_form.ser");
 
@@ -288,7 +291,7 @@ public class Loader extends IO {
         if(!file.exists()) {
             if(!file.mkdir()) System.out.println("Failed to create directory for teams");
         }
-        serializeObject(checkout, PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser");
+        serializeObject(checkout, PREFIX+File.separator+"checkouts"+File.separator+checkout.getHistoryID()+".ser");
     }
 
     public RCheckout loadCheckout(long checkoutID) {

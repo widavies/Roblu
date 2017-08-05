@@ -101,6 +101,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     }
 
     public void remove(final int position) {
+        checkouts.remove(position);
         notifyItemRemoved(position);
     }
     private class MyViewHolder extends RecyclerView.ViewHolder{
@@ -117,6 +118,8 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         }
 
         private void bindMovie(RCheckout checkout) {
+            if(checkout == null) return;
+
             title.setTextColor(rui.getText());
             number.setTextColor(rui.getText());
             subtitle.setTextColor(rui.getText());
@@ -132,6 +135,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             }
             if(mode == INBOX) {
                 if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nAutomatically merged on "+Text.convertTime(checkout.getMergedTime()));
+                else if(checkout.getConflictType().equals("local-edit")) subtitle.setText("Locally edited on "+Text.convertTime(checkout.getTeam().getLastEdit())+" and uploaded to server.");
                 else {
                     if(checkout.getConflictType().startsWith("not-found")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (not found) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
                     else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (already edited) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));

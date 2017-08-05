@@ -38,7 +38,7 @@ public class InboxFragment extends Fragment {
         adapter = new CheckoutAdapter(view.getContext(), bundle.getLong("eventID"));
         rv.setAdapter(adapter);
 
-        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.INBOX);
+        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.INBOX, 0);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 

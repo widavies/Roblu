@@ -20,6 +20,7 @@ import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.TeamViewer;
+import com.cpjd.roblu.utils.Constants;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,7 +47,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         adapter = new CheckoutAdapter(view.getContext(), eventID, CheckoutAdapter.CONFLICTS, this);
         rv.setAdapter(adapter);
 
-        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.CONFLICTS);
+        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.CONFLICTS, eventID);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
@@ -64,7 +65,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
         RForm form = new Loader(getActivity()).loadForm(eventID);
         if(checkout.getConflictType().equals("edited")) {
-            RTeam conflict = checkout.getTeam().duplicate();
+            RTeam conflict = checkout.getTeam();
             conflict.verify(form);
 
             RTeam localCopy = new Loader(getActivity()).loadTeam(eventID, conflict.getID());
@@ -74,27 +75,37 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
             for(int i = 0; i < conflict.getTabs().size(); i++) {
                 for(int j = 0; j < localCopy.getTabs().size(); j++) {
                     if(conflict.getTabs().get(i).getTitle().equalsIgnoreCase(localCopy.getTabs().get(j).getTitle())) {
-                        temp.addTab(localCopy.getTabs().get(j).duplicate());
+                        temp.addTab(localCopy.getTabs().get(j));
+                        temp.addTab(conflict.getTabs().get(i));
                         break;
                     }
                 }
-                temp.addTab(conflict.getTabs().get(i).duplicate());
             }
 
             for(int i = 0; i < temp.getTabs().size(); i++) if(i % 2 == 0) temp.getTabs().get(i).setTitle(temp.getTabs().get(i).getTitle()+" (local)");
 
+            temp.setID(-1);
+            new Loader(view.getContext()).saveTeam(temp, eventID);
+
             Intent intent = new Intent(getActivity(), TeamViewer.class);
             intent.putExtra("event", new Loader(getActivity()).getEvent(eventID));
             intent.putExtra("team", temp.getID());
+            intent.putExtra("isSpecialConflict", true);
             intent.putExtra("readOnly", true);
-            startActivity(intent);
+            startActivityForResult(intent, Constants.GENERAL);
         } else {
             Intent intent = new Intent(getActivity(), TeamViewer.class);
             intent.putExtra("event", new Loader(getActivity()).getEvent(eventID));
-            intent.putExtra("team", checkout.getTeam().getID());
+            intent.putExtra("isConflict", true);
+            intent.putExtra("checkout", checkout.getID());
             intent.putExtra("readOnly", true);
             startActivity(intent);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        new Loader(view.getContext()).deleteTeam(-1, eventID);
     }
 
     private class LoadCheckouts extends AsyncTask<Void, Void, ArrayList<RCheckout>> {
