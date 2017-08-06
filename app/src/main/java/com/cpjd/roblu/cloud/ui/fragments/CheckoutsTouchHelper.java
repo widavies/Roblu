@@ -15,6 +15,8 @@ import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 
+import java.util.ArrayList;
+
 /**
  * Manages interface of checkout cards. This class can be used in one of two ways:
  *
@@ -80,8 +82,11 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
                         if(team.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
                             for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
                                 team.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
+                                if(team.getTabs().get(j + k).getEditors() == null) team.getTabs().get(j + k).setEditors(new ArrayList<String>());
+                                if(k == 0) team.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
                             }
                             team.updateEdit();
+
                             l.saveTeam(team, eventID);
                             break;
                         }

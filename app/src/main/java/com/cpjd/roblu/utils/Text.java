@@ -14,6 +14,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.provider.Settings;
 import android.support.annotation.ColorInt;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
@@ -561,6 +562,12 @@ public class Text {
         return false;
     }
 
+    public static String getDeviceID(Context context) {
+        return Settings.Secure.getString(context.getContentResolver(),
+                Settings.Secure.ANDROID_ID);
+    }
+
+
     /**
      * Confirms a Roblu Cloud team code regenerate, if yes, then contacts the server
      * and requests and team code regeneration.
@@ -583,7 +590,7 @@ public class Text {
                         Toast.makeText(context, "You are not connected to the internet.", Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    CloudRequest cr = new CloudRequest(settings.getAuth(), settings.getTeamCode());
+                    CloudRequest cr = new CloudRequest(settings.getAuth(), settings.getTeamCode(), getDeviceID(context));
                     // first, regenerate the token
                     JSONObject response = (JSONObject) cr.regenerateToken();
                     if(!response.get("status").toString().equalsIgnoreCase("success")) throw new Exception();

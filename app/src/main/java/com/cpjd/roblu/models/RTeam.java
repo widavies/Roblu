@@ -63,14 +63,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     private int rookieYear;
 
     /**
-     * Stores the historical edits made to this checkout.
-     * The most recent edit (edits.get(edits.size()-1))) is the
-     * edit used to determine what to do in merge requests (based of completion time)
-     */
-    private ArrayList<RCheckoutEdit> edits;
-
-
-    /**
      * Uses for searching and contextual information that
      * is displayed on team cards. Can be safely deleted
      * when the app is closed.
@@ -171,7 +163,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * -If the team has never been opened before, set the PIT values, matches don't need to be set until creation.
      */
     public void verify(RForm form) {
-        // Check for null team (pit)
+        // If no tabs exist, create them with default forms
         if (this.tabs == null) {
             this.tabs = new ArrayList<>();
             addTab(Text.createNew(form.getPit()), "PIT", false, false, 0);
@@ -179,10 +171,10 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             return;
         }
 
-        // Remove elements
-        ArrayList<Element> formb = form.getPit(); // changes depending on index
+        // Remove elements that aren't in the form model
+        ArrayList<Element> formb = form.getPit();
         for (int i = 0; i < tabs.size(); i++) {
-            if(i == 1) formb = form.getMatch();
+            if(i == 1) formb = form.getMatch(); // switch to verifying with match elements for non-pit tabs
             for (int j = 0; j < tabs.get(i).getElements().size(); j++) {
                 boolean found = false;
                 if(formb.size() == 0) {
@@ -200,7 +192,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             }
         }
         
-        // Add elements
+        // Add elements that are in the form model
         formb = form.getPit(); // changes depending on index
         for (int i = 0; i < tabs.size(); i++) {
             if (i == 1) formb = form.getMatch();
@@ -513,20 +505,4 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         }
     }
 
-    @Data
-    private static class RCheckoutEdit {
-        /**
-         * The Google email address of the user who completed the checkout.
-         * This will be filled out when the RCheckout model is uploaded by
-         * the scouter.
-         *
-         */
-        private String completedBy;
-
-        /**
-         * The time in ms, that the scouter completed the assignment.
-         * Used for resolving merge conflicts.
-         */
-        private long completedTime;
-    }
 }

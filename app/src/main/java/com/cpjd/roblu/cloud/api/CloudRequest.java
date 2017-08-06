@@ -47,11 +47,17 @@ public class CloudRequest {
      */
     private String teamCode;
 
+    /**
+     * Unique device ID
+     */
+    private String device;
+
     public CloudRequest() {}
 
-    public CloudRequest(String auth, String teamCode) {
+    public CloudRequest(String auth, String teamCode, String device) {
         this.auth = auth;
         this.teamCode = teamCode;
+        this.device = device;
     }
 
     /**
@@ -73,7 +79,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object regenerateToken() throws Exception {
-        return doRequest(false, "teams/regenerateToken","?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
+        return doRequest(false, "teams/regenerateToken","?auth="+encodeString(auth)+"&code="+encodeString(teamCode)+"&device="+encodeString(device));
     }
 
     /**
@@ -82,15 +88,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object joinTeam() throws Exception {
-        return doRequest(false, "teams/joinTeam", "?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
-    }
-    /**
-     * Makes sure that only ONE user can be signed into the master account at once.
-     * @return object representing the servers response (either success or error)
-     * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
-     */
-    public Object leaveTeam() throws Exception {
-        return doRequest(false, "teams/leaveTeam", "?auth="+encodeString(auth)+"&code="+encodeString(teamCode));
+        return doRequest(false, "teams/joinTeam", "?auth="+encodeString(auth)+"&code="+encodeString(teamCode)+"&device="+encodeString(device));
     }
 
     /**
@@ -101,7 +99,7 @@ public class CloudRequest {
      */
     public Object pushForm(String content) throws Exception {
         return doRequest(true, "teams/pushForm", "?content="+encodeString(content)+
-                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
+                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&device="+encodeString(device));
     }
 
     /**
@@ -113,7 +111,7 @@ public class CloudRequest {
      */
     public Object initPushCheckouts(String activeEventTitle, String content) throws Exception {
         return doRequest(true, "checkouts/initPushCheckouts", "?content="+encodeString(content)+
-                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&active="+encodeString(activeEventTitle));
+                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&active="+encodeString(activeEventTitle)+"&device="+encodeString(device));
     }
 
     /**
@@ -123,7 +121,7 @@ public class CloudRequest {
      */
     public Object pushCheckouts(String content) throws Exception {
         return doRequest(true, "checkouts/pushCheckout", "?content="+encodeString(content)+
-                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
+                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&device="+encodeString(device));
     }
 
     /**
@@ -132,7 +130,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object clearActiveEvent() throws Exception {
-        return doRequest(false, "checkouts/clearActiveEvent", "?code="+encodeString(teamCode));
+        return doRequest(false, "checkouts/clearActiveEvent", "?code="+encodeString(teamCode)+"&device="+encodeString(device));
     }
 
     /**
@@ -141,7 +139,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object pullCheckouts() throws Exception {
-        return doRequest(false, "checkouts/pullReceivedCheckouts","?code="+encodeString(teamCode)+"&auth="+encodeString(auth));
+        return doRequest(false, "checkouts/pullReceivedCheckouts","?code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&device="+encodeString(device));
     }
 
     /**
@@ -151,7 +149,7 @@ public class CloudRequest {
      */
     public Object pushUI(String content) throws Exception {
         return doRequest(true, "teams/pushUI", "?content="+encodeString(content)+
-                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth));
+                "&code="+encodeString(teamCode)+"&auth="+encodeString(auth)+"&device="+encodeString(device));
     }
 
     /**

@@ -344,6 +344,7 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
         protected REvent doInBackground(Void... params) {
             Loader l = new Loader(getApplicationContext());
             REvent event = backup.getEvent();
+            event.setCloudEnabled(false);
             event.setID(l.getNewEventID());
             l.saveEvent(event);
             l.saveForm(backup.getForm(), event.getID());

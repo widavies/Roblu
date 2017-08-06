@@ -238,7 +238,13 @@ public class EventSettings extends AppCompatActivity {
                     builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            new Loader(getActivity()).deleteEvent(event.getID());
+                            Loader l = new Loader(getActivity());
+                            RSettings settings = l.loadSettings();
+                            settings.setClearActiveRequested(true);
+                            l.saveSettings(settings);
+                            l.deleteEvent(event.getID());
+                            l.clearCheckouts();
+
                             startActivity(new Intent(getActivity(), TeamsView.class));
                             Toast.makeText(getActivity(), "Event successfully deleted", Toast.LENGTH_LONG).show();
                             dialog.dismiss();
@@ -295,7 +301,11 @@ public class EventSettings extends AppCompatActivity {
         public boolean onPreferenceChange(Preference preference, Object o) {
             if(preference.getKey().equals("sync")) {
                 if(!new Loader(getActivity()).loadSettings().isSignedIn()) {
-                    Text.showSnackbar(layout, getActivity(), "You must sign in to Roblu Cloud in the settings before syncing an event", true, 0);
+                    Text.showSnackbar(layout, getActivity(), "You must sign in to Roblu Cloud in the settings before syncing an event.", true, 0);
+                    return false;
+                }
+                if(!Text.hasInternetConnection(getActivity())) {
+                    Text.showSnackbar(layout, getActivity(), "You are not connected to the internet.", true, 0);
                     return false;
                 }
 
@@ -306,7 +316,7 @@ public class EventSettings extends AppCompatActivity {
                 else {
                     try {
                         RSettings settings = new Loader(getActivity()).loadSettings();
-                        new CloudRequest(settings.getAuth(), settings.getTeamCode()).clearActiveEvent();
+                        new CloudRequest(settings.getAuth(), settings.getTeamCode(), Text.getDeviceID(getActivity())).clearActiveEvent();
                         Text.showSnackbar(layout, getActivity(), "Cloud sync disabled for "+event.getName(), false, rui.getPrimaryColor());
                         return true;
                     } catch(Exception e) {

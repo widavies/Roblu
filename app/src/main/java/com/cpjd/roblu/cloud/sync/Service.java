@@ -116,7 +116,7 @@ public class Service extends android.app.Service {
                 if(!Text.hasInternetConnection(getApplicationContext())) {
                     continue;
                 }
-                cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode());
+                cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode(), Text.getDeviceID(getApplicationContext()));
 
                 // check if the UI needs to be uploaded
                 RSettings settings = l.loadSettings();
@@ -196,6 +196,8 @@ public class Service extends android.app.Service {
                                     for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
                                         Log.d("RBS", "Updating tabs... Value: "+((ECounter)checkout.getTeam().getTabs().get(1).getElements().get(0)).getCurrent());
                                         temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
+                                        if(temp.getTabs().get(j + k).getEditors() == null) temp.getTabs().get(j + k).setEditors(new ArrayList<String>());
+                                        if(k == 0) temp.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
                                     }
                                     temp.updateEdit();
                                     l.saveTeam(temp, activeEvent.getID());

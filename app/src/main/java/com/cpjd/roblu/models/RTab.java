@@ -22,13 +22,14 @@ public class RTab implements Serializable, Comparable<RTab> {
      */
     private String title;
     private ArrayList<Element> elements;
-    private ArrayList<String> edits;
     private boolean redAlliance;
     private boolean won;
     private long time;
 
     private transient ArrayList<RTeam> teammates;
     private transient ArrayList<RTeam> opponents;
+
+    private ArrayList<String> editors;
 
     /**
      * This boolean will be flagged to true if this tab

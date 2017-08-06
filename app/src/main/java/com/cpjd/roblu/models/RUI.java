@@ -94,7 +94,7 @@ public class RUI implements Serializable {
         teamsRadius = 0;
         formRadius = 12;
         dialogDirection = 2;
-        preset = 2;
+        preset = 1;
     }
 
     /**

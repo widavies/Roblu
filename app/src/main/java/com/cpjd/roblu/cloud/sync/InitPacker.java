@@ -105,7 +105,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
             String eventName = l.getEvent(eventID).getName();
             if(eventName.equals("null")) eventName = "nnull";
 
-            new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode()).initPushCheckouts(eventName, json);
+            new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode(), Text.getDeviceID(activity)).initPushCheckouts(eventName, json);
         } catch(Exception e) {
             System.out.println("An error occured: "+e.getMessage());
             e.printStackTrace();

@@ -147,7 +147,7 @@ public class UICustomizer extends AppCompatActivity {
             }
 
             settings.setRui(rui);
-            rui.setPreset(3);
+            rui.setPreset(2);
             new Loader(getActivity()).saveSettings(settings);
             Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
             new UIHandler((AppCompatActivity) getActivity(), toolbar).update();
@@ -163,7 +163,7 @@ public class UICustomizer extends AppCompatActivity {
             final CharSequence[] items = { " Default ", " Light ", " Custom "};
 
             final Dialog d = new Dialog(getActivity());
-            d.setContentView(R.layout.dialog_sort);
+            d.setContentView(R.layout.dialog_animation);
             TextView view = (TextView) d.findViewById(R.id.sort_title);
             view.setText(R.string.ui_preset);
             view.setTextColor(rui.getText());
@@ -190,7 +190,6 @@ public class UICustomizer extends AppCompatActivity {
                     if(checkedId == R.id.numerical) pos = 0;
                     else if(checkedId == R.id.alphabetical) pos = 1;
                     else if(checkedId == R.id.last_edited) pos = 2;
-                    else if(checkedId == R.id.custom) pos = 3;
                     rui.setPreset(pos);
                     settings.setRui(rui);
                     new Loader(getActivity()).saveSettings(settings);

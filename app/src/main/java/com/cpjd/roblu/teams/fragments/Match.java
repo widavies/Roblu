@@ -86,8 +86,8 @@ public class Match extends Fragment implements ElementsListener {
             }
         }
         // Add edits card
-        if(event.isCloudEnabled() && team.getTabs().get(position).getEdits() != null && team.getTabs().get(position).getEdits().size() != 0)
-            if(team.getTabs().get(position) != null) layout.addView(els.getEditHistory(team.getTabs().get(position).getEdits()));
+        if(event.isCloudEnabled() && team.getTabs().get(position).getEditors() != null && team.getTabs().get(position).getEditors().size() != 0)
+            if(team.getTabs().get(position) != null) layout.addView(els.getEditHistory(team.getTabs().get(position).getEditors()));
     }
 
     private void loadElement(Element e) {

@@ -35,6 +35,7 @@ import android.widget.TextView;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.models.Loader;
+import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UICustomizer;
@@ -199,7 +200,15 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     if (status.isSuccess()) {
                         settings.setAuth("");
                         settings.setTeamCode("");
-                        new Loader(getActivity()).saveSettings(settings);
+                        settings.setClearActiveRequested(true);
+                        Loader l = new Loader(getActivity());
+                        REvent[] events = l.getEvents();
+                        for(REvent e : events) {
+                            e.setCloudEnabled(false);
+                            l.saveEvent(e);
+                        }
+                        l.saveSettings(settings);
+                        l.clearCheckouts();
                         Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
                     } else
                         Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
@@ -232,9 +241,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                                 Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet.", true, 0);
                                 return false;
                             }
-                            JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), settings.getTeamCode()).leaveTeam();
-                            if(response.get("status").toString().equalsIgnoreCase("success")) handleSignOut();
-                            else Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
+                            handleSignOut();
                         }
                     } catch(Exception e) {
                         Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
@@ -359,7 +366,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 public void onClick(DialogInterface dialog, int which) {
                     // attempt to sign in with the provided team code
                     try {
-                        JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString()).joinTeam();
+                        JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Text.getDeviceID(getActivity())).joinTeam();
                         System.out.println(response);
                         if(response.get("status").toString().equalsIgnoreCase("success")) {
                             // it works
@@ -368,7 +375,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                             toggleJoinTeam(false);
                             Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team", false, settings.getRui().getPrimaryColor());
                         } else { // didn't exist or already signed in
-                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team doesn't exist or you're already signed in on another device. Please sign out and try again.", true, 0);
+                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team doesn't exist.", true, 0);
                         }
                     } catch(Exception e) {
                         Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
