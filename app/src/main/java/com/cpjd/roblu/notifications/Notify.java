@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.teams.TeamsView;
+import com.cpjd.roblu.cloud.ui.Mailbox;
 
 
 /*
@@ -25,7 +25,7 @@ public class Notify {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity).setSmallIcon(R.drawable.launcher)
                 .setContentTitle(title).setContentText(content);
 
-        Intent result = new Intent(activity, TeamsView.class);
+        Intent result = new Intent(activity, Mailbox.class);
         PendingIntent pending = PendingIntent.getActivity(activity, 0, result, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pending);
 

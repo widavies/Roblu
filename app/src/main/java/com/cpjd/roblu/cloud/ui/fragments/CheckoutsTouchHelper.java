@@ -62,7 +62,7 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
         if(mode == CheckoutAdapter.CONFLICTS) {
             Loader l = new Loader(elementsAdapter.getContext());
             RCheckout checkout = l.loadCheckoutConflict(elementsAdapter.getCheckout(viewHolder.getAdapterPosition()).getID());
-            if(direction == ItemTouchHelper.LEFT && checkout.getConflictType().equals("edited")) {
+            if(direction == ItemTouchHelper.LEFT) {
                 // Merge the checkout
                 checkout.setMergedTime(System.currentTimeMillis());
                 checkout.setSyncRequired(true);
@@ -82,8 +82,12 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
                         if(team.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
                             for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
                                 team.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
-                                if(team.getTabs().get(j + k).getEditors() == null) team.getTabs().get(j + k).setEditors(new ArrayList<String>());
-                                if(k == 0) team.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                if(team.getTabs().get(j + k).getEditors() == null) {
+                                    team.getTabs().get(j + k).setEditors(new ArrayList<String>());
+                                    team.getTabs().get(j + k).setEditTimes(new ArrayList<Long>());
+                                }
+                                team.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                team.getTabs().get(j + k).getEditTimes().add(checkout.getCompletedTime());
                             }
                             team.updateEdit();
 
@@ -92,10 +96,13 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
                         }
                     }
                 } else {
-                    RTeam team = checkout.getTeam();
+                    RTeam team = checkout.getTeam().duplicate();
                     team.updateEdit();
                     team.setID(l.getNewTeamID(eventID));
                     l.saveTeam(team, eventID);
+                    Intent broadcast3 = new Intent();
+                    broadcast3.setAction("com.cpjd.roblu.broadcast.main");
+                    elementsAdapter.getContext().sendBroadcast(broadcast3);
                 }
 
             }  else {

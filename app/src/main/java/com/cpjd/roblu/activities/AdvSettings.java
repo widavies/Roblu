@@ -22,6 +22,8 @@ import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.NonNull;
+import android.support.design.widget.Snackbar;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
@@ -29,6 +31,7 @@ import android.text.InputFilter;
 import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -226,7 +229,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 return true;
             }
             else if(preference.getKey().equals("cloud_support")) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://roblu.weebly.com/support.html"));
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://roblu.net"));
                 startActivity(browserIntent);
                 return true;
             }
@@ -368,16 +371,22 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     try {
                         JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Text.getDeviceID(getActivity())).joinTeam();
                         System.out.println(response);
-                        if(response.get("status").toString().equalsIgnoreCase("success")) {
+                        System.out.println("{"+response.get("data")+"}");
+                        if(response.get("status").toString().equalsIgnoreCase("success") && response.get("data") != null && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
                             // it works
                             settings.setTeamCode(input.getText().toString());
                             new Loader(getActivity()).saveSettings(settings);
                             toggleJoinTeam(false);
                         } else { // didn't exist or already signed in
-                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team doesn't exist.", true, 0);
+                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "", true, 0);
+                            Snackbar s = Snackbar.make(getActivity().findViewById(R.id.advsettings), "Team doesn't exist.", Snackbar.LENGTH_LONG);
+                            s.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.red));
+                            s.setAction("Purchase Roblu Cloud", new PurchaseListener());
+                            s.show();
                         }
                     } catch(Exception e) {
                         Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
+
                     } finally {
                         dialog.dismiss();
                     }
@@ -405,10 +414,22 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
         @Override
         public void tokenRegenerated(String token) {
+            if(token != null && token.equals("")) toggleJoinTeam(true);
             settings.setTeamCode(token);
             new Loader(getActivity()).saveSettings(settings);
         }
+
+        public class PurchaseListener implements View.OnClickListener{
+
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://roblu.net/purchase"));
+                startActivity(browserIntent);
+            }
+        }
     }
+
+
 
     // load in the bug report button, and make it match the ui settings
     @Override

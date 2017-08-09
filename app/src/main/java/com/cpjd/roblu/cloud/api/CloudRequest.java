@@ -134,7 +134,7 @@ public class CloudRequest {
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
     public Object clearActiveEvent() throws Exception {
-        return doRequest(false, "checkouts/clearActiveEvent", "?code="+encodeString(teamCode)+"&device="+encodeString(device));
+        return doRequest(false, "checkouts/clearActiveEvent", "?code="+encodeString(teamCode)+"&device="+encodeString(device)+"&auth="+encodeString(auth));
     }
 
     /**

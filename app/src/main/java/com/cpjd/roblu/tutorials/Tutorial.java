@@ -85,6 +85,7 @@ public class Tutorial extends AppCompatActivity implements SelectListener{
         if(position == 1) watchYoutubeVideo("KoylfzTBvKM");
         if(position == 2) watchYoutubeVideo("LpWvnavebNw");
         if(position == 3) watchYoutubeVideo("5ktHjyQq4XY");
+        if(position == 5) watchYoutubeVideo("2QcXZoyctyw");
         if(position == 9) {
             String url = "https://www.youtube.com/playlist?list=PLjv2hkWcHVGZAlplguiS4rR_45-KLS28a";
             Intent i = new Intent(Intent.ACTION_VIEW);

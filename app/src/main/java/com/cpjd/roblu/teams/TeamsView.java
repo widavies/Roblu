@@ -26,6 +26,7 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -478,7 +479,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private BroadcastReceiver serviceReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            new LoadTeams(true, lastQuery, lastSortToken, lastFilter).execute();
+            Log.d("RBS", "Receiving update request");
+            LoadTeams lt = new LoadTeams(true, lastQuery, lastSortToken, lastFilter);
+            lt.enableForceReload();
+            lt.execute();
         }
     };
 

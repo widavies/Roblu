@@ -123,7 +123,8 @@ public class Service extends android.app.Service {
                 // check if clear active event needs to be called
                 if(settings.isClearActiveRequested()) {
                     try {
-                        cr.clearActiveEvent();
+                        Log.d("RBS", cr.clearActiveEvent().toString());
+
                     } catch(Exception e) {}
                     settings.setClearActiveRequested(false);
                     l.saveSettings(settings);
@@ -180,8 +181,6 @@ public class Service extends android.app.Service {
                         RCheckout checkout = mapper.readValue(object.get("content").toString(), RCheckout.class);
                         checkout.setStatus(checkout.getStatus().replace("\nWaiting to upload", ""));
                         checkout.setSyncRequired(false);
-
-                        Log.d("RBS", "ReceivedCheckout with "+checkout.getTeam().getTabs().get(1).getElements().size());
 
                         /*
                          * We need to check for conflicts (does a team already exist that's been edited, or does the team not exist)
@@ -251,8 +250,6 @@ public class Service extends android.app.Service {
                         broadcast.putExtra("mode", 0);
                         sendBroadcast(broadcast);
                     }
-
-
                 } catch(Exception e) {
                     Log.d("RBS", "Error checking for completed checkouts. Error: "+e.getMessage());
                 }
