@@ -18,8 +18,8 @@ import android.widget.Toast;
 
 import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.models.Loader;
-import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.teams.TeamViewer;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
@@ -31,6 +31,7 @@ import java.util.Locale;
 import pub.devrel.easypermissions.EasyPermissions;
 
 import static android.R.attr.path;
+import static com.cpjd.roblu.teams.TeamViewer.team;
 
 /**
  * Copyright 2015 Etienne Lawlor
@@ -57,7 +58,6 @@ import static android.R.attr.path;
 public class FullScreenImageGalleryActivity extends AppCompatActivity implements FullScreenImageGalleryAdapter.FullScreenImageLoader {
 
     private long eventID;
-    private RTeam team;
     private int tab;
     private int galleryID;
 
@@ -117,7 +117,6 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
             if (extras != null) {
                 position = extras.getInt(KEY_POSITION);
                 eventID = extras.getLong("eventID");
-                team = new Loader(getApplicationContext()).loadTeam(eventID, extras.getLong("team"));
                 galleryID = extras.getInt("galleryID");
                 tab = extras.getInt("tab");
                 readOnly = extras.getBoolean("readOnly");
@@ -201,12 +200,12 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
                     EGallery gal = (EGallery) team.getTabs().get(tab).getElements().get(i);
                     gal.removeImage(viewPager.getCurrentItem());
                     team.getTabs().get(tab).getElements().set(i, gal);
-                    new Loader(getApplicationContext()).saveTeam(team, eventID);
+                    new Loader(getApplicationContext()).saveTeam(TeamViewer.team, eventID);
                     break;
                 }
             }
             Intent result = new Intent();
-            result.putExtra("team", team.getID());
+            result.putExtra("team", TeamViewer.team.getID());
             result.putExtra("file", path);
             setResult(Constants.IMAGE_DELETED, result);
             finish();

@@ -25,7 +25,7 @@ import android.widget.RelativeLayout;
 import com.cpjd.roblu.forms.elements.EGallery;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
-import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.teams.TeamViewer;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Text;
@@ -38,6 +38,8 @@ import java.io.File;
 import java.util.ArrayList;
 
 import pub.devrel.easypermissions.EasyPermissions;
+
+import static com.cpjd.roblu.teams.TeamViewer.team;
 
 /**
  * Copyright 2015 Etienne Lawlor
@@ -71,7 +73,6 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
     private static ImageGalleryAdapter.ImageThumbnailLoader imageThumbnailLoader;
 
     private int ID;
-    private RTeam team;
     private REvent event;
 
     private ImageGalleryAdapter imageGalleryAdapter;
@@ -99,7 +100,6 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
                 title = extras.getString(KEY_TITLE);
                 ID = extras.getInt("ID");
                 event = (REvent) extras.getSerializable("event");
-                team = new Loader(getApplicationContext()).loadTeam(event.getID(), extras.getLong("team"));
                 tabID = extras.getInt("tabID");
                 readOnly = extras.getBoolean("readOnly");
             }
@@ -166,7 +166,6 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
         bundle.putLong("eventID", event.getID());
         bundle.putInt("tab", tabID);
         bundle.putInt("galleryID", ID);
-        bundle.putLong("team", team.getID());
         bundle.putBoolean("readOnly", readOnly);
         intent.putExtras(bundle);
         startActivityForResult(intent, Constants.GENERAL);
@@ -302,7 +301,7 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
 
         // Save all changes
         team.updateEdit();
-        new Loader(getApplicationContext()).saveTeam(team, event.getID());
+        new Loader(getApplicationContext()).saveTeam(TeamViewer.team, event.getID());
     }
 
     @Override

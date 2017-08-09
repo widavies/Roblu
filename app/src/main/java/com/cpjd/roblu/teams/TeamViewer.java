@@ -58,7 +58,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
     private RUI rui;
     private REvent event;
-    private RTeam team;
+    public static RTeam team;
     private boolean readOnly;
 
     // ViewPager
@@ -106,7 +106,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         getSupportActionBar().setSubtitle("#"+String.valueOf(team.getNumber()));
 
         if(getIntent().getBooleanExtra("isConflict", false)) tabAdapter = new TeamTabAdapter(getSupportFragmentManager(), event, tempCheckout, form, getApplicationContext());
-        else tabAdapter = new TeamTabAdapter(getSupportFragmentManager(), event, team, form, getApplicationContext(), readOnly);
+        else tabAdapter = new TeamTabAdapter(getSupportFragmentManager(), event, form, getApplicationContext(), readOnly);
         pager = (ViewPager) findViewById(R.id.pager);
 
         pager.addOnPageChangeListener(this);
@@ -217,20 +217,19 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     public void onStop() {
         super.onStop();
         if(!getIntent().getBooleanExtra("isConflict", false) && !getIntent().getBooleanExtra("isSpecialConflict", false)) {
-            team = new Loader(getApplicationContext()).loadTeam(event.getID(), team.getID());
-            team.setPage(pager.getCurrentItem());
-            new SaveThread(getApplicationContext(), event.getID(), team);
-
             // Check for modified tabs that need to be packaged
-            for(int i = 0; i < team.getTabs().size(); i++) {
-                RTeam temp = team.duplicate();
-                if(team.getTabs().get(i).isModified()) {
+            for(int i = 0; i < TeamViewer.team.getTabs().size(); i++) {
+                if(TeamViewer.team.getTabs().get(i).isModified()) {
+                    TeamViewer.team.getTabs().get(i).setModified(false);
+                    new Loader(getApplicationContext()).saveTeam(TeamViewer.team, event.getID());
+                    RTeam temp = team.duplicate();
                     if(i == 0) temp.removeAllTabsButPIT();
-                    else team.removeAllTabsBut(i);
+                    else temp.removeAllTabsBut(i);
 
-                    RCheckout checkout = new RCheckout(team);
+                    RCheckout checkout = new RCheckout(temp);
                     checkout.setHistoryID(new Loader(getApplicationContext()).getNewCheckoutID());
                     checkout.setSyncRequired(true);
+                    checkout.setStatus("local-edit");
                     checkout.setConflictType("local-edit");
                     new Loader(getApplicationContext()).saveCheckout(checkout);
                 }
@@ -247,6 +246,11 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     }
     @Override
     public void onPageSelected(int page) {
+        if(!getIntent().getBooleanExtra("isConflict", false) && !getIntent().getBooleanExtra("isSpecialConflict", false)) {
+            TeamViewer.team.setPage(page);
+            new SaveThread(getApplicationContext(), event.getID(), TeamViewer.team);
+        }
+
         if(page < 3) setColorScheme(rui.getPrimaryColor(), rui.darker(rui.getPrimaryColor(), 0.85f));
         else {
             if(tabAdapter.isPageRed(page)) setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.red), ContextCompat.getColor(getApplicationContext(), R.color.darkRed));
@@ -378,11 +382,9 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Constants.GALLERY_EXIT) {
             team = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getLongExtra("team", 0));
-            tabAdapter.setTeam(team);
             tabAdapter.notifyDataSetChanged();
         }
     }
-
 
     @Override
     public void onPageScrolled(int arg0, float arg1, int arg2) {

@@ -29,7 +29,6 @@ import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.cloud.api.CloudRequest;
 import com.cpjd.roblu.cloud.sync.InitPacker;
 import com.cpjd.roblu.csv.ExportCSV;
 import com.cpjd.roblu.forms.EditForm;
@@ -316,7 +315,11 @@ public class EventSettings extends AppCompatActivity {
                 else {
                     try {
                         RSettings settings = new Loader(getActivity()).loadSettings();
-                        new CloudRequest(settings.getAuth(), settings.getTeamCode(), Text.getDeviceID(getActivity())).clearActiveEvent();
+                        settings.setClearActiveRequested(true);
+                        event.setCloudEnabled(false);
+                        new Loader(getActivity()).saveEvent(event);
+                        new Loader(getActivity()).clearCheckouts();
+                        new Loader(getActivity()).saveSettings(settings);
                         Text.showSnackbar(layout, getActivity(), "Cloud sync disabled for "+event.getName(), false, rui.getPrimaryColor());
                         return true;
                     } catch(Exception e) {

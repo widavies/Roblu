@@ -23,6 +23,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
@@ -703,7 +704,6 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                 bundle.putString(ImageGalleryActivity.KEY_TITLE, name);
                 bundle.putInt("ID", ID);
                 bundle.putSerializable("event", event);
-                bundle.putLong("team", team.getID());
                 bundle.putInt("tabID", tabID);
                 bundle.putBoolean("readOnly", readOnly);
                 intent.putExtras(bundle);
@@ -727,7 +727,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getEditHistory(ArrayList<String> edits) {
+    public CardView getEditHistory(ArrayList<String> edits, ArrayList<Long> editTimes) {
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
         textView.setText(R.string.edit_history);
@@ -739,7 +739,9 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         TextView et = new TextView(activity);
         et.setId(Text.generateViewId());
         et.setTextColor(rui.getText());
-        et.setText(Text.concatenateArraylist(edits));
+        String text = "";
+        for(int i = 0; edits != null && i < edits.size(); i++) text += edits.get(i) + " on "+Text.convertTime(editTimes.get(i))+"\n";
+        et.setText(text);
         et.setSingleLine(false);
         et.setEnabled(false);
         et.setFocusableInTouchMode(false);

@@ -203,9 +203,9 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         settings.setClearActiveRequested(true);
                         Loader l = new Loader(getActivity());
                         REvent[] events = l.getEvents();
-                        for(REvent e : events) {
-                            e.setCloudEnabled(false);
-                            l.saveEvent(e);
+                        for(int i = 0; events != null && i < events.length; i++) {
+                            events[i].setCloudEnabled(false);
+                            l.saveEvent(events[i]);
                         }
                         l.saveSettings(settings);
                         l.clearCheckouts();
@@ -290,7 +290,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     }
                     // Attempt to contact the Roblu Server
                     try {
-                        JSONObject response = (JSONObject) new CloudRequest().signIn(acct.getDisplayName(), acct.getEmail());
+                        JSONObject response = (JSONObject) new CloudRequest(Text.getDeviceID(getActivity())).signIn(acct.getDisplayName(), acct.getEmail());
                         JSONObject response2 = (JSONObject) response.get("data");
                         settings.setAuth(response2.get("auth").toString());
                         new Loader(getActivity()).saveSettings(settings);
@@ -373,7 +373,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                             settings.setTeamCode(input.getText().toString());
                             new Loader(getActivity()).saveSettings(settings);
                             toggleJoinTeam(false);
-                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team", false, settings.getRui().getPrimaryColor());
                         } else { // didn't exist or already signed in
                             Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team doesn't exist.", true, 0);
                         }
@@ -407,6 +406,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
         @Override
         public void tokenRegenerated(String token) {
             settings.setTeamCode(token);
+            new Loader(getActivity()).saveSettings(settings);
         }
     }
 

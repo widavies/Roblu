@@ -134,11 +134,11 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 return;
             }
             if(mode == INBOX) {
-                if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nAutomatically merged on "+Text.convertTime(checkout.getMergedTime()));
+                if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nCompleted by "+checkout.getStatus().replace("Completed by", "")+"\nAutomatically merged on "+Text.convertTime(checkout.getMergedTime()));
                 else if(checkout.getConflictType().equals("local-edit")) subtitle.setText("Locally edited on "+Text.convertTime(checkout.getTeam().getLastEdit())+" and uploaded to server.");
                 else {
-                    if(checkout.getConflictType().startsWith("not-found")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (not found) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
-                    else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nConflict (already edited) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
+                    if(checkout.getConflictType().startsWith("not-found")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nCompleted by "+checkout.getStatus().replace("Completed by", "")+"\nConflict (not found) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
+                    else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nCompleted by "+checkout.getStatus().replace("Completed by", "")+"\nConflict (already edited) resolved and merged on "+Text.convertTime(checkout.getMergedTime()));
                 }
             }
             if(mode == CONFLICTS) {

@@ -653,7 +653,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
         protected LinkedList<RTeam> doInBackground(Void... params) {
             // Before we do anything, we must verify that an event exists, if not, nothing needs to be done
-            if(!new Loader(getApplicationContext()).doesEventExist(event.getID())) return null;
+            if(event == null || !new Loader(getApplicationContext()).doesEventExist(event.getID())) return null;
 
             // Alright, let's take care of loadFromDisk. If it's true, we gotta load all teams into the global teams array from the file system
             if(loadFromDisk) {

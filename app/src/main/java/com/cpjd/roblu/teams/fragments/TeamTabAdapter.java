@@ -13,6 +13,7 @@ import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.teams.TeamViewer;
 import com.cpjd.roblu.utils.Text;
 
 /*******************************************************
@@ -30,7 +31,6 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
     // vars
     private final REvent event;
-    private RTeam team;
     private final RForm form;
 
     private boolean removing;
@@ -39,10 +39,9 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private final boolean isConflict;
     private final RCheckout checkout;
 
-    public TeamTabAdapter(FragmentManager fm, REvent event, RTeam team, RForm form, Context context, boolean readOnly) {
+    public TeamTabAdapter(FragmentManager fm, REvent event, RForm form, Context context, boolean readOnly) {
         super(fm);
         this.event = event;
-        this.team = team;
         this.form = form;
         this.context = context;
         this.readOnly = readOnly;
@@ -55,22 +54,20 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         this.form = form;
         this.context = context;
         this.readOnly = true;
-        this.team = checkout.getTeam();
         this.event = event;
         this.isConflict = true;
         this.checkout = checkout;
     }
 
     public boolean isPageRed(int page) {
-        if(readOnly) return team.getTabs().get(page).isRedAlliance();
-        return page > 2 && team.getTabs().get(page - 1).isRedAlliance();
+        if(readOnly) return TeamViewer.team.getTabs().get(page).isRedAlliance();
+        return page > 2 && TeamViewer.team.getTabs().get(page - 1).isRedAlliance();
     }
 
     @Override
     public Fragment getItem(int i) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putLong("team", team.getID());
         bundle.putSerializable("position", 0);
         if(isConflict) {
             bundle.putBoolean("isConflict", true);
@@ -87,24 +84,20 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     }
 
     public boolean markWon(int position) {
-        team.getTabs().get(position).setWon(!team.getTabs().get(position).isWon());
-        new Loader(context).saveTeam(team, event.getID());
+        TeamViewer.team.getTabs().get(position).setWon(!TeamViewer.team.getTabs().get(position).isWon());
+        new Loader(context).saveTeam(TeamViewer.team, event.getID());
         notifyDataSetChanged();
-        return team.getTabs().get(position).isWon();
+        return TeamViewer.team.getTabs().get(position).isWon();
     }
 
     public RTeam deleteTab(int position) {
-        team.removeTab(position);
-        team.updateEdit();
-        new Loader(context).saveTeam(team, event.getID());
+        TeamViewer.team.removeTab(position);
+        TeamViewer.team.updateEdit();
+        new Loader(context).saveTeam(TeamViewer.team, event.getID());
         removing = true;
         notifyDataSetChanged();
         removing = false;
-        return team;
-    }
-
-    public void setTeam(RTeam team) {
-        this.team = team;
+        return TeamViewer.team;
     }
 
     @Override
@@ -113,7 +106,6 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
         if(object instanceof Match) {
             Match m = (Match) object;
-            m.setTeam(team);
             m.load();
 
             return m.getPosition();
@@ -124,7 +116,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private Fragment loadMatch(int position) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putLong("team", team.getID());
+        bundle.putLong("team", TeamViewer.team.getID());
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", readOnly);
         bundle.putInt("position", position);
@@ -138,13 +130,14 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     }
 
     public int createMatch(String name, boolean isRed) {
-        int position = team.addTab(Text.createNew(form.getMatch()), name, isRed, false, 0);
-        team.updateEdit();
-        new SaveThread(context, event.getID(), team);
+        int position = TeamViewer.team.addTab(Text.createNew(form.getMatch()), name, isRed, false, 0);
+        TeamViewer.team.getTabs().get(position).setModified(event.isCloudEnabled());
+        TeamViewer.team.updateEdit();
+        new SaveThread(context, event.getID(), TeamViewer.team);
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putLong("team", team.getID());
+        bundle.putLong("team", TeamViewer.team.getID());
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", false);
         bundle.putInt("position", position);
@@ -155,9 +148,9 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         return position + 1;
     }
 
-    private boolean isWon(int position) {
-        if(readOnly) return team.getTabs().get(position).isWon();
-        return team.getTabs().get(position - 1).isWon();
+     private boolean isWon(int position) {
+        if(readOnly) return TeamViewer.team.getTabs().get(position).isWon();
+        return TeamViewer.team.getTabs().get(position - 1).isWon();
     }
 
     private String getWinSuffix(int position) {
@@ -168,15 +161,15 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
     @Override
     public int getCount() {
-        if(readOnly) return team.getTabs().size();
-        return team.getTabs().size() + 1;
+        if(readOnly) return TeamViewer.team.getTabs().size();
+        return TeamViewer.team.getTabs().size() + 1;
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        if(readOnly) return getWinSuffix(position)+" "+team.getTabs().get(position).getTitle();
+        if(readOnly) return getWinSuffix(position)+" "+TeamViewer.team.getTabs().get(position).getTitle();
 
         if (position == 0) return "Overview";
-        return getWinSuffix(position)+" "+team.getTabs().get(position - 1).getTitle();
+        return getWinSuffix(position)+" "+TeamViewer.team.getTabs().get(position - 1).getTitle();
     }
 }

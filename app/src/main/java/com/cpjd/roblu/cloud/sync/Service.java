@@ -12,7 +12,6 @@ import android.os.Process;
 import android.util.Log;
 
 import com.cpjd.roblu.cloud.api.CloudRequest;
-import com.cpjd.roblu.forms.elements.ECounter;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
@@ -120,6 +119,16 @@ public class Service extends android.app.Service {
 
                 // check if the UI needs to be uploaded
                 RSettings settings = l.loadSettings();
+
+                // check if clear active event needs to be called
+                if(settings.isClearActiveRequested()) {
+                    try {
+                        cr.clearActiveEvent();
+                    } catch(Exception e) {}
+                    settings.setClearActiveRequested(false);
+                    l.saveSettings(settings);
+                }
+
                 RUI rui = settings.getRui();
                 if(rui != null && rui.isModified()) {
                     try {
@@ -194,10 +203,14 @@ public class Service extends android.app.Service {
                             for(int j = 0; j < temp.getTabs().size(); j++) {
                                 if(temp.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
                                     for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
-                                        Log.d("RBS", "Updating tabs... Value: "+((ECounter)checkout.getTeam().getTabs().get(1).getElements().get(0)).getCurrent());
                                         temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
-                                        if(temp.getTabs().get(j + k).getEditors() == null) temp.getTabs().get(j + k).setEditors(new ArrayList<String>());
-                                        if(k == 0) temp.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                        if(temp.getTabs().get(j + k).getEditors() == null) {
+                                            temp.getTabs().get(j + k).setEditors(new ArrayList<String>());
+                                            temp.getTabs().get(j + k).setEditTimes(new ArrayList<Long>());
+                                        }
+                                        temp.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                        temp.getTabs().get(j + k).getEditTimes().add(checkout.getCompletedTime());
+
                                     }
                                     temp.updateEdit();
                                     l.saveTeam(temp, activeEvent.getID());
@@ -208,7 +221,12 @@ public class Service extends android.app.Service {
                                     new Loader(getApplicationContext()).saveCheckout(checkout);
                                     auto++;
                                     break;
+                                } else if(j == temp.getTabs().size() - 1) { // we didn't find the tab, add a new one
+                                    temp.addTab(checkout.getTeam().getTabs().get(0));
+                                    if(temp.getTabs().get(j).getEditors() == null) temp.getTabs().get(j).setEditors(new ArrayList<String>());
+                                    temp.getTabs().get(j).getEditors().add(checkout.getStatus().replace("Completed by", ""));
                                 }
+
                             }
                         }
                     }
@@ -227,7 +245,7 @@ public class Service extends android.app.Service {
                     }
 
                     if(conflicts > 0) {
-                        Notify.notify(getApplicationContext(), conflicts+" conflicts could not be merged", conflicts+" conflicts could not be merged due to merge conflicts. Resolve them in Mailbox.");
+                        Notify.notify(getApplicationContext(), conflicts+" checkouts could not be merged", conflicts+" conflicts could not be merged due to merge conflicts. Resolve them in Mailbox.");
                         Intent broadcast = new Intent();
                         broadcast.setAction("com.cpjd.roblu.broadcast");
                         broadcast.putExtra("mode", 0);
@@ -250,6 +268,7 @@ public class Service extends android.app.Service {
                     if(toUpload.size() > 0) {
                         String json = mapper.writeValueAsString(toUpload);
                         JSONObject object = (JSONObject) cr.pushCheckouts(json);
+                        Log.d("RBS", object.toString());
                         if(object.get("status").equals("success")) {
                             for(RCheckout checkout : toUpload) {
                                 checkout.setSyncRequired(false);

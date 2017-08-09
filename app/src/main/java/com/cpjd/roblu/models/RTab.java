@@ -22,6 +22,7 @@ public class RTab implements Serializable, Comparable<RTab> {
      */
     private String title;
     private ArrayList<Element> elements;
+    private ArrayList<Long> editTimes;
     private boolean redAlliance;
     private boolean won;
     private long time;
@@ -57,7 +58,7 @@ public class RTab implements Serializable, Comparable<RTab> {
         return ((Long)Text.getMatchScore(title)).compareTo(Text.getMatchScore(tab.getTitle()));
     }
 
-    public void setModified(REvent event) {
-        if(event.isCloudEnabled()) modified = true;
+    public void setModified(boolean modified) {
+        this.modified = modified;
     }
 }

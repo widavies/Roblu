@@ -26,7 +26,6 @@ import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.TeamViewer;
 import com.cpjd.roblu.utils.Text;
 
@@ -37,7 +36,6 @@ public class Match extends Fragment implements ElementsListener {
     private int position;
 
     private REvent event;
-    private RTeam team;
     private RForm form;
 
     private Elements els;
@@ -55,8 +53,6 @@ public class Match extends Fragment implements ElementsListener {
 
         Bundle bundle = this.getArguments();
         event = (REvent) bundle.getSerializable("event");
-        if(bundle.getBoolean("isConflict", false)) team = new Loader(view.getContext()).loadCheckoutConflict(bundle.getLong("checkout")).getTeam();
-        else team = new Loader(view.getContext()).loadTeam(event.getID(), bundle.getLong("team"));
         form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
         readOnly = bundle.getBoolean("readOnly");
@@ -79,23 +75,23 @@ public class Match extends Fragment implements ElementsListener {
         else elements = form.getMatch();
 
         for(Element s : elements) {
-            for (Element e : team.getTabs().get(position).getElements()) {
+            for (Element e : TeamViewer.team.getTabs().get(position).getElements()) {
                 if (e.getID() == s.getID()) {
                     loadElement(e);
                 }
             }
         }
         // Add edits card
-        if(event.isCloudEnabled() && team.getTabs().get(position).getEditors() != null && team.getTabs().get(position).getEditors().size() != 0)
-            if(team.getTabs().get(position) != null) layout.addView(els.getEditHistory(team.getTabs().get(position).getEditors()));
+        if(event.isCloudEnabled() && TeamViewer.team.getTabs().get(position).getEditors() != null && TeamViewer.team.getTabs().get(position).getEditors().size() != 0)
+            if(TeamViewer.team.getTabs().get(position) != null) layout.addView(els.getEditHistory(TeamViewer.team.getTabs().get(position).getEditors(), TeamViewer.team.getTabs().get(position).getEditTimes()));
     }
 
     private void loadElement(Element e) {
         if (e instanceof ESTextfield) {
             if (e.getID() == 0)
-                layout.addView(els.getSTextfield(e.getID(), e.getTitle(), team.getName(), false));
+                layout.addView(els.getSTextfield(e.getID(), e.getTitle(), TeamViewer.team.getName(), false));
             else
-                layout.addView(els.getSTextfield(e.getID(), e.getTitle(), String.valueOf(team.getNumber()), true));
+                layout.addView(els.getSTextfield(e.getID(), e.getTitle(), String.valueOf(TeamViewer.team.getNumber()), true));
         } else if (e instanceof EBoolean)
             layout.addView(els.getBoolean(e.getID(), e.getTitle(), ((EBoolean) e).getValue(), ((EBoolean) e).isUsingNA()));
         else if (e instanceof ECounter)
@@ -110,11 +106,7 @@ public class Match extends Fragment implements ElementsListener {
             layout.addView(els.getStopwatch(e.getID(), e.getTitle(), Text.round(((EStopwatch) e).getTime(), 1), !e.isModified()));
         } else if (e instanceof ETextfield)
             layout.addView(els.getTextfield(e.getID(), e.getTitle(), ((ETextfield) e).getText()));
-        else if(e instanceof EGallery) layout.addView(els.getGallery(e.getID(), e.getTitle(), false, event, team, position));
-    }
-
-    public void setTeam(RTeam team) {
-        this.team = team;
+        else if(e instanceof EGallery) layout.addView(els.getGallery(e.getID(), e.getTitle(), false, event, TeamViewer.team, position));
     }
 
     @Override
@@ -122,38 +114,38 @@ public class Match extends Fragment implements ElementsListener {
 
     @Override
     public void booleanUpdated(int ID, int value) {
-        team.updateBoolean(position, ID, value);
+        TeamViewer.team.updateBoolean(position, ID, value);
         save();
 
     }
 
     @Override
     public void counterUpdated(int ID, int value) {
-        team.updateCounter(position, ID, value);
+        TeamViewer.team.updateCounter(position, ID, value);
         save();
     }
 
     @Override
     public void sliderUpdated(int ID, int value) {
-        team.updateSlider(position, ID, value);
+        TeamViewer.team.updateSlider(position, ID, value);
         save();
     }
 
     @Override
     public void chooserUpdated(int ID, int selected) {
-        team.updateChooser(position, ID, selected);
+        TeamViewer.team.updateChooser(position, ID, selected);
         save();
     }
 
     @Override
     public void checkboxUpdated(int ID, ArrayList<Boolean> checked) {
-        team.updateCheckbox(position, ID, checked);
+        TeamViewer.team.updateCheckbox(position, ID, checked);
         save();
     }
 
     @Override
     public void stopwatchUpdated(int ID, double time) {
-        team.updateStopwatch(position, ID, time);
+        TeamViewer.team.updateStopwatch(position, ID, time);
         save();
     }
 
@@ -170,15 +162,15 @@ public class Match extends Fragment implements ElementsListener {
             }
         }
 
-        team.updateTextfield(position, ID, value);
+        TeamViewer.team.updateTextfield(position, ID, value);
         save();
     }
 
     // Start a save thread and save everything to the file system
     private void save() {
         if(!readOnly) {
-            team.getTabs().get(position).setModified(event);
-            new SaveThread(view.getContext(), event.getID(), team);
+            TeamViewer.team.getTabs().get(position).setModified(event.isCloudEnabled());
+            new SaveThread(view.getContext(), event.getID(), TeamViewer.team);
         }
     }
 

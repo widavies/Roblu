@@ -542,6 +542,13 @@ public class Text {
                 confirmRegenerate(context, listener);
             }
         });
+        builder.setNeutralButton("Leave", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                listener.tokenRegenerated("");
+            }
+        });
         AlertDialog dialog = builder.create();
         if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
         dialog.show();
@@ -581,7 +588,6 @@ public class Text {
 
         builder.setTitle("Warning");
         builder.setMessage("If you regenerate your team code, all of your team members must rejoin this team with the new code.");
-
         builder.setPositiveButton("Regenerate", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {

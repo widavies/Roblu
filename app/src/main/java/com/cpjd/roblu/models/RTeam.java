@@ -123,6 +123,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     public RTeam duplicate() {
         RTeam team = new RTeam(name, number, ID);
+        team.setLastEdit(lastEdit);
         team.setPage(page);
         team.setTabs(Text.createNewTabs(tabs));
         team.setTBAInfo(fullName, location, motto, website, rookieYear);
