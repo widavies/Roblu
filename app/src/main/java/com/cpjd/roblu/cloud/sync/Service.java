@@ -222,8 +222,12 @@ public class Service extends android.app.Service {
                                     break;
                                 } else if(j == temp.getTabs().size() - 1) { // we didn't find the tab, add a new one
                                     temp.addTab(checkout.getTeam().getTabs().get(0));
-                                    if(temp.getTabs().get(j).getEditors() == null) temp.getTabs().get(j).setEditors(new ArrayList<String>());
+                                    if(temp.getTabs().get(j).getEditors() == null) {
+                                        temp.getTabs().get(j).setEditors(new ArrayList<String>());
+                                        temp.getTabs().get(j).setEditTimes(new ArrayList<Long>());
+                                    }
                                     temp.getTabs().get(j).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                    temp.getTabs().get(j).getEditTimes().add(checkout.getCompletedTime());
                                 }
 
                             }
@@ -260,12 +264,14 @@ public class Service extends android.app.Service {
                     ArrayList<RCheckout> toUpload = new ArrayList<>();
                     RCheckout[] checkouts = l.loadCheckouts();
                     for(RCheckout checkout : checkouts) {
-                        if(checkout.isSyncRequired()) toUpload.add(checkout);
+                        if(checkout.isSyncRequired()) {
+                            toUpload.add(checkout);
+                        }
+
                     }
                     if(toUpload.size() > 0) {
                         String json = mapper.writeValueAsString(toUpload);
                         JSONObject object = (JSONObject) cr.pushCheckouts(json);
-                        Log.d("RBS", object.toString());
                         if(object.get("status").equals("success")) {
                             for(RCheckout checkout : toUpload) {
                                 checkout.setSyncRequired(false);
@@ -275,7 +281,7 @@ public class Service extends android.app.Service {
                         Log.d("RBS", "Uploaded "+toUpload.size()+" checkouts.");
                     }
                 } catch(Exception e) {
-                    Log.d("RBS", "Failed to upload checkouts.");
+                    Log.d("RBS", "Failed to upload checkouts. "+e.getMessage());
                 }
             }
         }

@@ -324,6 +324,7 @@ public class Text {
         Element t = null;
         if(e instanceof EBoolean) {
             t = new EBoolean(e.getTitle(), ((EBoolean) e).getValue());
+            ((EBoolean)t).setUsingNA(((EBoolean) e).isUsingNA());
         }
         else if(e instanceof ECheckbox) {
             t = new ECheckbox(e.getTitle(), ((ECheckbox) e).getValues(), ((ECheckbox) e).getChecked());
@@ -349,7 +350,11 @@ public class Text {
             t = new EGallery(e.getTitle());
             ((EGallery)t).setImages(((EGallery) e).getImages());
         }
-        if(t != null) t.setID(e.getID());
+        if(t != null) {
+            t.setID(e.getID());
+            t.setModified(e.isModified());
+        }
+
         return t;
     }
 

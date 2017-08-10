@@ -66,7 +66,6 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
             RCheckout check = new RCheckout(temp);
             check.setID(id);
             check.setStatus("Available");
-
             checkouts.add(check);
             id++;
         }

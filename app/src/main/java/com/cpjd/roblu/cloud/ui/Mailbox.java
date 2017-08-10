@@ -16,6 +16,7 @@ import com.cpjd.roblu.cloud.ui.fragments.MailAdapter;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.utils.Constants;
 
 /**
  * Displays incoming and outgoing assignments
@@ -24,11 +25,14 @@ public class Mailbox extends AppCompatActivity {
 
     private MailAdapter adapter;
     private IntentFilter serviceFilter;
+    public static boolean addedConflict;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_team_viewer);
+
+        addedConflict = false;
 
         RUI rui = new Loader(getApplicationContext()).loadSettings().getRui();
 
@@ -85,6 +89,7 @@ public class Mailbox extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            if(addedConflict) setResult(Constants.MAILBOX_EXITED);
             finish();
             return true;
         }
@@ -93,6 +98,7 @@ public class Mailbox extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        if(addedConflict) setResult(Constants.MAILBOX_EXITED);
         finish();
     }
 

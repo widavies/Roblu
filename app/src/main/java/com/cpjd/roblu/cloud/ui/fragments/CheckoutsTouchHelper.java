@@ -10,6 +10,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.cloud.ui.Mailbox;
 import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTeam;
@@ -100,19 +101,16 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
                     team.updateEdit();
                     team.setID(l.getNewTeamID(eventID));
                     l.saveTeam(team, eventID);
-                    Intent broadcast3 = new Intent();
-                    broadcast3.setAction("com.cpjd.roblu.broadcast.main");
-                    elementsAdapter.getContext().sendBroadcast(broadcast3);
+                    Mailbox.addedConflict = true;
                 }
 
             }  else {
                 // Discard the checkout
                 l.deleteCheckoutConflict(checkout.getID());
                 elementsAdapter.remove(viewHolder.getAdapterPosition());
-                Intent broadcast = new Intent();
-                broadcast.setAction("com.cpjd.roblu.broadcast");
-                broadcast.putExtra("mode", 2);
-                elementsAdapter.getContext().sendBroadcast(broadcast);
+                Intent broadcast3 = new Intent();
+                broadcast3.setAction("com.cpjd.roblu.broadcast.main");
+                elementsAdapter.getContext().sendBroadcast(broadcast3);
             }
         }
     }

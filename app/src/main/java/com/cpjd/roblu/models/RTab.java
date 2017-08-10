@@ -36,7 +36,7 @@ public class RTab implements Serializable, Comparable<RTab> {
      * This boolean will be flagged to true if this tab
      * was modified and needs to be pushed to the server
      */
-    private boolean modified;
+    private boolean tabModified;
 
     // jackson requires an empty constructor
     public RTab() {}
@@ -50,7 +50,9 @@ public class RTab implements Serializable, Comparable<RTab> {
     }
 
     public RTab duplicate() {
-        return new RTab(Text.createNew(elements), title, redAlliance, won, time);
+        RTab tab = new RTab(Text.createNew(elements), title, redAlliance, won, time);
+        tab.setTabModified(tabModified);
+        return tab;
     }
 
     @Override
@@ -59,6 +61,6 @@ public class RTab implements Serializable, Comparable<RTab> {
     }
 
     public void setModified(boolean modified) {
-        this.modified = modified;
+        this.tabModified = modified;
     }
 }

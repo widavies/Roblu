@@ -567,6 +567,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             Bundle d = data.getExtras();
             selectEvent(d.getLong("eventID"));
         }
+        if(resultCode == Constants.MAILBOX_EXITED) {
+            new LoadTeams(true, lastQuery, lastSortToken, lastFilter).execute();
+            return;
+        }
         if(resultCode == Constants.TEAM_EDITED) {
             if(teams == null || teams.size() == 0 || event == null) return;
             RTeam temp = new Loader(getApplicationContext()).loadTeam(event.getID(), data.getLongExtra("team", 0));

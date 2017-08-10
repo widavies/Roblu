@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -219,11 +220,12 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         if(!getIntent().getBooleanExtra("isConflict", false) && !getIntent().getBooleanExtra("isSpecialConflict", false)) {
             // Check for modified tabs that need to be packaged
             for(int i = 0; i < TeamViewer.team.getTabs().size(); i++) {
-                if(TeamViewer.team.getTabs().get(i).isModified()) {
+                if(TeamViewer.team.getTabs().get(i).isTabModified()) {
+                    Log.d("RBS", "Index: "+i);
                     TeamViewer.team.getTabs().get(i).setModified(false);
                     new Loader(getApplicationContext()).saveTeam(TeamViewer.team, event.getID());
-                    RTeam temp = team.duplicate();
-                    if(i == 0) temp.removeAllTabsButPIT();
+                    RTeam temp = TeamViewer.team.duplicate();
+                    if(i == 0 || i == 1) temp.removeAllTabsButPIT();
                     else temp.removeAllTabsBut(i);
 
                     RCheckout checkout = new RCheckout(temp);
@@ -232,6 +234,10 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     checkout.setStatus("local-edit");
                     checkout.setConflictType("local-edit");
                     new Loader(getApplicationContext()).saveCheckout(checkout);
+                    if(i == 0) {
+                        i = 2;
+                        continue;
+                    }
                 }
             }
         }

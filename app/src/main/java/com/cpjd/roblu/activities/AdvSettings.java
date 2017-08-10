@@ -29,6 +29,7 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -371,14 +372,15 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     try {
                         JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Text.getDeviceID(getActivity())).joinTeam();
                         System.out.println(response);
-                        System.out.println("{"+response.get("data")+"}");
-                        if(response.get("status").toString().equalsIgnoreCase("success") && response.get("data") != null && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
+                        System.out.println("Data resposne: "+response.get("data"));
+                        if(response.get("status").toString().equalsIgnoreCase("success") && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
                             // it works
                             settings.setTeamCode(input.getText().toString());
                             new Loader(getActivity()).saveSettings(settings);
                             toggleJoinTeam(false);
+                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team.", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
                         } else { // didn't exist or already signed in
-                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "", true, 0);
+                            Log.d("RBS", "here");
                             Snackbar s = Snackbar.make(getActivity().findViewById(R.id.advsettings), "Team doesn't exist.", Snackbar.LENGTH_LONG);
                             s.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.red));
                             s.setAction("Purchase Roblu Cloud", new PurchaseListener());
