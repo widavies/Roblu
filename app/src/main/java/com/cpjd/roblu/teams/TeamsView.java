@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -217,13 +218,21 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 3.5.9 - 3.6.0")
-                    .setMessage("-Added my matches (long press on search button)\n-Improvements to searching and filtering\n-Ads removed, UI customizer available for everyone\n-Reworked cloud controls\n-Event import now searchable\n-Bug fixes\n\n" +
-                            "Cloud support is coming in 3.6.1")
+                    .setTitle("Changelist for Version 3.6.1")
+                    .setMessage("-Added Roblu Cloud [Beta], check out roblu.net for more\n-New image system\nBug fixes & performance improvements\n\nComplete the survey for 2 free months of Roblu Cloud!")
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
+                        }
+                    })
+                    .setNegativeButton("Survey", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            String url = "https://goo.gl/forms/X95MvBgRsx8f94ID3";
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(url));
+                            startActivity(i);
                         }
                     });
             AlertDialog dialog = builder.create();

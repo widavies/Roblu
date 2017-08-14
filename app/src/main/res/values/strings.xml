@@ -59,7 +59,7 @@
     <string name="must_be_setup">Roblu must be setup. Tap next to begin.</string>
     <string name="next">Next</string>
     <string name="privacy">Privacy Policy and Terms of Use</string>
-    <string name="agreement">By using Roblu, you agree to the Privacy Policy and Terms of Use located at www.cpjd.weebly.com/privacy</string>
+    <string name="agreement">By using Roblu, you agree to the Privacy Policy and Terms of Use located at https://www.roblu.net/privacy</string>
     <string name="agree">Agree</string>
     <string name="permissions">Permissions</string>
     <string name="requires_permissions">Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next.</string>

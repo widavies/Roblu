@@ -146,8 +146,8 @@ public class UICustomizer extends AppCompatActivity {
                 rui.setTeamsRadius(num);
             }
 
-            settings.setRui(rui);
             rui.setPreset(2);
+            settings.setRui(rui);
             new Loader(getActivity()).saveSettings(settings);
             Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
             new UIHandler((AppCompatActivity) getActivity(), toolbar).update();

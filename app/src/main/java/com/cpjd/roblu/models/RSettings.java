@@ -42,6 +42,7 @@ public class RSettings implements Serializable {
      */
     private String auth; // the user's authentication token, links them with their Roblu Cloud API account
     private String teamCode; // the team's authentication code, links the code with the Roblu Cloud Team profile
+    private String name, email;
 
     private boolean clearActiveRequested;
 

@@ -3,6 +3,7 @@ package com.cpjd.roblu.cloud.sync;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.cloud.api.CloudRequest;
@@ -101,7 +102,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
             if(eventName == null || eventName.equals("")) eventName = " ";
             else if(eventName.equals("null")) eventName = "null ";
 
-            new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode(), Text.getDeviceID(activity)).initPushCheckouts(eventName, json);
+            Log.d("RBS",new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode(), Text.getDeviceID(activity)).initPushCheckouts(eventName, json).toString());
         } catch(Exception e) {
             System.out.println("An error occured: "+e.getMessage());
             e.printStackTrace();

@@ -11,10 +11,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
-
-import javax.net.ssl.HttpsURLConnection;
 
 /**
  * The "bridge" between the app and the Roblu Cloud Server. All the methods that
@@ -33,7 +32,7 @@ public class CloudRequest {
     /**
      * The static URL of the Roblu Cloud Server
      */
-    private static final String URL = "https://frc-scout-andypethan.c9users.io/";
+    private static final String URL = "http://ec2-13-59-164-241.us-east-2.compute.amazonaws.com/";
     private static final JSONParser parser = new JSONParser();
 
     /**
@@ -72,8 +71,8 @@ public class CloudRequest {
      * @return object representing the servers response (either success or error)
      * @throws Exception A more broad error happened, server could not be contacted, wrong parameters or URL, response could not be read, etc.
      */
-    public Object signIn(String name, String email) throws Exception {
-        return doRequest(false, "users/signIn", "?name="+encodeString(name)+"&email="+encodeString(email));
+    public Object signIn(String name, String email, String teamCode) throws Exception {
+        return doRequest(false, "users/signIn", "?name="+encodeString(name)+"&email="+encodeString(email)+"&code="+encodeString(teamCode));
     }
 
     /**
@@ -174,7 +173,7 @@ public class CloudRequest {
         if(post) url = new URL(URL+ targetURL);
         else url = new URL(URL+targetURL+parameters);
 
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         if(post) {
             connection.setDoOutput(true);

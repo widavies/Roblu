@@ -307,7 +307,6 @@ public class EventSettings extends AppCompatActivity {
                     Text.showSnackbar(layout, getActivity(), "You are not connected to the internet.", true, 0);
                     return false;
                 }
-
                 if((boolean)o) {
                     new InitPacker(getActivity(), event.getID()).execute();
                     return true;

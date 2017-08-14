@@ -29,7 +29,6 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.InputType;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -292,19 +291,10 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet.", true, 0);
                         return;
                     }
-                    // Attempt to contact the Roblu Server
-                    try {
-                        JSONObject response = (JSONObject) new CloudRequest(Text.getDeviceID(getActivity())).signIn(acct.getDisplayName(), acct.getEmail());
-                        JSONObject response2 = (JSONObject) response.get("data");
-                        settings.setAuth(response2.get("auth").toString());
-                        new Loader(getActivity()).saveSettings(settings);
-                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully signed in to Roblu Cloud", false, rui.getPrimaryColor());
-                        updateUI(true);
-                    } catch(Exception e) {
-                        System.out.println(e.getMessage());
-                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
-                    }
-
+                    settings.setName(acct.getDisplayName());
+                    settings.setEmail(acct.getEmail());
+                    new Loader(getActivity()).saveSettings(settings);
+                    updateUI(true);
                 } else return;
             } else {
                 // Signed out, show unauthenticated UI.
@@ -346,6 +336,14 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             return true;
         }
         private void joinTeam() {
+            if(!Text.hasInternetConnection(getActivity())) {
+                Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet", true, 0);
+                return;
+            }
+            if(settings.getName() == null || settings.getEmail() == null || settings.getName().equals("") || settings.getEmail().equals("")) {
+                Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Please sign into your Google account before entering your team code.", true, 0);
+                return;
+            }
             RUI rui = settings.getRui();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -368,11 +366,26 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    // attempt to sign in with the provided team code
+                  // First, sign in
+                    try {
+                        JSONObject response = (JSONObject) new CloudRequest().signIn(settings.getName(), settings.getEmail(), input.getText().toString());
+                        JSONObject response2 = (JSONObject) response.get("data");
+                        if(!response.get("status").equals("Error: team does not exist")) {
+                            settings.setAuth(response2.get("auth").toString());
+                        } else {
+                            Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team not found.", true, 0);
+                            return;
+                        }
+                    } catch(Exception e) {
+                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
+                    }
+                    settings.setTeamCode(input.getText().toString());
+                    new Loader(getActivity()).saveSettings(settings);
+                    dialog.dismiss();
+
+                    // next, join team
                     try {
                         JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Text.getDeviceID(getActivity())).joinTeam();
-                        System.out.println(response);
-                        System.out.println("Data resposne: "+response.get("data"));
                         if(response.get("status").toString().equalsIgnoreCase("success") && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
                             // it works
                             settings.setTeamCode(input.getText().toString());
@@ -380,7 +393,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                             toggleJoinTeam(false);
                             Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team.", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
                         } else { // didn't exist or already signed in
-                            Log.d("RBS", "here");
                             Snackbar s = Snackbar.make(getActivity().findViewById(R.id.advsettings), "Team doesn't exist.", Snackbar.LENGTH_LONG);
                             s.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.red));
                             s.setAction("Purchase Roblu Cloud", new PurchaseListener());

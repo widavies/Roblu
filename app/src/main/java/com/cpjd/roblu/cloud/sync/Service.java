@@ -73,7 +73,7 @@ public class Service extends android.app.Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("RBS", "Service started at "+Text.convertTime(System.currentTimeMillis()));
+      //  Log.d("RBS", "Service started at "+Text.convertTime(System.currentTimeMillis()));
         Message message = handler.obtainMessage();
         message.arg1 = startId;
         handler.sendMessage(message);
@@ -82,7 +82,6 @@ public class Service extends android.app.Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        //TODO for communication return IBinder implementation
         return null;
     }
 
@@ -106,7 +105,7 @@ public class Service extends android.app.Service {
                         Thread.sleep(5000);
                     }
                     else {
-                        Log.d("RBS", "Sleeping for 15 seconds...");
+                       Log.d("RBS", "Sleeping for 15 seconds...");
                         Thread.sleep(15000);
                     }
                 } catch(Exception e) {}
@@ -124,7 +123,6 @@ public class Service extends android.app.Service {
                 if(settings.isClearActiveRequested()) {
                     try {
                         Log.d("RBS", cr.clearActiveEvent().toString());
-
                     } catch(Exception e) {}
                     settings.setClearActiveRequested(false);
                     l.saveSettings(settings);
@@ -133,7 +131,7 @@ public class Service extends android.app.Service {
                 RUI rui = settings.getRui();
                 if(rui != null && rui.isModified()) {
                     try {
-                        Log.d("RBS", "UI was modified, pushing changes...");
+                       // Log.d("RBS", "UI was modified, pushing changes...");
                         cr.pushUI(mapper.writeValueAsString(rui));
                         rui.setModified(false);
                         l.saveSettings(settings);
@@ -159,7 +157,7 @@ public class Service extends android.app.Service {
                 RForm form = l.loadForm(activeEvent.getID());
                 if(form != null  && form.isModified()) {
                     try {
-                        Log.d("RBS", "Form was modified, pushing changes...");
+                       // Log.d("RBS", "Form was modified, pushing changes...");
                         cr.pushForm(mapper.writeValueAsString(form));
                         form.setModified(false);
                         l.saveForm(form, activeEvent.getID());
@@ -174,7 +172,7 @@ public class Service extends android.app.Service {
                     int auto = 0;
                     int conflicts = 0;
 
-                    Log.d("RBS", "Checking for ReceivedCheckouts...");
+                    //Log.d("RBS", "Checking for ReceivedCheckouts...");
                     JSONArray checkouts = (JSONArray) ((JSONObject)cr.pullCheckouts()).get("data");
                     for(int i = 0; i < checkouts.size(); i++) {
                         JSONObject object = (JSONObject) checkouts.get(i);
