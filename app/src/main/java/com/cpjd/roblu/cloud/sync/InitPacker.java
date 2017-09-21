@@ -11,6 +11,7 @@ import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.utils.Text;
 
@@ -22,6 +23,9 @@ import java.util.ArrayList;
  * The initial passive push that pushes around 500
  * checkouts to the cloud! doInBackground() returns
  * true if the push & upload was successful
+ *
+ * We need to generate 1 checkout model per match, per team. So there will be
+ * a lot of checkouts.
  *
  * @since 3.5.9
  * @author Will Davies
@@ -43,18 +47,22 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
     protected Boolean doInBackground(Void... params) {
         Loader l = new Loader(activity);
 
-        // loading
+        // Load all the teams from this event
         RForm form = l.loadForm(eventID);
         RTeam[] teams = l.getTeams(eventID);
         if(teams == null || teams.length == 0) {
             return false;
         }
 
-        form.setModified(true); // form needs to be synced the first time
+        // Tell the background service that both the form and the UI need to be synced to the server
+        form.setModified(true);
+        RSettings settings = l.loadSettings();
+        settings.getRui().setModified(true);
+        l.saveSettings(settings);
         l.saveForm(form, eventID);
 
         ArrayList<RCheckout> checkouts = new ArrayList<>();
-        // Verify everything
+        // Verify everything - this keeps it in sync witht he form
         for(RTeam team : teams) {
             team.verify(form);
             l.saveTeam(team, eventID);
@@ -88,6 +96,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
             }
         }
 
+        // if no checkouts were generated, might as well stop this thread because we don't need to update anything
         if(checkouts.size() == 0) {
             return false;
         }
@@ -97,6 +106,7 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
          */
         ObjectMapper mapper = new ObjectMapper();
         try {
+            // serialization all the checkouts and pack them in an json array, this will be processed by the server
             String json = mapper.writeValueAsString(checkouts);
             String eventName = l.getEvent(eventID).getName();
             if(eventName == null || eventName.equals("")) eventName = " ";
@@ -124,11 +134,13 @@ public class InitPacker extends AsyncTask<Void, Void, Boolean> {
 
         return true;
     }
-    @Override
+    @Override // Update UI with either success or fail message
     protected void onPostExecute(Boolean result) {
         d.dismiss();
-        if(result) Text.showSnackbar(activity.findViewById(R.id.event_settings), activity, "Event successfully synced", false, new Loader(activity).loadSettings().getRui().getPrimaryColor());
-        else Text.showSnackbar(activity.findViewById(R.id.event_settings), activity, "No match data found. Please create some before uploading.", true, 0);
+        try {
+            if(result) Text.showSnackbar(activity.findViewById(R.id.event_settings), activity, "Event successfully synced", false, new Loader(activity).loadSettings().getRui().getPrimaryColor());
+            else Text.showSnackbar(activity.findViewById(R.id.event_settings), activity, "No match data found. Please create some before uploading.", true, 0);
+        } catch(Exception e) {}
     }
 
 

@@ -62,7 +62,7 @@ import org.json.simple.JSONObject;
 /**
  *
  * AdvSettings is short for "Advanced Settings", because the last version of settings was absolute garbage.
- * This one is a bit better. This manages application level settings, not specific to any elements.
+ * This one is a bit better. This manages application level settings, not specific to any events
  *
  * @since 2.0.0
  * @author Will Davies
@@ -171,6 +171,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("sync_service").setOnPreferenceClickListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
             findPreference("cloud_support").setOnPreferenceClickListener(this);
+            findPreference("reddit").setOnPreferenceClickListener(this);
 
             toggleJoinTeam(!(settings.getTeamCode() != null && !settings.getTeamCode().equals("")));
 
@@ -184,6 +185,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("display_code").setEnabled(b);
         }
 
+        // This updates the UI depending on whether the user has entered a team code or not
         private void toggleJoinTeam(boolean b) {
             Preference joinTeam = findPreference("display_code");
             if(!b) {
@@ -195,12 +197,19 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             }
         }
 
+        /*
+         * If the user decides to sign out of their account, we should do several things:
+         * 1) Remove account credentials from settings
+         * 2) De-sync all events and clear any checkouts leftover from previously synced events
+         */
         private void handleSignOut() {
             Auth.GoogleSignInApi.signOut(apiClient).setResultCallback(new ResultCallback<Status>() {
                 @Override
                 public void onResult(@NonNull Status status) {
                     toggleCloudControls(!status.isSuccess());
                     if (status.isSuccess()) {
+                        settings.setName("");
+                        settings.setEmail("");
                         settings.setAuth("");
                         settings.setTeamCode("");
                         settings.setClearActiveRequested(true);
@@ -220,30 +229,31 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             updateUI(false);
         }
 
-        // Handles preference clicks
+        // Called when the user taps a preference
         @Override
         public boolean onPreferenceClick(Preference preference) {
-            if(preference.getKey().equals("display_code")) { // user tapped display team code
-                if(settings.getTeamCode() != null && !settings.getTeamCode().equals("")) Text.showTeamCode(getActivity(), settings.getTeamCode(), this);
-                else joinTeam();
+            if(preference.getKey().equals("reddit")) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.reddit.com/r/Roblu"));
+                startActivity(browserIntent);
                 return true;
             }
-            else if(preference.getKey().equals("cloud_support")) {
+            else if(preference.getKey().equals("display_code")) { // user tapped display team code
+                // if already signed in, display the team code
+                if(settings.getTeamCode() != null && !settings.getTeamCode().equals("")) Text.showTeamCode(getActivity(), settings.getTeamCode(), this);
+                else joinTeam(); // if not, prompt the user for a team code
+                return true;
+            }
+            else if(preference.getKey().equals("cloud_support")) { // open roblu.net in a browser on the user's device
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://roblu.net"));
                 startActivity(browserIntent);
                 return true;
             }
             else if(preference.getKey().equals("sync_service")) { // user tapped sign-in button, we have to decide whether to request sign-in, or sign out of Google
                 if(new Loader(getActivity()).loadSettings().isSignedIn()) { // If we're already signed in, let's make a request to sign out
-                    // attempt to leave team on the server
                     try {
                         if(settings.getTeamCode() == null || settings.getTeamCode().equalsIgnoreCase("")) {
                             handleSignOut();
                         } else {
-                            if(!Text.hasInternetConnection(getActivity())) {
-                                Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet.", true, 0);
-                                return false;
-                            }
                             handleSignOut();
                         }
                     } catch(Exception e) {
@@ -263,7 +273,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         start(getActivity());
                 return true;
             }
-            else if(preference.getKey().equals("customizer")) { // launch the UI customizer, make sure to listen for any changes the user makes
+            else if(preference.getKey().equals("customizer")) { // launch the UI customizer, make sure to listen for any changes the user makes since this activity isn't re-created on back button pressed
                 getActivity().startActivityForResult(new Intent(getActivity(), UICustomizer.class), Constants.GENERAL);
                 return true;
             }
@@ -286,11 +296,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 // Signed in successfully, show authenticated UI.
                 GoogleSignInAccount acct = result.getSignInAccount();
                 if(acct != null) { // update our local settings with the email and display name, don't touch anything else! we don't want to store unnecessary personal information
-                    // check for an internet connection
-                    if(!Text.hasInternetConnection(getActivity())) {
-                        Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet.", true, 0);
-                        return;
-                    }
                     settings.setName(acct.getDisplayName());
                     settings.setEmail(acct.getEmail());
                     new Loader(getActivity()).saveSettings(settings);
@@ -319,7 +324,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
         @Override
         public boolean onPreferenceChange(Preference preference, Object o) {
             if(preference.getKey().equals("team_number")) { // user changed their team number
-                // We have to verify that the number they typed in is not above the Integer.MAX_VALUE or we'll get an error
+                // We have to verify that the number they typed in is not above the Integer.MAX_VALUE or we'll get an error, for our purposes, we'll just cap it at a million possible numbers
                 int num;
                 try {
                     num = Integer.parseInt(o.toString());
@@ -335,11 +340,15 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             new Loader(getActivity()).saveSettings(settings); // save the settings to the file system
             return true;
         }
+
+        // prompts the user to enter their team code
         private void joinTeam() {
+            // check for an internet connection
             if(!Text.hasInternetConnection(getActivity())) {
                 Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet", true, 0);
                 return;
             }
+            // make sure that we have Google account information on the user
             if(settings.getName() == null || settings.getEmail() == null || settings.getName().equals("") || settings.getEmail().equals("")) {
                 Text.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Please sign into your Google account before entering your team code.", true, 0);
                 return;
@@ -350,6 +359,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             LinearLayout layout = new LinearLayout(getActivity());
             layout.setOrientation(LinearLayout.VERTICAL);
 
+            // this is the team code input edit text
             final AppCompatEditText input = new AppCompatEditText(getActivity());
             Text.setInputTextLayoutColor(rui.getAccent(), rui.getText(), null, input);
             input.setHighlightColor(rui.getAccent());
@@ -426,13 +436,14 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
         }
 
-        @Override
+        @Override // called when the user taps "regenerate" within the display team code dialog
         public void tokenRegenerated(String token) {
             if(token != null && token.equals("")) toggleJoinTeam(true);
             settings.setTeamCode(token);
             new Loader(getActivity()).saveSettings(settings);
         }
 
+        // Listens to the custom snack bar, displays a link to Roblu Cloud purchase
         public class PurchaseListener implements View.OnClickListener{
 
             @Override
@@ -442,8 +453,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             }
         }
     }
-
-
 
     // load in the bug report button, and make it match the ui settings
     @Override

@@ -53,10 +53,6 @@ public class CloudRequest {
 
     public CloudRequest() {}
 
-    public CloudRequest(String device) {
-        this.device = device;
-    }
-
     public CloudRequest(String auth, String teamCode, String device) {
         this.auth = auth;
         this.teamCode = teamCode;

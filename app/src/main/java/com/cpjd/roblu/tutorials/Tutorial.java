@@ -39,7 +39,7 @@ public class Tutorial extends AppCompatActivity implements SelectListener{
 
         // List of tutorials
         LinkedList<RTutorial> tuts = new LinkedList<>();
-        tuts.add(new RTutorial("The basics [Coming soon]", "Roblu's mission, description of platforms, terms, etc."));
+        tuts.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc."));
         tuts.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events"));
         tuts.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form"));
         tuts.add(new RTutorial("Scouting", "Learn how to scout with the RTeam model, sort, organize, search"));
@@ -82,6 +82,7 @@ public class Tutorial extends AppCompatActivity implements SelectListener{
     @Override
     public void onItemClick(View v) {
         int position = rv.getChildLayoutPosition(v);
+        if(position == 0) watchYoutubeVideo("9j6ysvJJyQg");
         if(position == 1) watchYoutubeVideo("KoylfzTBvKM");
         if(position == 2) watchYoutubeVideo("LpWvnavebNw");
         if(position == 3) watchYoutubeVideo("5ktHjyQq4XY");

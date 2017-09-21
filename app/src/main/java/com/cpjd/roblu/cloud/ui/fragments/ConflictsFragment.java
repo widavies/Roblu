@@ -44,7 +44,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
-        adapter = new CheckoutAdapter(view.getContext(), eventID, CheckoutAdapter.CONFLICTS, this);
+        adapter = new CheckoutAdapter(view.getContext(), CheckoutAdapter.CONFLICTS, this);
         rv.setAdapter(adapter);
 
         ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.CONFLICTS, eventID);

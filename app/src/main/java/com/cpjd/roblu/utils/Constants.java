@@ -11,7 +11,7 @@ package com.cpjd.roblu.utils;
 // Some constants that are required in almost everything
 public abstract class Constants {
 
-    public static final int VERSION = 10; // used for updating the changelist
+    public static final int VERSION = 11; // used for updating the changelist
 
     // Drawer identifier codes
     public static final int CREATE_EVENT = 1;

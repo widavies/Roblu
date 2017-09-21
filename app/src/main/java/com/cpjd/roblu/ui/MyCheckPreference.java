@@ -28,20 +28,23 @@ public class MyCheckPreference extends CheckBoxPreference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
-        RUI rui = new Loader(getContext()).loadSettings().getRui();
-        AppCompatCheckBox checkbox = (AppCompatCheckBox) view.findViewById(android.R.id.checkbox);
-        checkbox.animate();
-        ColorStateList colorStateList = new ColorStateList(
-                new int[][] {
-                        new int[] { -android.R.attr.state_checked }, // unchecked
-                        new int[] {  android.R.attr.state_checked }  // checked
-                },
-                new int[] {
-                        rui.getText(),
-                        rui.getAccent()
-                }
-        );
-        if(android.os.Build.VERSION.SDK_INT >= 21) checkbox.setSupportButtonTintList(colorStateList);
+        try {
+            RUI rui = new Loader(getContext()).loadSettings().getRui();
+            AppCompatCheckBox checkbox = (AppCompatCheckBox) view.findViewById(android.R.id.checkbox);
+            checkbox.animate();
+            ColorStateList colorStateList = new ColorStateList(
+                    new int[][] {
+                            new int[] { -android.R.attr.state_checked }, // unchecked
+                            new int[] {  android.R.attr.state_checked }  // checked
+                    },
+                    new int[] {
+                            rui.getText(),
+                            rui.getAccent()
+                    }
+            );
+            if(android.os.Build.VERSION.SDK_INT >= 21) checkbox.setSupportButtonTintList(colorStateList);
+        } catch(Exception e) {}
+
 
     }
 

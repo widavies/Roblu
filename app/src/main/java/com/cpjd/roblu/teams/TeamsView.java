@@ -218,18 +218,18 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 3.6.1")
-                    .setMessage("-Added Roblu Cloud [Beta], check out roblu.net for more\n-New image system\nBug fixes & performance improvements\n\nComplete the survey for 2 free months of Roblu Cloud!")
+                    .setTitle("Changelist for Version 3.6.3")
+                    .setMessage("-Improvements to Roblu Cloud\n-Bug fixes\n-More work on Bluetooth, expect rollout around 10/15\n-Roblu Cloud now costs only $5 a season\n\n-Created a subreddit for all things Roblu")
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             dialog.dismiss();
                         }
                     })
-                    .setNegativeButton("Survey", new DialogInterface.OnClickListener() {
+                    .setNegativeButton("Subreddit", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            String url = "https://goo.gl/forms/X95MvBgRsx8f94ID3";
+                            String url = "https://www.reddit.com/r/Roblu";
                             Intent i = new Intent(Intent.ACTION_VIEW);
                             i.setData(Uri.parse(url));
                             startActivity(i);

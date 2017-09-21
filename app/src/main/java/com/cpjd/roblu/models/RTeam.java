@@ -172,6 +172,8 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             return;
         }
 
+        if(form == null || form.getPit() == null) return;
+
         // Remove elements that aren't in the form model
         ArrayList<Element> formb = form.getPit();
         for (int i = 0; i < tabs.size(); i++) {

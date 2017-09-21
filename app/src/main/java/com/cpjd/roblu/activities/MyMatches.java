@@ -146,7 +146,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false); // prevents a weird rendering issues
 
         // load the data into the adapter (synced with recyclerview)
-        adapter = new CheckoutAdapter(getApplicationContext(), eventID, CheckoutAdapter.MYMATCHES, this);
+        adapter = new CheckoutAdapter(getApplicationContext(), CheckoutAdapter.MYMATCHES, this);
         rv.setAdapter(adapter);
 
         // manages the gestures that are available to us (recyclerview supports a lot of gestures, we only need the click gesture for this scenario)

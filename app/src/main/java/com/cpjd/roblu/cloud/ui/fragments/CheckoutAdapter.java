@@ -34,32 +34,25 @@ import lombok.Getter;
 public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Getter
     private final Context context;
-    private CheckoutListener listener;
+    private CheckoutListener listener; // called when a checkout is tapped
     private final RUI rui;
-    private final long eventID;
 
+    // the list of all the checkouts to display
     private ArrayList<RCheckout> checkouts;
+
+    private final int mode; // CheckoutAdapter is shared by the following three views: (we need to know which one for several purposes)
     public static final int CONFLICTS = 1;
     public static final int INBOX = 2;
     public static final int MYMATCHES = 3;
-    private final int mode;
 
-    public CheckoutAdapter(Context context, long eventID){
-        this.context = context;
-        this.mode = CheckoutAdapter.INBOX;
-        this.eventID = eventID;
-        this.rui = new Loader(getContext()).loadSettings().getRui();
-    }
-
-    public CheckoutAdapter(Context context, long eventID, int mode, CheckoutListener listener){
+    public CheckoutAdapter(Context context, int mode, CheckoutListener listener){
         this.context = context;
         this.mode = mode;
-        this.eventID = eventID;
         this.listener = listener;
         this.rui = new Loader(getContext()).loadSettings().getRui();
     }
 
-    @Override
+    @Override // Called for each CardView, displays checkout information on it
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.teams_item, parent, false);
         view.setBackgroundColor(rui.getCardColor());
@@ -73,17 +66,19 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         return holder;
     }
 
+    // gets the checkout at the specified position
     public RCheckout getCheckout(int position) {
         if(checkouts == null || checkouts.size() == 0) return null;
         return checkouts.get(position);
     }
 
-    @Override
+    @Override // binds a checkouts information to it's CardView, this will change depending on @var mode
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         MyViewHolder myHolder = (MyViewHolder)holder;
         myHolder.bindMovie(checkouts.get(position));
     }
 
+    // sets the checkouts in this adapter
     public void setCheckouts(ArrayList<RCheckout> checkouts) {
         if(this.checkouts == null) this.checkouts = new ArrayList<>();
         if(checkouts == null || checkouts.size() == 0) return;
@@ -91,19 +86,24 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         notifyDataSetChanged();
     }
 
-    @Override
+    @Override // gets the amount of checkouts in this adapter
     public int getItemCount() {
         if(checkouts == null) checkouts = new ArrayList<>();
         return checkouts.size();
     }
+
+    // removes all the checkouts in this adapter
     public void removeAll() {
        if(checkouts != null) checkouts.clear();
     }
 
+    // removes a checkout at the specified position
     public void remove(final int position) {
         checkouts.remove(position);
         notifyItemRemoved(position);
     }
+
+    // Specifies what and where information from a checkout should be binded to on a CardView
     private class MyViewHolder extends RecyclerView.ViewHolder{
         public final TextView title;
         public final TextView number;

@@ -47,5 +47,9 @@
             android:title="About"
             android:key="about"
             android:summary="External library information"/>
+        <com.cpjd.roblu.ui.MyPreference
+            android:title="r/Roblu"
+            android:key="reddit"
+            android:summary="Changelists, features, bug reports, and community subreddit."/>
     </com.cpjd.roblu.ui.MyPreferenceCategory>
 </PreferenceScreen>

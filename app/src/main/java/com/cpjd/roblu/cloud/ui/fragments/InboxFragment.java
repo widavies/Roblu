@@ -28,14 +28,12 @@ public class InboxFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         view = inflater.inflate(R.layout.assignments_tab, container, false);
 
-        Bundle bundle = this.getArguments();
-
         RecyclerView rv = (RecyclerView) view.findViewById(R.id.assign_recycler);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(view.getContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
-        adapter = new CheckoutAdapter(view.getContext(), bundle.getLong("eventID"));
+        adapter = new CheckoutAdapter(view.getContext(), CheckoutAdapter.INBOX, null);
         rv.setAdapter(adapter);
 
         ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.INBOX, 0);

@@ -47,7 +47,7 @@ import java.util.List;
  *
  * Service timing:
  * -Service will start on device startup
- * -Service will run through the stack once every 3 minutes when unopened, once every 5 seconds when open
+ * -Service will run through the stack once every 15 seconds when unopened, once every 5 seconds when open
  *
  * Service can receive new jobs from the main app thread.
  *
@@ -60,23 +60,26 @@ import java.util.List;
 
 public class Service extends android.app.Service {
 
-    private Looper serviceLooper;
     private ServiceHandler handler;
 
     @Override
     public void onCreate() {
         HandlerThread thread = new HandlerThread("Roblu Service", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
-        serviceLooper = thread.getLooper();
+        Looper serviceLooper = thread.getLooper();
         handler = new ServiceHandler(serviceLooper);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-      //  Log.d("RBS", "Service started at "+Text.convertTime(System.currentTimeMillis()));
-        Message message = handler.obtainMessage();
-        message.arg1 = startId;
-        handler.sendMessage(message);
+        Log.d("RBS", "Service started at "+Text.convertTime(System.currentTimeMillis()));
+        try {
+            Message message = handler.obtainMessage();
+            message.arg1 = startId;
+            handler.sendMessage(message);
+        } catch(Exception e) {
+            Log.d("RBS", "Failed to start service.");
+        }
         return Service.START_STICKY;
     }
 
@@ -87,12 +90,13 @@ public class Service extends android.app.Service {
 
     private final class ServiceHandler extends Handler {
 
-        public ServiceHandler(Looper looper) {
+        ServiceHandler(Looper looper) {
             super(looper);
         }
 
         @Override
         public void handleMessage(Message msg) {
+            if(msg == null) return;
             ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
             Loader l = new Loader(getApplicationContext());
             CloudRequest cr;
@@ -100,7 +104,7 @@ public class Service extends android.app.Service {
             while(true) {
                 // sleep a bit
                 try {
-                    if(isAppOnForeground(getApplicationContext())) {
+                    if(isAppOnForeground(getApplicationContext())) { // detect if app is in foreground, if yes, sleep for a little less
                         Log.d("RBS", "Sleeping for 5 seconds...");
                         Thread.sleep(5000);
                     }
@@ -108,26 +112,37 @@ public class Service extends android.app.Service {
                        Log.d("RBS", "Sleeping for 15 seconds...");
                         Thread.sleep(15000);
                     }
-                } catch(Exception e) {}
+                } catch(Exception e) { /* Ignore */}
 
                 // first, check if we have an internet connection, if we don't, the background service is useless
                 if(!Text.hasInternetConnection(getApplicationContext())) {
                     continue;
                 }
+                // create the object we use to access the server
                 cr = new CloudRequest(l.loadSettings().getAuth(), l.loadSettings().getTeamCode(), Text.getDeviceID(getApplicationContext()));
 
                 // check if the UI needs to be uploaded
                 RSettings settings = l.loadSettings();
 
-                // check if clear active event needs to be called
+                /*
+                 * -DE SYNC-
+                 * Check if we need to tell the server to stop syncing
+                 * all the scouters because the master either deleted a synced event,
+                 * or tapped stop syncing
+                 *
+                 */
                 if(settings.isClearActiveRequested()) {
                     try {
                         Log.d("RBS", cr.clearActiveEvent().toString());
-                    } catch(Exception e) {}
+                    } catch(Exception e) { /* Ignore */ }
                     settings.setClearActiveRequested(false);
                     l.saveSettings(settings);
                 }
 
+                /*
+                 *-UI-
+                 * Check if the UI was modified and needs to be uploaded to all the scouters
+                 */
                 RUI rui = settings.getRui();
                 if(rui != null && rui.isModified()) {
                     try {
@@ -141,8 +156,9 @@ public class Service extends android.app.Service {
                     }
                 }
 
-                /* UPDATES */
-                // first, find the active event
+                /*
+                 * Find the active event from local events and obtain a reference to it
+                 */
                 REvent[] events = l.getEvents();
                 REvent activeEvent = null;
                 for(int i = 0; events != null && events.length > 0 && i < events.length; i++) {
@@ -152,12 +168,14 @@ public class Service extends android.app.Service {
                     }
                 }
                 if(activeEvent == null) continue;
-
-                // check if the form needs to be uploaded
+                /*
+                 * -FORM-
+                 * Check if the form was modified and needs to be uploaded to the scouters
+                 */
                 RForm form = l.loadForm(activeEvent.getID());
                 if(form != null  && form.isModified()) {
                     try {
-                       // Log.d("RBS", "Form was modified, pushing changes...");
+                        Log.d("RBS", "Form was modified, pushing changes...");
                         cr.pushForm(mapper.writeValueAsString(form));
                         form.setModified(false);
                         l.saveForm(form, activeEvent.getID());
@@ -167,12 +185,17 @@ public class Service extends android.app.Service {
                     }
                 }
 
-                // check if their are any checkouts in RCheckouts
+                /*
+                 * -ReceivedCheckouts-
+                 * Check to see if any scouters completed scouting data and
+                 * uploaded it to the server, if so, download it and either merge
+                 * automatically or save to merge conflicts
+                 */
                 try {
                     int auto = 0;
                     int conflicts = 0;
 
-                    //Log.d("RBS", "Checking for ReceivedCheckouts...");
+                    Log.d("RBS", "Checking for ReceivedCheckouts...");
                     JSONArray checkouts = (JSONArray) ((JSONObject)cr.pullCheckouts()).get("data");
                     for(int i = 0; i < checkouts.size(); i++) {
                         JSONObject object = (JSONObject) checkouts.get(i);
@@ -184,50 +207,53 @@ public class Service extends android.app.Service {
                          * We need to check for conflicts (does a team already exist that's been edited, or does the team not exist)
                          */
                         RTeam temp = l.loadTeam(activeEvent.getID(), checkout.getTeam().getID());
-                        if(temp == null) {
+                        if(temp == null) { // if we don't have a local team matching the downloaded team, set conflict type not-found locally
                             checkout.setConflictType("not-found");
                             l.saveCheckoutConflict(checkout);
                             conflicts++;
                         }
-                        else if(temp.getLastEdit() > 0) {
+                        else if(temp.getLastEdit() > 0) { // if the local team is already edited, set conflict type to edited locally already
                             checkout.setConflictType("edited");
                             l.saveCheckoutConflict(checkout);
                             conflicts++;
                         }
 
-                        // no conflicts, merge automatically
+                        // If there are no conflicts, merge the checkout automatically with the local master copy
                         if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) {
-                            for(int j = 0; j < temp.getTabs().size(); j++) {
-                                if(temp.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
-                                    for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) {
-                                        temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
-                                        if(temp.getTabs().get(j + k).getEditors() == null) {
-                                            temp.getTabs().get(j + k).setEditors(new ArrayList<String>());
-                                            temp.getTabs().get(j + k).setEditTimes(new ArrayList<Long>());
+                            if(temp != null) {
+                                for(int j = 0; j < temp.getTabs().size(); j++) {
+                                    if(temp.getTabs().get(j).getTitle().equals(checkout.getTeam().getTabs().get(0).getTitle())) {
+                                        for(int k = 0; k < checkout.getTeam().getTabs().size(); k++) { // set the correct tabs to the received data, set editors and edit times
+                                            temp.getTabs().set(j + k, checkout.getTeam().getTabs().get(k));
+                                            if(temp.getTabs().get(j + k).getEditors() == null) {
+                                                temp.getTabs().get(j + k).setEditors(new ArrayList<String>());
+                                                temp.getTabs().get(j + k).setEditTimes(new ArrayList<Long>());
+                                            }
+                                            temp.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                            Log.d("RBS", "Received checkout with compleltion time: "+checkout.getCompletedTime());
+                                            temp.getTabs().get(j + k).getEditTimes().add(checkout.getCompletedTime());
+
                                         }
-                                        temp.getTabs().get(j + k).getEditors().add(checkout.getStatus().replace("Completed by", ""));
-                                        temp.getTabs().get(j + k).getEditTimes().add(checkout.getCompletedTime());
+                                        temp.updateEdit();
+                                        l.saveTeam(temp, activeEvent.getID());
+                                        // save the checkout in the merge history
+                                        checkout.setMergedTime(System.currentTimeMillis());
+                                        checkout.setSyncRequired(true); // update the master checkouts repo
+                                        checkout.setHistoryID(new Loader(getApplicationContext()).getNewCheckoutID());
+                                        new Loader(getApplicationContext()).saveCheckout(checkout);
+                                        auto++;
+                                        break;
+                                    } else if(j == temp.getTabs().size() - 1) { // we didn't find the tab, add a new one
+                                        temp.addTab(checkout.getTeam().getTabs().get(0));
+                                        if(temp.getTabs().get(j).getEditors() == null) {
+                                            temp.getTabs().get(j).setEditors(new ArrayList<String>());
+                                            temp.getTabs().get(j).setEditTimes(new ArrayList<Long>());
+                                        }
+                                        temp.getTabs().get(j).getEditors().add(checkout.getStatus().replace("Completed by", ""));
+                                        temp.getTabs().get(j).getEditTimes().add(checkout.getCompletedTime());
+                                    }
 
-                                    }
-                                    temp.updateEdit();
-                                    l.saveTeam(temp, activeEvent.getID());
-                                    // save the checkout in the merge history
-                                    checkout.setMergedTime(System.currentTimeMillis());
-                                    checkout.setSyncRequired(true); // update the master checkouts repo
-                                    checkout.setHistoryID(new Loader(getApplicationContext()).getNewCheckoutID());
-                                    new Loader(getApplicationContext()).saveCheckout(checkout);
-                                    auto++;
-                                    break;
-                                } else if(j == temp.getTabs().size() - 1) { // we didn't find the tab, add a new one
-                                    temp.addTab(checkout.getTeam().getTabs().get(0));
-                                    if(temp.getTabs().get(j).getEditors() == null) {
-                                        temp.getTabs().get(j).setEditors(new ArrayList<String>());
-                                        temp.getTabs().get(j).setEditTimes(new ArrayList<Long>());
-                                    }
-                                    temp.getTabs().get(j).getEditors().add(checkout.getStatus().replace("Completed by", ""));
-                                    temp.getTabs().get(j).getEditTimes().add(checkout.getCompletedTime());
                                 }
-
                             }
                         }
                     }
@@ -284,6 +310,7 @@ public class Service extends android.app.Service {
             }
         }
 
+        // returns true if the user has the app open (not just in the recent apps drawer, but currently being drawed to the screen)
         private boolean isAppOnForeground(Context context) {
             ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
             List<ActivityManager.RunningAppProcessInfo> appProcesses = activityManager.getRunningAppProcesses();
