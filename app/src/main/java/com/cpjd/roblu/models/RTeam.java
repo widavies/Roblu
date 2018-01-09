@@ -1,20 +1,16 @@
 package com.cpjd.roblu.models;
 
-import android.support.annotation.NonNull;
-
-import com.cpjd.roblu.forms.elements.EBoolean;
-import com.cpjd.roblu.forms.elements.ECheckbox;
-import com.cpjd.roblu.forms.elements.EChooser;
-import com.cpjd.roblu.forms.elements.ECounter;
-import com.cpjd.roblu.forms.elements.ESlider;
-import com.cpjd.roblu.forms.elements.EStopwatch;
-import com.cpjd.roblu.forms.elements.ETextfield;
-import com.cpjd.roblu.forms.elements.Element;
-import com.cpjd.roblu.teams.TeamsView;
-import com.cpjd.roblu.utils.Text;
+import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCheckbox;
+import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RSlider;
+import com.cpjd.roblu.models.metrics.RStopwatch;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 
 import lombok.Data;
@@ -23,25 +19,32 @@ import lombok.Data;
  * Welcome to the belly of the beast! (Not really)
  * This class models what data a team should store.
  *
- * Don't forget to add any new variables to the duplicate() method!
- *
+ * @version 2
  * @since 3.0.0
  * @author Will Davies
  */
 @Data
-public class RTeam implements Serializable, Comparable<RTeam> {
+@SuppressWarnings("unused")
+public class RTeam implements Serializable {
 
     /**
-     * Identifies duplicate teams, used for file storage as well
+     * Unique identifier for this team. No duplicate IDs allowed. Completely arbitrary.
      */
-    private long ID;
+    private int ID;
 
     /**
-     * General attributes of this team.
-     * Note, lastEdit has a value 0 if not edited and is used for resolving merge conflicts
+     * Name of this team, can be really anything. Usually will be pulled from the Blue Alliance.
      */
     private String name;
+
+    /**
+     * Number of this team
+     */
     private int number;
+
+    /**
+     * Time stamp of last edit made to this team. Also used for resolving merge conflicts
+     */
     private long lastEdit;
 
     /**
@@ -50,6 +53,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * tabs.get(1) is always the Predictions tab
      */
     private ArrayList<RTab> tabs;
+
     /**
      * tabs.get(page) is the page that the user looked at last
      */
@@ -57,95 +61,33 @@ public class RTeam implements Serializable, Comparable<RTeam> {
 
     /**
      * In order to make the user base happier by downloading less data,
-     * TBA data is only downloaded once
+     * TBA data is only downloaded once. Roblu can infer whether the download
+     * happened by checking the below data.
      */
     private String fullName, location, motto, website;
     private int rookieYear;
 
     /**
-     * Uses for searching and contextual information that
-     * is displayed on team cards. Can be safely deleted
-     * when the app is closed.
-     */
-    private transient int filter;
-
-    private transient double searchRelevance;
-    private transient double sortRelevance;
-
-    private transient String searchTip;
-    private String sortTip;
-
-    public RTeam() {}
-
-    /**
      * Creates a new RTeam with default values
-     * @param name
-     * @param number
-     * @param ID
+     * @param name the team's name
+     * @param number the team's numebr
+     * @param ID the arbitrary, unique identifier for this team
      */
-    public RTeam(String name, int number, long ID) {
+    public RTeam(String name, int number, int ID) {
         this.name = name;
         this.number = number;
         this.ID = ID;
-        this.page = 1;
+        this.page = 1; // set default page to PIT
 
         lastEdit = 0;
-    }
-
-    /**
-     * After we download TBA information, save it to this class so we don't have to download it again
-     * @param name
-     * @param location
-     * @param motto
-     * @param website
-     * @param rookieYear
-     */
-    public void setTBAInfo(String name, String location, String motto, String website, int rookieYear) {
-        this.fullName = name;
-        this.location = location;
-        this.motto = motto;
-        this.website = website;
-        this.rookieYear = rookieYear;
-    }
-
-    /**
-     * Checks if their is locally stored TBA data, if there is, we don't need to redownload any more data
-     * @return true if we've got locally stored TBA data
-     */
-    public boolean hasTBAInfo() {
-        return name != null || location != null || motto != null || website == null || rookieYear > 0;
-    }
-
-    /**
-     * Creates a new instance matching this class, useful utility function
-     * for various things
-     * @return a new instance, but with all the same values as the current class
-     */
-    public RTeam duplicate() {
-        RTeam team = new RTeam(name, number, ID);
-        team.setLastEdit(lastEdit);
-        team.setPage(page);
-        team.setTabs(Text.createNewTabs(tabs));
-        team.setTBAInfo(fullName, location, motto, website, rookieYear);
-        team.setSearchTip(searchTip);
-        team.setSortTip(sortTip);
-        team.setFilter(filter);
-        team.setSearchRelevance(searchRelevance);
-        team.setSortRelevance(searchRelevance);
-        return team;
-    }
-
-    public void addTab(RTab tab) {
-        if(this.tabs == null) this.tabs = new ArrayList<>();
-        this.tabs.add(tab);
     }
 
     /**
      * verify() makes sure that the form and team are synchronized. Here's what it does:
      * <p>
      * PIT:
-     * -If the user modified the form and ADDED elements, then we'll make sure to add them to this team
-     * -If the user modified the form and REMOVED elements, then we'll make sure to remove them from this team
+     * -If the user modified the form and ADDED elements, then we'll make sure to add them to this team's form copy
+     * -If the user modified the form and REMOVED elements, then we'll make sure to remove them from this team's form copy
      * -If the user changed any item titles, change them right away
      * -If the user changed any default values, reset all the values on all elements that have NOT been modified
      * -If the user changed the order of any elements, change the order
@@ -164,51 +106,49 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * -If the team has never been opened before, set the PIT values, matches don't need to be set until creation.
      */
     public void verify(RForm form) {
-        // If no tabs exist, create them with default forms
-        if (this.tabs == null) {
+        // Check for null or missing Pit & Predictions tabs
+        if (this.tabs == null || this.tabs.size() == 0) {
             this.tabs = new ArrayList<>();
-            addTab(Text.createNew(form.getPit()), "PIT", false, false, 0);
-            addTab(Text.createNew(form.getMatch()), "PREDICTIONS", false, false, 0);
+            addTab(new RTab("Pit",(ArrayList<RMetric>)form.getPit().clone() , false, false, 0));
+            addTab(new RTab("Predictions",(ArrayList<RMetric>)form.getMatch().clone() , false, false, 0));
             return;
         }
 
-        if(form == null || form.getPit() == null) return;
-
-        // Remove elements that aren't in the form model
-        ArrayList<Element> formb = form.getPit();
+        // Remove elements that aren't on the form
+        ArrayList<RMetric> temp = form.getPit(); // less if statements, just switches between PIT or MATCH depending on what needs to be verified
         for (int i = 0; i < tabs.size(); i++) {
-            if(i == 1) formb = form.getMatch(); // switch to verifying with match elements for non-pit tabs
-            for (int j = 0; j < tabs.get(i).getElements().size(); j++) {
+            if(!tabs.get(i).getTitle().equalsIgnoreCase("Pit")) temp = form.getMatch();
+            for (int j = 0; j < tabs.get(i).getMetrics().size(); j++) {
                 boolean found = false;
-                if(formb.size() == 0) {
-                    tabs.get(i).getElements().clear();
+                if(temp.size() == 0) {
+                    tabs.get(i).getMetrics().clear();
                     break;
                 }
-                for (int k = 0; k < formb.size(); k++) {
-                    if (tabs.get(i).getElements().get(j).getID() == formb.get(k).getID()) found = true;
-                    if (k == formb.size() - 1 && !found) {
-                        tabs.get(i).getElements().remove(j);
+                for (int k = 0; k < temp.size(); k++) {
+                    if (tabs.get(i).getMetrics().get(j).getID() == temp.get(k).getID()) found = true;
+                    if (k == temp.size() - 1 && !found) {
+                        tabs.get(i).getMetrics().remove(j);
                         j = 0;
                         break;
                     }
                 }
             }
         }
-        
-        // Add elements that are in the form model
-        formb = form.getPit(); // changes depending on index
+
+        // Add elements that are on the form, but not in this team
+        temp = form.getPit();
         for (int i = 0; i < tabs.size(); i++) {
-            if (i == 1) formb = form.getMatch();
-            for (int j = 0; j < formb.size(); j++) {
+            if(!tabs.get(i).getTitle().equalsIgnoreCase("Pit")) temp = form.getMatch();
+            for (int j = 0; j < temp.size(); j++) {
                 boolean found = false;
-                if(tabs.get(i).getElements().size() == 0) {
-                    tabs.get(i).getElements().add(Text.createNew(formb.get(j)));
+                if(tabs.get(i).getMetrics().size() == 0) {
+                    tabs.get(i).getMetrics().add(temp.get(j).clone());
                     continue;
                 }
-                for (int k = 0; k < tabs.get(i).getElements().size(); k++) {
-                    if (tabs.get(i).getElements().get(k).getID() == formb.get(j).getID()) found = true;
-                    if (k == tabs.get(i).getElements().size() - 1 && !found) {
-                        tabs.get(i).getElements().add(Text.createNew(formb.get(j)));
+                for (int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
+                    if (tabs.get(i).getMetrics().get(k).getID() == temp.get(j).getID()) found = true;
+                    if (k == tabs.get(i).getMetrics().size() - 1 && !found) {
+                        tabs.get(i).getMetrics().add(temp.get(j).clone());
                         j = 0;
                         break;
                     }
@@ -217,13 +157,13 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         }
 
         // Update item names
-        formb = form.getPit();
+        temp = form.getPit();
         for (int i = 0; i < tabs.size(); i++) {
-            if (i == 1) formb = form.getMatch();
-            for (int j = 0; j < formb.size(); j++) {
-                for (int k = 0; k < tabs.get(i).getElements().size(); k++) {
-                    if (formb.get(j).getID() == tabs.get(i).getElements().get(k).getID()) {
-                        tabs.get(i).getElements().get(k).setTitle(formb.get(j).getTitle());
+            if(!tabs.get(i).getTitle().equalsIgnoreCase("PIT")) temp = form.getMatch();
+            for (int j = 0; j < temp.size(); j++) {
+                for (int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
+                    if (temp.get(j).getID() == tabs.get(i).getMetrics().get(k).getID()) {
+                        tabs.get(i).getMetrics().get(k).setTitle(temp.get(j).getTitle());
                         break;
                     }
                 }
@@ -231,48 +171,45 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         }
 
         // Update default values for non-modified values, also check for some weird scenarioes
-        formb = form.getPit();
+        temp = form.getPit();
         for (int i = 0; i < tabs.size(); i++) {
-            if (i == 1) formb = form.getMatch();
-            for (int j = 0; j < formb.size(); j++) {
-                for (int k = 0; k < tabs.get(i).getElements().size(); k++) {
-                    if (formb.get(j).getID() == tabs.get(i).getElements().get(k).getID()) {
-                        Element e = formb.get(j);
-                        Element s = tabs.get(i).getElements().get(k);
+            if(!tabs.get(i).getTitle().equalsIgnoreCase("PIT")) temp = form.getMatch();
+            for (int j = 0; j < temp.size(); j++) {
+                for (int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
+                    if (temp.get(j).getID() == tabs.get(i).getMetrics().get(k).getID()) {
+                        RMetric e = temp.get(j);
+                        RMetric s = tabs.get(i).getMetrics().get(k);
 
-                        if (e instanceof EBoolean && !s.isModified() && s instanceof EBoolean)
-                            ((EBoolean) s).setValue(((EBoolean) e).getValue());
-                        else if (e instanceof ECheckbox && s instanceof ECheckbox) {
+                        if (e instanceof RBoolean && !s.isModified() && s instanceof RBoolean)
+                            ((RBoolean) s).setValue(((RBoolean) e).isValue());
+                        else if (e instanceof RCheckbox && s instanceof RCheckbox) {
                             if (!s.isModified()) {
-                                ((ECheckbox) s).setValues(((ECheckbox) e).getValues());
+                                ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
                             }
-                            if (!((ECheckbox) s).getValues().equals(((ECheckbox) e).getValues())) {
-                                ((ECheckbox) s).setChecked(((ECheckbox) e).getChecked());
-                                ((ECheckbox) s).setValues(((ECheckbox) e).getValues());
+                            if (!((RCheckbox) s).getValues().equals(((RCheckbox) e).getValues())) {
+                                ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
+                                ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
                             }
                         }
-                        //else if (e instanceof ETextfield && !s.isModified()) ((ETextfield) s).setText(((ETextfield) e).getText());
-                        else if (e instanceof EChooser && s instanceof EChooser) {
+                        //else if (e instanceof RTextfield && !s.isModified()) ((RTextfield) s).setText(((RTextfield) e).getText());
+                        else if (e instanceof RChooser && s instanceof RChooser) {
                             if (!s.isModified())
-                                ((EChooser) s).setSelected(((EChooser) e).getSelected());
-                            if (!((EChooser) s).getValues().equals(((EChooser) e).getValues())) {
-                                ((EChooser) s).setValues(((EChooser) e).getValues());
-                                ((EChooser) s).setSelected(((EChooser) e).getSelected());
+                                ((RChooser) s).setSelectedIndex(((RChooser) e).getSelectedIndex());
+                            if (!Arrays.equals(((RChooser) s).getValues(), ((RChooser) e).getValues())) {
+                                ((RChooser) s).setValues(((RChooser) e).getValues());
+                                ((RChooser) s).setSelectedIndex(((RChooser) e).getSelectedIndex());
                             }
-                        } else if (e instanceof EStopwatch && !s.isModified() && s instanceof EStopwatch)
-                            ((EStopwatch) s).setTime(((EStopwatch) e).getTime());
-                        else if (e instanceof ESlider && !s.isModified() && s instanceof ESlider) {
-                            ((ESlider) s).setMax(((ESlider) e).getMax());
-                            ((ESlider) s).setCurrent(((ESlider) e).getCurrent());
-                        } else if (e instanceof ECounter && s instanceof ECounter) {
-                            ((ECounter) s).setMin(((ECounter) e).getMin());
-                            ((ECounter) s).setMax(((ECounter) e).getMax());
-                            ((ECounter) s).setIncrement(((ECounter) e).getIncrement());
+                        } else if (e instanceof RStopwatch && !s.isModified() && s instanceof RStopwatch)
+                            ((RStopwatch) s).setTime(((RStopwatch) e).getTime());
+                        else if (e instanceof RSlider && !s.isModified() && s instanceof RSlider) {
+                            ((RSlider) s).setMax(((RSlider) e).getMax());
+                            ((RSlider) s).setValue(((RSlider) e).getValue());
+                            ((RSlider) s).setMin(((RSlider) e).getMin());
+
+                        } else if (e instanceof RCounter && s instanceof RCounter) {
+                            ((RCounter) s).setIncrement(((RCounter) e).getIncrement());
                             if (!s.isModified())
-                                ((ECounter) s).setCurrent(((ECounter) e).getCurrent());
-                            if (((ECounter) e).getCurrent() < ((ECounter) e).getMin() || ((ECounter) e).getCurrent() > ((ECounter) e).getMax()) {
-                                ((ECounter) s).setCurrent(((ECounter) s).getMin());
-                            }
+                                ((RCounter) s).setValue(((RCounter) e).getValue());
                         }
                         break;
                     }
@@ -282,20 +219,16 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     /**
-     * Adds the tab to the team.
-     * @param elements the form elements for this tab
-     * @param title the title of the tab
-     * @param isRedAlliance whether the team is on the blue or red alliance for this "tab" (match)
-     * @param won whether the user has won this match
-     * @return the position of the new tab within the array
+     * Adds the tab to the team
+     * @param tab the new RTab to add
+     * @return index of sorted, newly added tab
      */
-    public int addTab(ArrayList<Element> elements, String title, boolean isRedAlliance, boolean won, long time) {
-        tabs.add(new RTab(elements, title, isRedAlliance, won, time));
+    public int addTab(RTab tab) {
+        tabs.add(tab);
         Collections.sort(tabs);
-        for(int i = 0; i < tabs.size(); i++) if(tabs.get(i).getTitle().equals(title)) return i;
+        for(int i = 0; i < tabs.size(); i++) if(tabs.get(i).getTitle().equals(tab.getTitle())) return i;
         return 1;
     }
-
     /**
      * Deletes the tab from the RTabs array
      * @param position the index or position of the tab to delete
@@ -304,53 +237,14 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         tabs.remove(position);
     }
 
-
     /**
      * Shortcut method to get the elements from the specified tab
-     * @param index the tab index
+     * @param page the tab index
      * @return the form elements from that index
      */
-    public ArrayList<Element> getItems(int index) {
-        return tabs.get(index).getElements();
+    public ArrayList<RMetric> getMetrics(int page) {
+        return tabs.get(page).getMetrics();
     }
-
-
-    /**
-     * Resets the relevance when and associated contextual information
-     */
-    public void resetSearchRelevance() {
-        this.searchTip = "";
-        this.searchRelevance = 0;
-    }
-
-    public void resetSortRelevance() {
-        this.sortTip = "";
-        this.sortRelevance = 0;
-    }
-
-    /**
-     * Searching utility to help provide the user with more in-depth results
-     * when they are searching teams
-     * @param query the search query
-     * @return the relevance to add to the team because of matches with the following name
-     */
-    public int searchMatches(String query) {
-        if(tabs == null || tabs.size() == 0) return 0;
-        query = query.toLowerCase();
-        searchTip = "Contains matches: ";
-        for(int i = 2; i < tabs.size(); i++) {
-            if(tabs.get(i).getTitle().equalsIgnoreCase(query)) searchTip += tabs.get(i).getTitle()+", ";
-            else if(tabs.get(i).getTitle().toLowerCase().contains(query)) searchTip += tabs.get(i).getTitle()+", ";
-        }
-        if(!searchTip.equals("Contains matches: ")) {
-            searchTip = searchTip.substring(0, searchTip.length() - 2);
-            return 200;
-        } else {
-            searchTip = "";
-        }
-        return 0;
-    }
-
     /**
      * Removes all the tab except the PIT and PREDICTIONS tabs
      */
@@ -363,149 +257,12 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         tabs.add(pit);
         tabs.add(predictions);
     }
-
-    /**
-     * Removes all the tabs expected the tab at the specified position
-     * @param position position of the tab to keep
-     */
-    public void removeAllTabsBut(int position) {
-        if(tabs == null || tabs.size() == 0) return;
-
-        RTab tab = tabs.get(position);
-        tabs.clear();
-        tabs.add(tab);
-    }
-
     /**
      * Returns the number of matches this team is in
-     * @return
+     * @return returns the number of matches this team contains
      */
     public int getNumMatches() {
         if(tabs == null) return 0;
         else return tabs.size() - 2;
     }
-
-    /**
-     * Update methods. These manage updating of form elements with RTabs
-     */
-
-
-    /**
-     * Updates the time this team was last edited
-     */
-    public void updateEdit() {
-        lastEdit = System.currentTimeMillis();
-    }
-
-
-    public void updateBoolean(int index, int ID, int value) {
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((EBoolean) tabs.get(index).getElements().get(j)).setValue(value);
-                tabs.get(index).getElements().get(j).setModified(!(ID == -1));
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    public void updateCounter(int index, int ID, int value) {
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((ECounter) tabs.get(index).getElements().get(j)).setCurrent(value);
-                tabs.get(index).getElements().get(j).setModified(true);
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    public void updateSlider(int index, int ID, int value) {
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((ESlider) tabs.get(index).getElements().get(j)).setCurrent(value);
-                tabs.get(index).getElements().get(j).setModified(true);
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    public void updateChooser(int index, int ID, int selected) {
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID && ((EChooser) tabs.get(index).getElements().get(j)).getSelected() != selected) {
-                ((EChooser) tabs.get(index).getElements().get(j)).setSelected(selected);
-                tabs.get(index).getElements().get(j).setModified(true);
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    public void updateCheckbox(int index, int ID, ArrayList<Boolean> checked) {
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((ECheckbox) tabs.get(index).getElements().get(j)).setChecked(checked);
-                tabs.get(index).getElements().get(j).setModified(true);
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    public void updateStopwatch(int index, int ID, double time) {
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((EStopwatch) tabs.get(index).getElements().get(j)).setTime(Text.round(time, 1));
-                tabs.get(index).getElements().get(j).setModified(true);
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    public void updateTextfield(int index, int ID, String value) {
-        if (ID == 0 && index == 0) {
-            name = value;
-            updateEdit();
-            return;
-        } else if (ID == 1 && index == 0) {
-            number = Integer.parseInt(value);
-            updateEdit();
-            return;
-        }
-
-        for (int j = 0; j < tabs.get(index).getElements().size(); j++) {
-            if (tabs.get(index).getElements().get(j).getID() == ID) {
-                ((ETextfield) tabs.get(index).getElements().get(j)).setText(value);
-                tabs.get(index).getElements().get(j).setModified(true);
-                updateEdit();
-                break;
-            }
-        }
-    }
-
-    /**
-     * Used for sorting the team from TeamsView
-     * @param team the team to compare against this copy
-     * @return the corrected position
-     */
-    @Override
-    public int compareTo(@NonNull RTeam team) {
-        switch (filter) {
-            case TeamsView.ALPHABETICAL:
-                return this.getName().compareTo(team.getName());
-            case TeamsView.NUMERICAL:
-                return ((Integer) getNumber()).compareTo(team.getNumber());
-            case TeamsView.SEARCH:
-                return Double.compare(getSearchRelevance(), team.getSearchRelevance());
-            case TeamsView.SORT:
-                return Double.compare(getSortRelevance(), team.getSortRelevance());
-            case TeamsView.LAST_EDIT:
-                return ((Long)getLastEdit()).compareTo(team.getLastEdit());
-            default:
-                return 0;
-        }
-    }
-
 }

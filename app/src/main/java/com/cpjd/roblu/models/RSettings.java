@@ -41,10 +41,12 @@ public class RSettings implements Serializable {
      * Roblu Cloud API variables
      */
     private String auth; // the user's authentication token, links them with their Roblu Cloud API account
-    private String teamCode; // the team's authentication code, links the code with the Roblu Cloud Team profile
+    private String code; // the team's authentication code, links the code with the Roblu Cloud Team profile
     private String name, email;
-
-    private boolean clearActiveRequested;
+    /**
+     * Millisecond timestamp of last successful server checkouts sync
+     */
+    private long lastCheckoutSync;
 
     /**
      * Sets the default values for the RSettings class
@@ -61,7 +63,5 @@ public class RSettings implements Serializable {
         rui.setModified(true);
         this.rui = rui;
     }
-
-
 
 }

@@ -1,0 +1,10 @@
+package com.cpjd.roblu.ui.teams;
+
+import android.view.View;
+
+import com.cpjd.roblu.models.RTeam;
+
+interface TeamsItemClickListener {
+    void onItemClick(View v);
+    void deleteTeam(RTeam team);
+}

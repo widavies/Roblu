@@ -1,6 +1,6 @@
 package com.cpjd.roblu;
 
-import com.cpjd.roblu.utils.Text;
+import com.cpjd.roblu.utils.Utils;
 
 import org.junit.Test;
 
@@ -14,6 +14,6 @@ import static org.junit.Assert.*;
 public class ExampleUnitTest {
     @Test
     public void contains() throws Exception {
-        assertEquals(Text.contains("Team CRUSH", "CRUSH"), true);
+        assertEquals(Utils.contains("Team CRUSH", "CRUSH"), true);
     }
 }

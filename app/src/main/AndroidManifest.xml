@@ -7,20 +7,19 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="com.android.vending.BILLING" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false"/>
+    <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:name="android.support.multidex.MultiDexApplication"
         android:allowBackup="true"
         android:icon="@drawable/launcher"
-        android:label= "Roblu Master"
         android:theme="@style/AppTheme">
 
-        <service android:name=".cloud.sync.Service"/>
+        <service android:name=".sync.cloud.sync.Service"/>
         <receiver android:name=".utils.BootBroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -36,31 +35,27 @@
                 android:resource="@xml/file_provider_paths"/>
         </provider>
 
-        <meta-data
-            android:name="com.google.android.gms.version"
-            android:value="@integer/google_play_services_version"/>
-
         <activity
-            android:name=".events.CreateEvent"
+            android:name=".ui.events.CreateEvent"
             android:label="@string/title_activity_create_event_view"
-            android:parentActivityName=".events.CreateEventPicker"
+            android:parentActivityName=".ui.events.CreateEventPicker"
             android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.cpjd.roblu.events.CreateEventPicker"/>
+                android:value="com.cpjd.roblu.ui.events.CreateEventPicker"/>
         </activity>
         <activity
-            android:name=".teams.customsort.CustomSort"
+            android:name=".ui.teams.customsort.CustomSort"
             android:label="">
         </activity>
         <activity
-            android:name=".forms.EditForm"
+            android:name=".ui.forms.EditForm"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_create_form"
-            android:parentActivityName=".events.CreateEvent">
+            android:parentActivityName=".ui.events.CreateEvent">
         </activity>
         <activity
-            android:name=".teams.TeamsView"
+            android:name=".ui.teams.TeamsView"
             android:launchMode="singleTop"
             android:configChanges="orientation|screenSize"
             android:label="Roblu Master">
@@ -71,11 +66,11 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".teams.TeamViewer"
+            android:name=".ui.teams.TeamViewer"
             android:label="@string/title_activity_team_viewer">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.cpjd.roblu.teams.TeamsView"/>
+                android:value="com.cpjd.roblu.ui.teams.TeamsView"/>
         </activity>
         <activity
             android:name=".forms.images.ImageGalleryActivity"
@@ -86,54 +81,52 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label=""/>
         <activity
-            android:name=".activities.SetupActivity"
+            android:name=".ui.setup.SetupActivity"
             android:label="Setup"
             android:screenOrientation="portrait"/>
         <activity
-            android:name=".activities.AdvSettings"
+            android:name=".ui.settings.AdvSettings"
             android:label="Settings"
-            android:parentActivityName=".activities.AdvSettings">
+            android:parentActivityName=".ui.settings.AdvSettings">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.cpjd.roblu.activities.AdvSettings"/>
+                android:value="com.cpjd.roblu.ui.settings.AdvSettings"/>
         </activity>
         <activity
-            android:name=".forms.Predefined"
+            android:name=".ui.forms.Predefined"
             android:label="@string/title_activity_predefined"
-            android:parentActivityName=".events.CreateEvent">
+            android:parentActivityName=".ui.events.CreateEvent">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.cpjd.roblu.events.CreateEvent"/>
+                android:value="com.cpjd.roblu.ui.events.CreateEvent"/>
         </activity>
         <activity
-            android:name=".events.EventSettings"
+            android:name=".ui.events.EventSettings"
             android:label="@string/title_activity_predefined">
         </activity>
         <activity
-            android:name=".events.CreateEventPicker"
+            android:name=".ui.events.CreateEventPicker"
             android:label="@string/title_activity_create_event_picker">
         </activity>
         <activity
-            android:name=".tba.APIEventSelect"
+            android:name=".ui.tba.APIEventSelect"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_apievent_select">
         </activity>
         <activity
-            android:name=".forms.AddElement"
+            android:name=".ui.forms.AddElement"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_add_element">
         </activity>
         <activity
-            android:name=".tutorials.Tutorial"
+            android:name=".ui.tutorials.Tutorial"
             android:label="@string/title_activity_tutorial">
         </activity>
-        <activity android:name=".ui.UICustomizer">
-        </activity>
-        <activity android:name=".cloud.ui.Mailbox"
+        <activity android:name=".sync.cloud.ui.Mailbox"
                   android:label="Mailbox"/>
         <activity android:name =".forms.images.Drawing"
                   android:label="Drawing"/>
-        <activity android:name=".activities.MyMatches"
+        <activity android:name=".ui.mymatches.MyMatches"
                   android:label="My matches"/>
     </application>
 

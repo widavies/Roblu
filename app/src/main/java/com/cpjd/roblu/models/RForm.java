@@ -1,7 +1,7 @@
 package com.cpjd.roblu.models;
 
-import com.cpjd.roblu.forms.elements.Element;
-import com.cpjd.roblu.utils.Text;
+
+import com.cpjd.roblu.models.metrics.RMetric;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,6 +11,7 @@ import lombok.Data;
 /**
  * Stores form data for the PIT and Match forms.
  *
+ * @version 2
  * @since 3.0.0
  * @author Will Davies
  */
@@ -18,23 +19,23 @@ import lombok.Data;
 public class RForm implements Serializable {
 
     /**
-     * If this variable is set to true, then it will be re-uploaded to the cloud
+     * Represents the pit metric form. Pit form will be used to generate a PIT form for every team.
+     * It's mandatory
      */
-    private boolean modified;
+    private ArrayList<RMetric> pit;
+    /**
+     * Represents the match metric form. Multiple match forms can be used for each team.
+     * It also it used to generate a predictions tab.
+     */
+    private ArrayList<RMetric> match;
 
-    private ArrayList<Element> pit;
-    private ArrayList<Element> match;
-
-    public RForm() {
-
-    }
-
-    public RForm(ArrayList<Element> pit, ArrayList<Element> match) {
+    /**
+     * Creates a form model
+     * @param pit ArrayList of pit metrics
+     * @param match ArrayList of match metrics
+     */
+    public RForm(ArrayList<RMetric> pit, ArrayList<RMetric> match) {
         this.pit = pit;
         this.match = match;
-    }
-
-    RForm duplicate() {
-        return new RForm(Text.createNew(pit), Text.createNew(match));
     }
 }

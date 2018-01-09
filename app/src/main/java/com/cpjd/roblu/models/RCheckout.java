@@ -2,85 +2,93 @@ package com.cpjd.roblu.models;
 
 import android.support.annotation.NonNull;
 
+import com.cpjd.roblu.utils.Utils;
+
 import java.io.Serializable;
 
 import lombok.Data;
 
 /**
+ * A model that stores data that will be transferred to the Roblu Cloud server, a hosted server, Bluetooth, or QR codes.
  *
- * The newer model for transferring checkout data, a successor to RAssignment.
+ * This is the 3rd hand-off model iteration, successor to RCheckout and RAssignment
  *
- * Version 2 Features:
- * -Images are included within elements, instead of in a separate array
- * -Simplified status variables and conflict variables
+ * More on hand-off:
+ * RCheckout is a packaging utility for Roblu. Any time data goes to the server, all data to be transported will be
+ * set into the RCheckout class and serialized as a string. However, the ID number should be sent to the server
+ * as a SEPARATE PARAMETER, and NOT IN THE SERIALIZED CONTENT
  *
- * @version 2
+ * Important steps:
+ * 1) To flag this handoff as ready for upload, save the handoff to directory /pending/, this will notify the background service that
+ * we're ready to upload. After a successful upload attempt, the service will delete the handoff from /pending/. Note: flagging for upload
+ * should save twice, once to /checkouts/ and once to /pending/.
+ *
+ * RCheckout's will still be referred to as checkouts in many places, but they needed a different name for technical implementations.
+ * Generally speaking, checkouts refer to the UI implementation, and handoffs refer to the backend.
+ *
+ * @version 3
  * @since 3.5.9
  * @author Will Davies
  */
 @Data
 public class RCheckout implements Serializable, Comparable<RCheckout> {
 
-    private long ID;
-
     /**
-     * The historical ID is simply used for storing multiple merges
-     * of the same team
+     * This number is a universal identification number for the handoff. It shouldn't be serialized when transporting, but sent
+     * as a separate parameter. The internal ID should match the external ID on the server. Note: Roblu Master doesn't care about
+     * the ID, it doesn't need to be synced there.
      */
-    private long historyID;
+    private transient int ID;
 
     /**
-     * If you look in the RTeam model, it contains an ArrayList of RTab.
-     * This team should be filtered upon packaging to only include the tabs
-     * required to this checkout. It might either include the PIT and PREDICTIONS tab, or one
-     * match TAB. When merging, the correct tab will be merged back into the local RTeam model.
+     * RCheckout is designed specifically for transferring a team object with some meta data. This is the all important,
+     * team data object. Take good care of her!
      */
     private RTeam team;
 
-    /**
-     * "Available", "Currently checked out to <name>", "Completed by <name>"
+    /*
+     * Meta data
+     * -Status tags-
+     * These are non-critical variables that help describe this handoff to the client and Roblu master.
+     * the status int ID is important to prevent some trivial UI problems, but nameTag and time are purely
+     * optional additions. They can be flagged at any point in time to any value.
+     * Think of these as meta data
      */
-    private String status;
+    /**
+     * Represents the status of this handoff as specified by
+     * @see com.cpjd.roblu.utils.HandoffStatus
+     */
+    private int status;
+    /**
+     * A name, if applicable, to associate with the handoff status
+     */
+    private String nameTag;
 
     /**
-     * If status = Completed by, then this is the time in milliseconds that it was completed
+     * A time, if applicable to associate with handoff status
      */
-    private long completedTime;
+    private long time;
+    // End status tags
 
     /**
-     * The time that this checkout was merged into the master repo., either set automatically
-     * when auto-merged, or set explicitly when a conflict is resolved
+     * This an upload flag. This handoff still has to be loaded from /pending/, but the upload type is determined by
+     * @see com.cpjd.roblu.utils.HandoffStatus
+     * When the correct upload is finished, this handoff will be removed from /pending/
+     * uploadType will be transferred back to Roblu Master, but not acknowledged
      */
-    private long mergedTime;
-    /**
-     * Either "no-local" or "edited-local"
-     *
-     * Essentially, we don't want to auto merge a checkout if the local copy has already been edited or if the local copy doesn't exist
-     */
-    private String conflictType;
-    /**
-     * Set to true if status or content of this class was changed,
-     * if true, it will be uploaded to the server when a connection is available.
-     */
-    private boolean syncRequired;
-
-    public RCheckout() {}
+    private int uploadType;
 
     /**
-     * Constructor to use for packaging a checkout
+     * Creates a handoff object
+     * @param team the team to package in this object.
      */
     public RCheckout(RTeam team) {
         this.team = team;
     }
 
     @Override
-    public int compareTo(@NonNull RCheckout o) {
-        return new Long(completedTime).compareTo(o.getCompletedTime());
+    public int compareTo(@NonNull RCheckout handoff) {
+        return ((Long)(Utils.getMatchSortScore(getTeam().getTabs().get(0).getTitle()))).compareTo((Utils.getMatchSortScore(handoff.getTeam().getTabs().get(0).getTitle())));
     }
 
-    public boolean equals(RCheckout checkout) {
-        return ((team == null && checkout.getTeam() == null) || team.equals(checkout.getTeam()))
-                && ID == checkout.getID() && completedTime == checkout.getCompletedTime() && mergedTime == checkout.getMergedTime() &&
-                ((conflictType == null && checkout.getConflictType() == null) || conflictType.equals(checkout.getConflictType()));
-    }
 }

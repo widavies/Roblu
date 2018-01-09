@@ -24,13 +24,12 @@ import com.cpjd.roblu.forms.elements.ESlider;
 import com.cpjd.roblu.forms.elements.EStopwatch;
 import com.cpjd.roblu.forms.elements.ETextfield;
 import com.cpjd.roblu.forms.elements.Element;
-import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.teams.TeamsView;
-import com.cpjd.roblu.utils.Text;
+import com.cpjd.roblu.ui.teams.TeamsView;
+import com.cpjd.roblu.utils.Utils;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
@@ -86,7 +85,7 @@ public class ExportCSV extends AsyncTask<Void, Void, File> {
         form = new Loader(activity).loadForm(event.getID());
 
         if(teams == null || teams.length == 0) {
-            Text.showSnackbar(layout, activity, "This event doesn't contain any teams.", true, 0);
+            Utils.showSnackbar(layout, activity, "This event doesn't contain any teams.", true, 0);
             this.cancel(true);
             d.dismiss();
         }

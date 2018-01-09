@@ -14,7 +14,6 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
-import com.cpjd.roblu.models.Loader;
 import com.cpjd.roblu.models.RUI;
 
 /**

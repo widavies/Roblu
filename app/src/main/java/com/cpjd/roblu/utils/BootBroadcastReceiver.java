@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.cpjd.roblu.cloud.sync.Service;
+import com.cpjd.roblu.sync.cloud.sync.Service;
 
 /**
  * Created by Will Davies on 7/22/2017.

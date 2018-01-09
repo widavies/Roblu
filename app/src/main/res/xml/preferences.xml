@@ -12,8 +12,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Application settings">
-        <com.cpjd.roblu.ui.MyEditPreference
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Application settings">
+        <com.cpjd.roblu.ui.settings.MyEditPreference
             android:defaultValue="0"
             android:selectAllOnFocus="true"
             android:singleLine="true"
@@ -21,35 +21,35 @@
             android:title="My team number"
             android:key="team_number"
             android:summary="Your team's FRC number" />
-        <com.cpjd.roblu.ui.MyPreference
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="UI Customizer"
             android:key="customizer"
             android:summary="Change colors, animations, icons, layouts, and more"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
 
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Roblu Cloud">
-        <com.cpjd.roblu.ui.MyPreference
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Roblu Cloud">
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="Sign-in to Roblu Cloud"
             android:key="sync_service"
             android:summary="Sign-in to to Roblu Cloud to enable Roblu Cloud's team syncing services"/>
-        <com.cpjd.roblu.ui.MyPreference
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="Join team"
             android:key="display_code"
             android:summary="Enter your team code to join a team"/>
-        <com.cpjd.roblu.ui.MyPreference
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="Website"
             android:key="cloud_support"
             android:summary="Purchase, support, and more."/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
 
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="About">
-        <com.cpjd.roblu.ui.MyPreference
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="About">
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="About"
             android:key="about"
             android:summary="External library information"/>
-        <com.cpjd.roblu.ui.MyPreference
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="r/Roblu"
             android:key="reddit"
             android:summary="Changelists, features, bug reports, and community subreddit."/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
 </PreferenceScreen>

@@ -19,7 +19,7 @@ public class REvent implements Serializable, Comparable<REvent> {
      * The event's ID, this is what differentiates duplicate events and is
      * used for saving the event to the file system
      */
-    private long ID;
+    private int ID;
 
     /**
      * Attributes of the event
@@ -34,21 +34,16 @@ public class REvent implements Serializable, Comparable<REvent> {
     private String key;
     /**
      * The last filter that was used to sort this team, so when the user relaunches
-     * the app, they're still sorting in the most recently used sort scheme
+     * the app, they're still sorting in the most recently used sort scheme. This sorting
+     * filter applies to the team list
      */
     private int lastFilter;
     /**
      * Whether this event is currently being managed by Roblu Cloud
      */
     private boolean cloudEnabled;
-    /**
-     * If a non-admin wants to view the event, they can view it but make no
-     * changes to it, this determines if the event should be readOnly or not.
-     * If it is, NOTHING in this event can be edited
-     */
-    private boolean readOnly;
 
-    public REvent(String name, long startTime, long endTime, long ID) {
+    public REvent(int ID, String name, long startTime, long endTime) {
         this.startTime = startTime;
         this.endTime = endTime;
         this.ID = ID;

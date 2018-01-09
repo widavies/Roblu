@@ -12,61 +12,61 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
                   android:layout_height="match_parent"
                   android:layout_width="match_parent">
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Presets">
-        <com.cpjd.roblu.ui.MyPreference
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Presets">
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="Choose preset"
             android:key="presets"
             android:summary="Set all attributes based off a preset"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Colors">
-        <com.cpjd.roblu.ui.MyColorPreference
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Colors">
+        <com.cpjd.roblu.ui.settings.MyColorPreference
             android:defaultValue="@color/colorPrimaryDark"
             android:key="primary"
             android:summary="Change the color that appears on the toolbar, floating action buttons, etc."
             android:title="Primary color"/>
-        <com.cpjd.roblu.ui.MyColorPreference
+        <com.cpjd.roblu.ui.settings.MyColorPreference
             android:defaultValue="@color/accent"
             android:key="accent"
             android:summary="Change the color that appears on selected items and categories"
             android:title="Accent color"/>
-        <com.cpjd.roblu.ui.MyColorPreference
+        <com.cpjd.roblu.ui.settings.MyColorPreference
             android:defaultValue="@color/card"
             android:key="card"
             android:summary="Change the color that appears on cards for teams card, form cards, and scouting cards"
             android:title="Card color"/>
-        <com.cpjd.roblu.ui.MyColorPreference
+        <com.cpjd.roblu.ui.settings.MyColorPreference
             android:defaultValue="@color/background"
             android:key="background"
             android:summary="Chnage the color that appears on the background of all views"
             android:title="Background color"/>
-        <com.cpjd.roblu.ui.MyColorPreference
+        <com.cpjd.roblu.ui.settings.MyColorPreference
             android:defaultValue="@color/textColorPrimary"
             android:key="buttons"
             android:summary="Chnage the color for button icons"
             android:title="Button color"/>
-        <com.cpjd.roblu.ui.MyColorPreference
+        <com.cpjd.roblu.ui.settings.MyColorPreference
             android:defaultValue="@color/textColorPrimary"
             android:key="text"
             android:summary="Change the color of all text items"
             android:title="Text color"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Animations">
-        <com.cpjd.roblu.ui.MyPreference
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Animations">
+        <com.cpjd.roblu.ui.settings.MyPreference
             android:title="Dialog animation"
             android:key="animation"
             android:summary="Change the animation that is used for dialogs to open"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
 
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Other">
-        <com.cpjd.roblu.ui.MyEditPreference
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Other">
+        <com.cpjd.roblu.ui.settings.MyEditPreference
             android:title="Card radius for forms"
             android:key="forms_radius"
             android:inputType="number"
             android:summary="Change the corner radius for form elements"/>
-        <com.cpjd.roblu.ui.MyEditPreference
+        <com.cpjd.roblu.ui.settings.MyEditPreference
             android:title="Card radius for teams"
             android:key="teams_radius"
             android:inputType="number"
             android:summary="Change the corner radius for team cards"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
 </PreferenceScreen>

@@ -12,7 +12,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="General">
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="General">
         <Preference
             android:title="Edit event info"
             android:key="edit_event"
@@ -21,15 +21,15 @@
             android:title="Edit form"
             android:key="edit_form"
             android:summary="Make changes to this event's form"/>
-        <com.cpjd.roblu.ui.MyCheckPreference
+        <com.cpjd.roblu.ui.settings.MyCheckPreference
             android:defaultValue="true"
             android:title="Sync event with Roblu Cloud"
             android:key="sync"
             android:summary="Enable or disable Roblu Cloud support for this event" />
 
 
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
-    <com.cpjd.roblu.ui.MyPreferenceCategory android:title="Export">
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
+    <com.cpjd.roblu.ui.settings.MyPreferenceCategory android:title="Export">
         <Preference
             android:title="Create backup"
             android:key="backup"
@@ -42,8 +42,8 @@
             android:title="Duplicate"
             android:key="duplicate"
             android:summary="Create a copy of this event"/>
-    </com.cpjd.roblu.ui.MyPreferenceCategory>
-    <com.cpjd.roblu.ui.DangerCategory android:title="DANGER ZONE">
+    </com.cpjd.roblu.ui.settings.MyPreferenceCategory>
+    <com.cpjd.roblu.ui.settings.DangerCategory android:title="DANGER ZONE">
         <Preference
             android:title="Delete teams"
             android:key="delete_teams"
@@ -52,5 +52,5 @@
             android:title="Delete event"
             android:key="delete_event"
             android:summary="Delete this event"/>
-    </com.cpjd.roblu.ui.DangerCategory>
+    </com.cpjd.roblu.ui.settings.DangerCategory>
 </PreferenceScreen>

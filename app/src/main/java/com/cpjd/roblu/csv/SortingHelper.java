@@ -2,7 +2,7 @@ package com.cpjd.roblu.csv;
 
 import android.support.annotation.NonNull;
 
-import com.cpjd.roblu.utils.Text;
+import com.cpjd.roblu.utils.Utils;
 
 class SortingHelper implements Comparable<SortingHelper> {
 
@@ -13,7 +13,7 @@ class SortingHelper implements Comparable<SortingHelper> {
     SortingHelper(String matchName) {
         this.matchName = matchName;
 
-        score = Text.getMatchScore(matchName);
+        score = Utils.getMatchScore(matchName);
     }
 
     String getAbbreviatedName() {
