@@ -11,6 +11,10 @@ package com.cpjd.roblu.utils;
 // Some constants that are required in almost everything
 public abstract class Constants {
 
+    public static final String SERVICE_ID = "com.cpjd.roblu.service";
+
+    public static final String UPDATE_MESSAGE = "";
+
     public static final int VERSION = 11; // used for updating the changelist
 
     // Drawer identifier codes

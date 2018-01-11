@@ -5,7 +5,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-import com.cpjd.roblu.ui.forms.ElementsProcessor;
+import com.cpjd.roblu.ui.forms.TeamMetricProcessor;
 import com.cpjd.roblu.forms.elements.ESort;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.RForm;
@@ -39,25 +39,25 @@ class SortTabAdapter extends FragmentPagerAdapter {
 
         if(i == 0) {
             MetricFragment frag = new MetricFragment();
-            bundle.putSerializable("tabID", ElementsProcessor.MATCHES);
+            bundle.putSerializable("tabID", TeamMetricProcessor.MATCHES);
             frag.setArguments(bundle);
             return frag;
         }
         if(i == 1) {
             MetricFragment frag = new MetricFragment();
-            bundle.putSerializable("tabID", ElementsProcessor.PREDICTIONS);
+            bundle.putSerializable("tabID", TeamMetricProcessor.PREDICTIONS);
             frag.setArguments(bundle);
             return frag;
         }
         if(i == 2) {
             MetricFragment frag = new MetricFragment();
-            bundle.putSerializable("tabID", ElementsProcessor.MATCHES);
+            bundle.putSerializable("tabID", TeamMetricProcessor.MATCHES);
             frag.setArguments(bundle);
             return frag;
         }
         if(i == 3) {
             MetricFragment frag = new MetricFragment();
-            bundle.putSerializable("tabID", ElementsProcessor.OTHER);
+            bundle.putSerializable("tabID", TeamMetricProcessor.OTHER);
             frag.setArguments(bundle);
             return frag;
         }

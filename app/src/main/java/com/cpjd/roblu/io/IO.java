@@ -10,6 +10,7 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Utils;
 
 import org.apache.poi.util.IOUtils;
@@ -99,6 +100,7 @@ public class IO {
         RSettings settings = new IO(context).loadSettings();
         if(settings == null) {
             settings = new RSettings();
+            settings.setRui(new RUI());
             new IO(context).saveSettings(settings);
             return true;
         }

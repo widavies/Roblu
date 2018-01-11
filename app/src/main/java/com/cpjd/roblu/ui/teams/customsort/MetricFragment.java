@@ -21,7 +21,7 @@ import android.widget.Toast;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.ui.forms.ElementTouchHelper;
 import com.cpjd.roblu.ui.forms.ElementsAdapter;
-import com.cpjd.roblu.ui.forms.ElementsProcessor;
+import com.cpjd.roblu.ui.forms.TeamMetricProcessor;
 import com.cpjd.roblu.forms.elements.ESTextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.RForm;
@@ -98,7 +98,7 @@ public class MetricFragment extends Fragment implements SelectListener {
                 @Override
                 public void onClick(View v) {
                     Intent result = new Intent();
-                    result.putExtra("sortToken", ElementsProcessor.OTHER+":-1:"+values[spinner.getSelectedItemPosition()]);
+                    result.putExtra("sortToken", TeamMetricProcessor.OTHER+":-1:"+values[spinner.getSelectedItemPosition()]);
                     getActivity().setResult(Constants.CUSTOM_SORT_CONFIRMED, result);
                     getActivity().finish();
                     d.dismiss();

@@ -12,11 +12,18 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
-class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
+public class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final Context mContext;
-    private LinkedList<RTeam> teams;
+    @Getter
+    @Setter
+    private ArrayList<RTeam> teams;
     private final TeamsItemClickListener listener;
     private RUI rui;
 
@@ -73,7 +80,7 @@ class TeamsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         myHolder.bindMovie(teams.get(position));
     }
 
-    public void setElements(LinkedList<RTeam> teams) {
+    public void setElements(ArrayList<RTeam> teams) {
         if(this.teams == null) this.teams = new LinkedList<>();
         if(teams == null || teams.size() == 0) return;
         this.teams.addAll(teams);

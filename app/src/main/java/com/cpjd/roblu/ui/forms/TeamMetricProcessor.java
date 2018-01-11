@@ -17,32 +17,35 @@ import com.cpjd.roblu.utils.Utils;
 import java.util.ArrayList;
 
 /**
- * ElementsProcessor generates a string that represents the data
+ * TeamMetricProcessor generates a string that represents the data
  * for one element in a tabs.size() amount of matches.
- *
+ * <p>
  * Some statistics will be generated for some elements
  *
- * @since 3.5.9
  * @author Will Davies
+ * @since 3.5.9
  */
-public class ElementsProcessor {
+public class TeamMetricProcessor {
 
-    private static final int PIT = 0;
-    public static final int PREDICTIONS = 1;
-    public static final int MATCHES = 2;
-    public static final int OTHER = 3;
+    public static class PROCESS_METHOD {
+        private static final int PIT = 0;
+        public static final int PREDICTIONS = 1;
+        public static final int MATCHES = 2;
+        public static final int MATCH_WINS = 3;
+        public static final int PHYSICAL_TEAM_SIZE = 3;
+    }
 
     /**
      * Processes data for an element and provides a small string that represents its info.
-     *
+     * <p>
      * Team MUST be verified with team.verify(form) before being processed.
      *
      * @param team the team to be analyzed
-     * @param set specific tabs to be processored, either ElementsProcessor.PIT, ElementsProcessor.PREDICTIONS, ElementsProcessor.MATCH, ElementsProcessor.OTHER
-     * @param ID the ID of the element to analyze
+     * @param set  specific tabs to be processored, either TeamMetricProcessor.PIT, TeamMetricProcessor.PREDICTIONS, TeamMetricProcessor.MATCH, TeamMetricProcessor.OTHER
+     * @param ID   the ID of the element to analyze
      * @return relevance:text, relevance tells how high the team should be placed near the top, text is the subtitle text
      */
-    public RTeam process(RTeam team, int set, int ID) {
+    public RTeam process(RTeam team, int method, int ID) {
         team.setSortRelevance(0);
         team.setFilter(TeamsView.SORT);
 
@@ -53,19 +56,18 @@ public class ElementsProcessor {
 
         /* PROCESS FOR SET == OTHER */
         if(set == OTHER) {
-            for(int i = 2;  i < team.getTabs().size(); i++) {
+            for(int i = 2; i < team.getTabs().size(); i++) {
                 if(ID == 0) {
                     if(team.getTabs().get(i).isWon()) {
                         occurrences++;
                         relevance++;
-                        text += "W"+ending(i, team.getTabs());
-                    } else text += "L"+ending(i, team.getTabs());
+                        text += "W" + ending(i, team.getTabs());
+                    } else text += "L" + ending(i, team.getTabs());
                     if(i == team.getTabs().size() - 1) {
-                        if(occurrences == 1) text = "1 match win\n"+text;
-                        else text = occurrences+" match wins\n"+text;
+                        if(occurrences == 1) text = "1 match win\n" + text;
+                        else text = occurrences + " match wins\n" + text;
                     }
-                }
-                else if(ID == 1) { // user is reseting sorting from within custom sorting
+                } else if(ID == 1) { // user is reseting sorting from within custom sorting
                     relevance++;
                 }
             }
@@ -79,36 +81,29 @@ public class ElementsProcessor {
                 if(element.getID() != ID) continue;
 
                 if(element instanceof EBoolean) {
-                    text = "Boolean: "+element.getTitle()+" is "+friendlyBoolean((EBoolean)element);
-                    if(((EBoolean)element).getValue() == 1) relevance++;
-                }
-                else if(element instanceof ECounter) {
-                    text = "Counter: "+element.getTitle()+" is "+friendlyCounter((ECounter)element);
-                    relevance += ((ECounter)element).getCurrent();
-                }
-                else if(element instanceof ESlider) {
-                    text = "Slider: "+element.getTitle()+" is "+ friendlySlider((ESlider) element);
-                    relevance += ((ESlider)element).getCurrent();
-                }
-                else if(element instanceof EStopwatch) {
-                    text = "Stopwatch: "+element.getTitle()+" is "+friendlyStopwatch((EStopwatch)element);
-                    relevance += ((EStopwatch)element).getTime();
-                }
-                else if(element instanceof ETextfield) {
-                    text = "Textfield: "+element.getTitle()+" has "+((ETextfield) element).getText().length()+" characters";
-                    relevance += ((ETextfield)element).getText().length();
-                }
-                else if(element instanceof EGallery) {
-                    text = "Gallery: "+element.getTitle()+" contains "+((EGallery)element).getImages().size()+" images";
-                    relevance += ((EGallery)element).getImages().size();
-                }
-                else if(element instanceof ECheckbox) {
-                    text = "Checkbox: "+element.getTitle()+ " values: "+friendlyCheckbox((ECheckbox)element);
-                    relevance += getCheckedAmount((ECheckbox)element);
-                }
-                else if(element instanceof EChooser) text = "Chooser: "+element.getTitle()+" has value "+((EChooser)element).getValues().get(((EChooser)element).getSelected());
+                    text = "Boolean: " + element.getTitle() + " is " + friendlyBoolean((EBoolean) element);
+                    if(((EBoolean) element).getValue() == 1) relevance++;
+                } else if(element instanceof ECounter) {
+                    text = "Counter: " + element.getTitle() + " is " + friendlyCounter((ECounter) element);
+                    relevance += ((ECounter) element).getCurrent();
+                } else if(element instanceof ESlider) {
+                    text = "Slider: " + element.getTitle() + " is " + friendlySlider((ESlider) element);
+                    relevance += ((ESlider) element).getCurrent();
+                } else if(element instanceof EStopwatch) {
+                    text = "Stopwatch: " + element.getTitle() + " is " + friendlyStopwatch((EStopwatch) element);
+                    relevance += ((EStopwatch) element).getTime();
+                } else if(element instanceof ETextfield) {
+                    text = "Textfield: " + element.getTitle() + " has " + ((ETextfield) element).getText().length() + " characters";
+                    relevance += ((ETextfield) element).getText().length();
+                } else if(element instanceof EGallery) {
+                    text = "Gallery: " + element.getTitle() + " contains " + ((EGallery) element).getImages().size() + " images";
+                    relevance += ((EGallery) element).getImages().size();
+                } else if(element instanceof ECheckbox) {
+                    text = "Checkbox: " + element.getTitle() + " values: " + friendlyCheckbox((ECheckbox) element);
+                    relevance += getCheckedAmount((ECheckbox) element);
+                } else if(element instanceof EChooser) text = "Chooser: " + element.getTitle() + " has value " + ((EChooser) element).getValues().get(((EChooser) element).getSelected());
 
-                text += " in "+friendlyMode(set);
+                text += " in " + friendlyMode(set);
                 team.setSortRelevance(relevance);
                 team.setSortTip(text);
             }
@@ -126,10 +121,9 @@ public class ElementsProcessor {
                             occurrences++;
                             relevance++;
                         }
-                        if(i == set) text = "Boolean: "+element.getTitle()+" is true in "+occurrences+" / "+(team.getTabs().size() - 2)+" matches\nRaw data: ";
-                        text += friendlyBoolean((EBoolean)element)+ending(i, team.getTabs());
-                    }
-                    else if(element instanceof ECounter) {
+                        if(i == set) text = "Boolean: " + element.getTitle() + " is true in " + occurrences + " / " + (team.getTabs().size() - 2) + " matches\nRaw data: ";
+                        text += friendlyBoolean((EBoolean) element) + ending(i, team.getTabs());
+                    } else if(element instanceof ECounter) {
                         int value = ((ECounter) element).getCurrent();
                         if(i == set) {
                             min = value;
@@ -138,13 +132,13 @@ public class ElementsProcessor {
                         if(element.isModified()) { // Only add this value to stats if it's modified
                             if(value < min) min = value;
                             if(value > max) max = value;
-                            average += (double)value / (double)numModified(team.getTabs(), ID);
+                            average += (double) value / (double) numModified(team.getTabs(), ID);
                             relevance = average;
                         }
-                        text += friendlyCounter((ECounter)element)+ending(i, team.getTabs());
-                        if(i == team.getTabs().size() - 1) text = "Counter: "+element.getTitle()+" Average: "+ Utils.round(average, 2) +" Min: "+(int)min+" Max: "+(int)max+"\nRaw data: "+text;
-                    }
-                    else if(element instanceof ESlider) {
+                        text += friendlyCounter((ECounter) element) + ending(i, team.getTabs());
+                        if(i == team.getTabs().size() - 1)
+                            text = "Counter: " + element.getTitle() + " Average: " + Utils.round(average, 2) + " Min: " + (int) min + " Max: " + (int) max + "\nRaw data: " + text;
+                    } else if(element instanceof ESlider) {
                         int value = ((ESlider) element).getCurrent();
                         if(i == set) {
                             min = value;
@@ -153,13 +147,13 @@ public class ElementsProcessor {
                         if(element.isModified()) { // Only add this value to stats if it's modified
                             if(value < min) min = value;
                             if(value > max) max = value;
-                            average += (double)value / (double)numModified(team.getTabs(), ID);
+                            average += (double) value / (double) numModified(team.getTabs(), ID);
                             relevance = average;
                         }
-                        text += friendlySlider((ESlider)element)+ending(i, team.getTabs());
-                        if(i == team.getTabs().size() - 1) text = "Slider: "+element.getTitle()+" Average: "+ Utils.round(average, 2)+" Min: "+(int)min+" Max: "+(int)max+"\nRaw data: "+text;
-                    }
-                    else if(element instanceof EStopwatch) {
+                        text += friendlySlider((ESlider) element) + ending(i, team.getTabs());
+                        if(i == team.getTabs().size() - 1)
+                            text = "Slider: " + element.getTitle() + " Average: " + Utils.round(average, 2) + " Min: " + (int) min + " Max: " + (int) max + "\nRaw data: " + text;
+                    } else if(element instanceof EStopwatch) {
                         double value = ((EStopwatch) element).getTime();
                         if(i == set) {
                             min = value;
@@ -168,13 +162,12 @@ public class ElementsProcessor {
                         if(element.isModified()) { // Only add this value to stats if it's modified
                             if(value < min) min = value;
                             if(value > max) max = value;
-                            average += value / (double)numModified(team.getTabs(), ID);
+                            average += value / (double) numModified(team.getTabs(), ID);
                             relevance = average;
                         }
-                        text += friendlyStopwatch((EStopwatch)element)+ending(i, team.getTabs());
-                        if(i == team.getTabs().size() - 1) text = "Stopwatch: "+element.getTitle()+" Average: "+ Utils.round(average, 2)+" Min: "+min+" Max: "+max+"\nRaw data: "+text;
-                    }
-                    else if(element instanceof ETextfield) {
+                        text += friendlyStopwatch((EStopwatch) element) + ending(i, team.getTabs());
+                        if(i == team.getTabs().size() - 1) text = "Stopwatch: " + element.getTitle() + " Average: " + Utils.round(average, 2) + " Min: " + min + " Max: " + max + "\nRaw data: " + text;
+                    } else if(element instanceof ETextfield) {
                         int value = ((ETextfield) element).getText().length();
                         if(i == set) {
                             min = value;
@@ -183,14 +176,14 @@ public class ElementsProcessor {
                         if(element.isModified()) { // Only add this value to stats if it's modified
                             if(value < min) min = value;
                             if(value > max) max = value;
-                            average += (double)value / (double)numModified(team.getTabs(), ID);
+                            average += (double) value / (double) numModified(team.getTabs(), ID);
                             relevance = average;
                         }
-                        text += value+" chars"+ending(i, team.getTabs());
-                        if(i == team.getTabs().size() - 1) text = "Textfield: "+element.getTitle()+" Average chars: "+ Utils.round(average, 2)+" Min: "+min+" Max: "+max+"\nRaw data: "+text;
-                    }
-                    else if(element instanceof EGallery) {
-                        int value = ((EGallery)element).getImages().size();
+                        text += value + " chars" + ending(i, team.getTabs());
+                        if(i == team.getTabs().size() - 1)
+                            text = "Textfield: " + element.getTitle() + " Average chars: " + Utils.round(average, 2) + " Min: " + min + " Max: " + max + "\nRaw data: " + text;
+                    } else if(element instanceof EGallery) {
+                        int value = ((EGallery) element).getImages().size();
                         if(i == set) {
                             min = value;
                             max = value;
@@ -198,21 +191,20 @@ public class ElementsProcessor {
                         if(element.isModified()) { // Only add this value to stats if it's modified
                             if(value < min) min = value;
                             if(value > max) max = value;
-                            average += (double)value / (double)numModified(team.getTabs(), ID);
+                            average += (double) value / (double) numModified(team.getTabs(), ID);
                             relevance = average;
                         }
-                        text += value+" images"+ending(i, team.getTabs());
-                        if(i == team.getTabs().size() - 1) text = "Gallery: "+element.getTitle()+" Average images: "+ Utils.round(average, 2)+" Min: "+min+" Max: "+max+"\nRaw data: "+text;
-                    }
-                    else if(element instanceof ECheckbox) {
+                        text += value + " images" + ending(i, team.getTabs());
+                        if(i == team.getTabs().size() - 1)
+                            text = "Gallery: " + element.getTitle() + " Average images: " + Utils.round(average, 2) + " Min: " + min + " Max: " + max + "\nRaw data: " + text;
+                    } else if(element instanceof ECheckbox) {
                         if(i == set) text = "Raw data: ";
-                        text += friendlyCheckbox((ECheckbox)element)+ending(i, team.getTabs());
-                        relevance+=getCheckedAmount((ECheckbox)element);
-                    }
-                    else if(element instanceof EChooser) {
+                        text += friendlyCheckbox((ECheckbox) element) + ending(i, team.getTabs());
+                        relevance += getCheckedAmount((ECheckbox) element);
+                    } else if(element instanceof EChooser) {
                         if(element.isModified()) relevance++;
                         if(i == set) text = "Raw data: ";
-                        text += ((EChooser)element).getValues().get(((EChooser)element).getSelected())+ending(i, team.getTabs());
+                        text += ((EChooser) element).getValues().get(((EChooser) element).getSelected()) + ending(i, team.getTabs());
                     }
                     break;
                 }
@@ -258,17 +250,18 @@ public class ElementsProcessor {
 
     private String friendlyStopwatch(EStopwatch element) {
         if(!element.isModified()) return "N.O.";
-        else return String.valueOf(element.getTime()+"s");
+        else return String.valueOf(element.getTime() + "s");
     }
+
     private String friendlyCheckbox(ECheckbox element) {
         String temp = "(";
         for(int i = 0; i < element.getChecked().size(); i++) {
             if(i != element.getChecked().size() - 1) {
-                if(element.getChecked().get(i)) temp +="T,";
-                else temp+="F,";
+                if(element.getChecked().get(i)) temp += "T,";
+                else temp += "F,";
             } else {
-                if(element.getChecked().get(i)) temp+="T)";
-                else temp +="F)";
+                if(element.getChecked().get(i)) temp += "T)";
+                else temp += "F)";
             }
         }
         return temp;

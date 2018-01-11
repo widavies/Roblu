@@ -45,7 +45,6 @@ import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.ui.eventdrawer.EventSelectListener;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;

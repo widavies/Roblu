@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models;
 
+import android.support.annotation.NonNull;
+
 import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
@@ -7,6 +9,7 @@ import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
+import com.cpjd.roblu.ui.teams.TeamsView;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,7 +28,7 @@ import lombok.Data;
  */
 @Data
 @SuppressWarnings("unused")
-public class RTeam implements Serializable {
+public class RTeam implements Serializable, Comparable<RTeam> {
 
     /**
      * Unique identifier for this team. No duplicate IDs allowed. Completely arbitrary.
@@ -68,9 +71,24 @@ public class RTeam implements Serializable {
     private int rookieYear;
 
     /**
+     * Stores a SORT_TYPE variable for how this team should return compareTo() if it's included in a sorting operation
+     * @see com.cpjd.roblu.ui.teams.TeamsView.SORT_TYPE
+     * If filter == SORT_TYPE.CUSTOM_SORT or filter == SORT_TYPE.SEARCH, then customRelevance will be used instead
+     * of other internal RTeam variables.
+     */
+    private transient int filter;
+    private transient int customRelevance;
+    /**
+     * If desired, a filterTag can be attached that will display extra information when this team is sorted.
+     * For example, searching for a match to find teams that contain the queried match might want this tag to
+     * say "Contains matches..."
+     */
+    private transient String filterTag;
+
+    /**
      * Creates a new RTeam with default values
      * @param name the team's name
-     * @param number the team's numebr
+     * @param number the team's number
      * @param ID the arbitrary, unique identifier for this team
      */
     public RTeam(String name, int number, int ID) {
@@ -264,5 +282,18 @@ public class RTeam implements Serializable {
     public int getNumMatches() {
         if(tabs == null) return 0;
         else return tabs.size() - 2;
+    }
+
+    /**
+     * Returns the sorting behavior for the team
+     * @param team the team that is being compared to this one
+     * @return a value representing which one should be sorted higher
+     */
+    @Override
+    public int compareTo(@NonNull RTeam team) {
+        if(filter == TeamsView.SORT_TYPE.ALPHABETICAL) return name.compareTo(team.getName());
+        else if(filter == TeamsView.SORT_TYPE.NUMERICAL) return ((Integer)number).compareTo(team.getNumber());
+        else if(filter == TeamsView.SORT_TYPE.LAST_EDIT) return ((Long)lastEdit).compareTo(team.getLastEdit());
+        else return ((Integer)customRelevance).compareTo(customRelevance);
     }
 }

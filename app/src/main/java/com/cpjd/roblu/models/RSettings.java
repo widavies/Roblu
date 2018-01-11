@@ -24,7 +24,7 @@ public class RSettings implements Serializable {
      * The last event the user was looking at, for convenience, we can
      * reload that event at app startup
      */
-    private long lastEventID;
+    private int lastEventID;
     /**
      * The master form, if the user has specified one
      */
