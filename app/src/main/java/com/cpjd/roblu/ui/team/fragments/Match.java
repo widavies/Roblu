@@ -1,4 +1,4 @@
-package com.cpjd.roblu.ui.teams.fragments;
+package com.cpjd.roblu.ui.team.fragments;
 
 
 import android.os.Bundle;
@@ -24,7 +24,7 @@ import com.cpjd.roblu.forms.elements.ETextfield;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.ui.teams.TeamViewer;
+import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.utils.Utils;
 
 import java.util.ArrayList;

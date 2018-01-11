@@ -12,38 +12,53 @@ import android.view.View;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.RUI;
 
-class TeamTouchHelper extends ItemTouchHelper.SimpleCallback {
-    private final TeamsAdapter mElementsAdapter;
+/**
+ * This class manages the UI gestures available in the teams view.
+ *
+ * @version 2
+ * @since 3.0.0
+ * @author Will Davies
+ */
+class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
+    /**
+     * Stores a reference to the teams adapter that is managing the TeamsView.teams array
+     */
+    private final TeamsRecyclerAdapter teamsAdapter;
 
-    // Helpers
+    /*
+     * UI helpers
+     */
     private final Drawable xMark;
     private final int xMarkMargin;
 
-    TeamTouchHelper(TeamsAdapter elementsAdapter) {
+    TeamsRecyclerTouchHelper(TeamsRecyclerAdapter teamsAdapter) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
-        this.mElementsAdapter = elementsAdapter;
+        this.teamsAdapter = teamsAdapter;
 
-        xMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.clear);
-        try {
-            RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
-            xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
-        } catch(Exception e) {}
+        /*
+         * Setup UI stuff
+         */
+        xMark = ContextCompat.getDrawable(teamsAdapter.getContext(), R.drawable.clear);
+        if(xMark != null) xMark.setColorFilter(teamsAdapter.getRui().getButtons(), PorterDuff.Mode.SRC_ATOP);
         xMarkMargin = 100;
     }
 
-    @Override
-    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-        return false;
-    }
-
+    /**
+     * This method is called when a card is swiped, in this case, the only swipe direction is for the team
+     * delete swipe
+     * @param viewHolder the viewHolder that was swiped
+     * @param direction the direction the card was swiped in
+     */
     @Override
     public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
-        if (direction == ItemTouchHelper.LEFT) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(mElementsAdapter.getContext());
+        /*
+         * User wants to delete a team, let's confirm it with them
+         */
+        if(direction == ItemTouchHelper.LEFT) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(teamsAdapter.getContext());
 
-            final RTeam team = mElementsAdapter.getTeam(viewHolder.getAdapterPosition());
+            final RTeam team = TeamsView.teams.get(viewHolder.getAdapterPosition());
 
             builder.setTitle("Are you sure?");
             builder.setMessage("Are you sure you want to delete team " + team.getName() + "?");
@@ -51,14 +66,20 @@ class TeamTouchHelper extends ItemTouchHelper.SimpleCallback {
             builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mElementsAdapter.remove(viewHolder.getAdapterPosition());
+                    teamsAdapter.remove(viewHolder.getAdapterPosition());
+                    teamsAdapter.notifyDataSetChanged();
+                    /*
+                     * Also, we need to tell TeamsView that the LoadTeamsTask now contains an invalid internal teams array and must
+                     * refresh it from the local disk
+                     */
+                    teamsAdapter.getListener().teamDeleted(team);
                     dialog.dismiss();
                 }
             });
             builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    mElementsAdapter.reAdd(team);
+                    teamsAdapter.reAdd(team);
                 }
             });
             AlertDialog dialog = builder.create();
@@ -68,24 +89,39 @@ class TeamTouchHelper extends ItemTouchHelper.SimpleCallback {
         }
     }
 
+    /*
+     * Returns the acceptable swipe directions, in this case, only to the left for deleting at eam
+     */
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
         int swipeFlags = ItemTouchHelper.LEFT;
         return makeMovementFlags(0, swipeFlags);
     }
 
+    /*
+     * Disables re-arranged of cards
+     */
     @Override
     public boolean isLongPressDragEnabled() {
         return false;
     }
 
+    /*
+     * Disables re-arranging of cards
+     */
+    @Override
+    public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+        return false;
+    }
+
+    /*
+     * Makes an 'x' show up when the card is swiped a bit
+     */
     @Override
     public void onChildDraw(Canvas c, RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
         View itemView = viewHolder.itemView;
 
-        if (viewHolder.getAdapterPosition() == -1) {
-            return;
-        }
+        if(viewHolder.getAdapterPosition() == -1) return;
 
         int itemHeight = itemView.getBottom() - itemView.getTop();
         int intrinsicWidth = xMark.getIntrinsicWidth();

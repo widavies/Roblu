@@ -1,4 +1,4 @@
-package com.cpjd.roblu.ui.teams;
+package com.cpjd.roblu.ui.team;
 
 import android.app.Activity;
 import android.app.AlertDialog;

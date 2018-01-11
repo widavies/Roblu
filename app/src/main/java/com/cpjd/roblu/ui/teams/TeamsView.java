@@ -41,6 +41,7 @@ import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.setup.SetupActivity;
+import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.ui.teamsSorting.CustomSort;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
@@ -58,7 +59,7 @@ import java.util.ArrayList;
  * @since 3.0.0
  * @author Will Davies
  */
-public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsItemClickListener, View.OnLongClickListener, EventDrawerManager.EventSelectListener, LoadTeamsTask.LoadTeamsTaskListener {
+public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsRecyclerAdapter.TeamSelectedListener, View.OnLongClickListener, EventDrawerManager.EventSelectListener, LoadTeamsTask.LoadTeamsTaskListener {
     /**
      * IO handles access between the file system and the models
      */
@@ -83,9 +84,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * The adapter is essentially the backend to the teams array, it helps manage UI binding, actions,
      * and more
      */
-    private TeamsAdapter adapter;
+    private TeamsRecyclerAdapter adapter;
     /**
-     * The UI front-end for the teams array, the backend of the recyclerView is the TeamsAdapter
+     * The UI front-end for the teams array, the backend of the recyclerView is the TeamsRecyclerAdapter
      */
     private RecyclerView rv;
     /**
@@ -116,7 +117,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private String lastCustomSortToken;
 
     /**
-     * Stores all the possible ways to sort the teams list
+     * Stores all the possible ways to sort the teams list.
+     * {@link RTeam#compareTo(RTeam team)}
      */
     public static class SORT_TYPE {
         /**
@@ -160,10 +162,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * teams list
      */
     private ProgressBar bar;
-    /**
-     * Stores a reference to the background service
-     */
-    private IntentFilter serviceFilter;
     // End UI and other
 
     @Override
@@ -206,11 +204,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
 
         // Setup the team adapter
-        adapter = new TeamsAdapter(this, this);
+        adapter = new TeamsRecyclerAdapter(this, this);
         rv.setAdapter(adapter);
 
         // Setup the UI gestures manager and link to recycler view
-        ItemTouchHelper.Callback callback = new TeamTouchHelper(adapter);
+        ItemTouchHelper.Callback callback = new TeamsRecyclerTouchHelper(adapter);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
@@ -282,7 +280,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         eventDrawerManager.selectEvent(settings.getLastEventID());
 
         // Check to see if the background service is running, if it isn't, start it
-        serviceFilter = new IntentFilter();
+        IntentFilter serviceFilter = new IntentFilter();
         serviceFilter.addAction(Constants.SERVICE_ID);
         if(!Utils.isMyServiceRunning(getApplicationContext())) {
             Intent serviceIntent = new Intent(this, Service.class);
@@ -424,8 +422,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
     @Override
     public void teamsTaskComplete() {
-        if(adapter.getTeams() == null) adapter.setTeams(new ArrayList<RTeam>());
-        if(TeamsView.teams != null) adapter.setTeams(teams);
         adapter.notifyDataSetChanged();
         rv.setVisibility(View.VISIBLE);
         bar.setVisibility(View.GONE);
@@ -468,9 +464,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         else if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIMRED) { // the user edited the master form, retrieve it and save it
             Bundle b = data.getExtras();
-            settings.setMaster(new RForm((ArrayList<RMetric>) b.getSerializable("pit"), ((ArrayList<RMetric>) b.getSerializable("pit"))));
+            if(b != null) {
+                settings.setMaster(new RForm((ArrayList<RMetric>) b.getSerializable("pit"), ((ArrayList<RMetric>) b.getSerializable("pit"))));
+            }
             io.saveSettings(settings);
-            return;
         }
         else if(resultCode == Constants.PICKER_EVENT_CREATED){ // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
@@ -478,7 +475,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
             executeLoadTeamsTask(true);
-            return;
         }
         else if(resultCode == Constants.TEAM_EDITED) { // the user edited a team, let's toss it in the teams array and reload it also
             if(teams == null || teams.size() == 0 || eventDrawerManager.getEvent() == null) return;
@@ -555,11 +551,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             executeLoadTeamsTask(false);
         }
     }
-
     @Override
-    public void onItemClick(View v) {
-        int itemPosition = rv.getChildLayoutPosition(v);
-        RTeam team = adapter.getTeam(itemPosition);
+    public void teamSelected(View v) {
+        RTeam team = TeamsView.teams.get(rv.getChildLayoutPosition(v));
         Intent startView = new Intent(this, TeamViewer.class);
         startView.putExtra("teamID", team.getID());
         startView.putExtra("event", eventDrawerManager.getEvent());
@@ -568,7 +562,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
 
     @Override
-    public void deleteTeam(RTeam team) {
+    public void teamDeleted(RTeam team) {
         io.deleteTeam(eventDrawerManager.getEvent().getID(), team.getID());
         executeLoadTeamsTask(true);
         Utils.showSnackbar(findViewById(R.id.main_layout), getApplicationContext(), team.getName()+" was successfully deleted", false, settings.getRui().getPrimaryColor());

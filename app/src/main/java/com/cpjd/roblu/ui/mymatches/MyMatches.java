@@ -24,7 +24,7 @@ import com.cpjd.roblu.sync.cloud.ui.fragments.CheckoutAdapter;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.ui.teams.TeamViewer;
+import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.ui.UIHandler;
 
 import java.util.ArrayList;

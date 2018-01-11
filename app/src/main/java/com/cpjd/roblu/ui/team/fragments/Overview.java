@@ -1,4 +1,4 @@
-package com.cpjd.roblu.ui.teams.fragments;
+package com.cpjd.roblu.ui.team.fragments;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

@@ -66,7 +66,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".ui.teams.TeamViewer"
+            android:name=".ui.team.TeamViewer"
             android:label="@string/title_activity_team_viewer">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"

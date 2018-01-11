@@ -18,7 +18,7 @@ import com.cpjd.roblu.sync.cloud.ui.CheckoutListener;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.ui.teams.TeamViewer;
+import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.utils.Constants;
 
 import java.util.ArrayList;
