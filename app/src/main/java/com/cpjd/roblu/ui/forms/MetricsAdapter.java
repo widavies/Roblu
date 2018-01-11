@@ -11,25 +11,33 @@ import android.widget.TextView;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.ui.teams.customsort.SelectListener;
+import com.cpjd.roblu.models.metrics.RMetric;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 
-public class ElementsAdapter extends RecyclerView.Adapter<ElementsAdapter.ViewHolder> {
+public class MetricsAdapter extends RecyclerView.Adapter<MetricsAdapter.ViewHolder>  {
     private final Context mContext;
     private LinkedList<Element> elements;
     private final boolean editing;
     private int initID;
-    private final EditListener listener;
 
     private final boolean sorting;
     private SelectListener selectListener;
     private final RUI rui;
 
+    public interface MetricSelectedListener {
+        void metricSelected(View v);
+    }
 
-    ElementsAdapter(EditListener listener, Context context, boolean editing){
+    /**
+     * Will be notified whenever a metric is tapped from the metrics array
+     */
+    private MetricSelectedListener listener;
+
+
+    MetricsAdapter(EditListener listener, Context context, boolean editing){
         this.mContext = context;
         this.editing = editing;
         this.listener = listener;
@@ -39,17 +47,17 @@ public class ElementsAdapter extends RecyclerView.Adapter<ElementsAdapter.ViewHo
     }
 
     // for sorting
-    public ElementsAdapter(Context context, SelectListener selectListener){
+    public MetricsAdapter(Context context, MetricSelectedListener selectListener){
         this.mContext = context;
         this.editing = false;
         this.listener = null;
         this.sorting = true;
-        this.selectListener = selectListener;
+        this.listener = selectListener;
 
         rui = new Loader(context).loadSettings().getRui();
     }
 
-    public void pushElements(ArrayList<Element> elements) {
+    public void setMetrics(ArrayList<RMetric> elements) {
         if(elements == null) this.elements = new LinkedList<>();
         else this.elements = new LinkedList<>(elements);
 

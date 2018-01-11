@@ -29,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.api.CloudRequest;
 import com.cpjd.roblu.forms.elements.EBoolean;
 import com.cpjd.roblu.forms.elements.ECheckbox;
 import com.cpjd.roblu.forms.elements.EChooser;
@@ -40,11 +39,13 @@ import com.cpjd.roblu.forms.elements.ESlider;
 import com.cpjd.roblu.forms.elements.EStopwatch;
 import com.cpjd.roblu.forms.elements.ETextfield;
 import com.cpjd.roblu.forms.elements.Element;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.sync.cloud.api.CloudRequest;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -53,6 +54,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -578,6 +580,48 @@ public class Utils {
                 Settings.Secure.ANDROID_ID);
     }
 
+    /**
+     * Returns the match titles within an REvent
+     * @return a String[] containing ALL match titles within an REvent, may be null
+     */
+    public static String[] getMatchTitlesWithinEvent(Context context, int eventID) {
+        RTeam[] local = new IO(context).loadTeams(eventID);
+        // no teams found
+        if(local == null || local.length == 0) return null;
+
+        ArrayList<RTab> tabs = new ArrayList<>();
+
+        RForm form = new IO(context).loadForm(eventID);
+
+        for(RTeam team : local) {
+            team.verify(form);
+            // check if the match already exists
+            if(team.getTabs() == null || team.getTabs().size() == 0) continue;
+            for(RTab tab : team.getTabs()) {
+                if(tab.getTitle().equalsIgnoreCase("pit") || tab.getTitle().equalsIgnoreCase("predictions")) continue;
+                boolean found = false;
+                for(RTab temp : tabs) {
+                    if(temp.getTitle().equalsIgnoreCase(tab.getTitle())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) tabs.add(tab);
+            }
+        }
+
+        if(tabs.size() == 0) return null;
+
+        Collections.sort(tabs);
+
+        // Convert to String[]
+        String[] values = new String[tabs.size()];
+        for(int i = 0; i < tabs.size(); i++) {
+            values[i] = tabs.get(i).getTitle();
+        }
+
+        return values;
+    }
 
     /**
      * Confirms a Roblu Cloud team code regenerate, if yes, then contacts the server

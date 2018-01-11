@@ -38,10 +38,10 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.sync.cloud.sync.Service;
 import com.cpjd.roblu.ui.UIHandler;
-import com.cpjd.roblu.ui.events.EventManager;
+import com.cpjd.roblu.ui.events.EventDrawerManager;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.setup.SetupActivity;
-import com.cpjd.roblu.ui.teams.customsort.CustomSort;
+import com.cpjd.roblu.ui.teamsSorting.CustomSort;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -58,17 +58,17 @@ import java.util.ArrayList;
  * @since 3.0.0
  * @author Will Davies
  */
-public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsItemClickListener, View.OnLongClickListener, EventManager.EventSelectListener, LoadTeamsTask.LoadTeamsTaskListener {
+public class TeamsView extends AppCompatActivity implements View.OnClickListener, TeamsItemClickListener, View.OnLongClickListener, EventDrawerManager.EventSelectListener, LoadTeamsTask.LoadTeamsTaskListener {
     /**
      * IO handles access between the file system and the models
      */
     private IO io;
 
     /**
-     * Everything that has to do with events will be managed by the EventManager, which also takes care of the UI drawer
-     * @see EventManager
+     * Everything that has to do with events will be managed by the EventDrawerManager, which also takes care of the UI drawer
+     * @see EventDrawerManager
      */
-    private EventManager eventManager;
+    private EventDrawerManager eventDrawerManager;
 
     /*
      * Teams
@@ -102,18 +102,16 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      */
     private LoadTeamsTask loadTeamsTask;
     /**
-     * Sometimes the list needs to be refreshed for some other reason, store the lastFilter the user used
-     * so we can get them back in the same spot when refreshing the teams list
+     * The filter to use next time the team list is sorted, must be one of SORT_TYPE
      */
     private int lastFilter;
     /**
-     * Sometimes the list needs to be refreshed for some other reason, store the last search query the user used
-     * so we can get them back in the same spot when refreshing the teams list
+     * The query to use next time the team list is sorted, must be one of SORT_TYPE
      */
     private String lastQuery;
     /**
-     * Sometimes the list needs to be refreshed for some other reason, store the advanced sort token the user used
-     * so we can get them back in the same spot when refreshing the teams list
+     * The custom sort token to use next time the team list is sorted, must be one of SORT_TYPE.
+     * In the format of [TeamMetricProcessor.PROCESS_METHOD:metricID], example: 2:2
      */
     private String lastCustomSortToken;
 
@@ -134,7 +132,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
          */
         public static final int LAST_EDIT = 2;
         /**
-         * Sorts teams by search relevance, each team has a 'relevance' int, this is what is being sorted
+         * Sorts teams by search relevance, each team has a 'customRelevance' int, this is what is being sorted
          */
         public static final int SEARCH = 3;
         /**
@@ -142,6 +140,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
          * @see CustomSort
          */
         public static final int CUSTOM_SORT = 4;
+
     }
     // End filters and searching
 
@@ -279,8 +278,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         /*
          * Setup events drawer and load events to it
          */
-        eventManager = new EventManager(this, toolbar, this);
-        eventManager.selectEvent(settings.getLastEventID());
+        eventDrawerManager = new EventDrawerManager(this, toolbar, this);
+        eventDrawerManager.selectEvent(settings.getLastEventID());
 
         // Check to see if the background service is running, if it isn't, start it
         serviceFilter = new IntentFilter();
@@ -322,7 +321,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * desired filter method
      */
 	private void showFilterDialog() {
-        if(eventManager.getEvent() == null) return;
+        if(eventDrawerManager.getEvent() == null) return;
 
         final Dialog d = new Dialog(this);
         d.setContentView(R.layout.dialog_sort);
@@ -339,13 +338,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 public void onClick(View v) {
                     if(i2 == 3) {
                         Intent intent = new Intent(TeamsView.this, CustomSort.class);
-                        intent.putExtra("eventID", eventManager.getEvent().getID());
+                        intent.putExtra("eventID", eventDrawerManager.getEvent().getID());
                         startActivityForResult(intent, Constants.GENERAL);
                         d.dismiss();
                         return;
                     }
-                    eventManager.getEvent().setLastFilter(i2);
-                    io.saveEvent(eventManager.getEvent());
+                    eventDrawerManager.getEvent().setLastFilter(i2);
+                    io.saveEvent(eventDrawerManager.getEvent());
                     lastFilter = i2;
                     executeLoadTeamsTask(false);
                     d.dismiss();
@@ -363,7 +362,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * Shows the team create dialog where the user can manually create a team
      */
     private void showTeamCreateDialog() {
-        if(eventManager.getEvent() == null) return;
+        if(eventDrawerManager.getEvent() == null) return;
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LinearLayout layout = new LinearLayout(this);
@@ -399,8 +398,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 if(input2.getText().toString().equals("")) input2.setText("0");
-                RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), io.getNewTeamID(eventManager.getEvent().getID()));
-                io.saveTeam(team, eventManager.getEvent().getID());
+                RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), io.getNewTeamID(eventDrawerManager.getEvent().getID()));
+                io.saveTeam(team, eventDrawerManager.getEvent().getID());
                 executeLoadTeamsTask(true);
             }
         });
@@ -445,7 +444,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * @param reload true if teams should be reloaded from the disk
      */
     private void executeLoadTeamsTask(boolean reload) {
-        loadTeamsTask.setTaskParameters(eventManager.getEvent().getID(), reload, lastFilter, lastQuery, lastCustomSortToken);
+        loadTeamsTask.setTaskParameters(eventDrawerManager.getEvent().getID(), reload, lastFilter, lastQuery, lastCustomSortToken);
         // Flag UI to look like it's loading something
         rv.setVisibility(View.GONE);
         bar.setVisibility(View.VISIBLE);
@@ -475,15 +474,15 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         else if(resultCode == Constants.PICKER_EVENT_CREATED){ // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
-            eventManager.selectEvent(d.getInt("eventID"));
+            eventDrawerManager.selectEvent(d.getInt("eventID"));
         }
         else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
             executeLoadTeamsTask(true);
             return;
         }
         else if(resultCode == Constants.TEAM_EDITED) { // the user edited a team, let's toss it in the teams array and reload it also
-            if(teams == null || teams.size() == 0 || eventManager.getEvent() == null) return;
-            RTeam temp = io.loadTeam(eventManager.getEvent().getID(), data.getIntExtra("team", 0));
+            if(teams == null || teams.size() == 0 || eventDrawerManager.getEvent() == null) return;
+            RTeam temp = io.loadTeam(eventDrawerManager.getEvent().getID(), data.getIntExtra("team", 0));
             for(int i = 0; i < teams.size(); i++) {
                 if(teams.get(i).getID() == temp.getID()) {
                     teams.set(i, temp);
@@ -494,9 +493,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         else if(resultCode == Constants.DATA_SETTINGS_CHANGED) { // user edited the event
             REvent temp = (REvent) data.getSerializableExtra("event");
-            if(eventManager.getEvent() != null && temp.getID() == eventManager.getEvent().getID()) {
+            if(eventDrawerManager.getEvent() != null && temp.getID() == eventDrawerManager.getEvent().getID()) {
                 if(getSupportActionBar() != null) getSupportActionBar().setTitle(temp.getName());
-                eventManager.setEvent(temp);
+                eventDrawerManager.setEvent(temp);
             }
             executeLoadTeamsTask(true);
         }
@@ -508,9 +507,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     @Override
     public boolean onLongClick(View v) {
         if(v.getId() == R.id.fab) {
-            if(eventManager.getEvent() == null) return false;
+            if(eventDrawerManager.getEvent() == null) return false;
             Intent intent = new Intent(this, MyMatches.class);
-            intent.putExtra("eventID", eventManager.getEvent().getID());
+            intent.putExtra("eventID", eventDrawerManager.getEvent().getID());
             startActivity(intent);
             return true;
         }
@@ -542,7 +541,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
     @Override
     public void onClick(View v) {
-        if(!searchView.isSearchOpen() && eventManager.getEvent() != null) {
+        if(!searchView.isSearchOpen() && eventDrawerManager.getEvent() != null) {
             searchView.showSearch(true);
             searchButton.setVisibility(FloatingActionButton.INVISIBLE);
         }
@@ -563,14 +562,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         RTeam team = adapter.getTeam(itemPosition);
         Intent startView = new Intent(this, TeamViewer.class);
         startView.putExtra("teamID", team.getID());
-        startView.putExtra("event", eventManager.getEvent());
+        startView.putExtra("event", eventDrawerManager.getEvent());
         startView.putExtra("editable", false);
         startActivityForResult(startView, Constants.GENERAL);
     }
 
     @Override
     public void deleteTeam(RTeam team) {
-        io.deleteTeam(eventManager.getEvent().getID(), team.getID());
+        io.deleteTeam(eventDrawerManager.getEvent().getID(), team.getID());
         executeLoadTeamsTask(true);
         Utils.showSnackbar(findViewById(R.id.main_layout), getApplicationContext(), team.getName()+" was successfully deleted", false, settings.getRui().getPrimaryColor());
     }

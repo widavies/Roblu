@@ -80,7 +80,7 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
     private boolean editing;
     private boolean masterForm;
 
-    private ElementsAdapter elementsAdapter;
+    private MetricsAdapter metricsAdapter;
 
     // Temporary arrays
     private ArrayList<Element> tempPit, tempMatch;
@@ -150,10 +150,10 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
 
-        elementsAdapter = new ElementsAdapter(this, this, editing);
-        rv.setAdapter(elementsAdapter);
+        metricsAdapter = new MetricsAdapter(this, this, editing);
+        rv.setAdapter(metricsAdapter);
 
-        ItemTouchHelper.Callback callback = new ElementTouchHelper(elementsAdapter, false);
+        ItemTouchHelper.Callback callback = new ElementTouchHelper(metricsAdapter, false);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
@@ -186,13 +186,13 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
 	private void loadViews(boolean init, int tab) {
         currentTab = tab;
         if(tab == 0) {
-            if(!init) tempMatch = elementsAdapter.getElements();
-            elementsAdapter.removeAll();
-            elementsAdapter.pushElements(tempPit);
+            if(!init) tempMatch = metricsAdapter.getElements();
+            metricsAdapter.removeAll();
+            metricsAdapter.pushElements(tempPit);
         } else {
-            tempPit = elementsAdapter.getElements();
-            elementsAdapter.removeAll();
-            elementsAdapter.pushElements(tempMatch);
+            tempPit = metricsAdapter.getElements();
+            metricsAdapter.removeAll();
+            metricsAdapter.pushElements(tempMatch);
         }
     }
 
@@ -205,7 +205,7 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
 
     @Override
     public void onTabSelected(@IdRes int tabId) {
-        if(elementsAdapter == null) return;
+        if(metricsAdapter == null) return;
 
         if(tabId == R.id.tab_pit) {
             loadViews(false, 0);
@@ -284,8 +284,8 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
     }
 
     private void finishUp(int mode) {
-        if(currentTab == 0) tempPit = elementsAdapter.getElements();
-        else tempMatch = elementsAdapter.getElements();
+        if(currentTab == 0) tempPit = metricsAdapter.getElements();
+        else tempMatch = metricsAdapter.getElements();
 
         Intent intent = new Intent();
         Bundle bundle = new Bundle();
@@ -301,17 +301,17 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
             if(resultCode == Constants.NEW_CONFIRMED) {
                 Bundle bundle = data.getExtras();
                 Element e = (Element) bundle.getSerializable("element");
-                elementsAdapter.add(e, elementsAdapter.getNewID());
+                metricsAdapter.add(e, metricsAdapter.getNewID());
                 changesMade = true;
             }
             else if(resultCode == Constants.EDIT_CONFIRMED) {
                 Bundle bundle = data.getExtras();
                 Element e = (Element) bundle.getSerializable("element");
-                elementsAdapter.reAdd(e);
+                metricsAdapter.reAdd(e);
                 changesMade = true;
             } else if(resultCode == Constants.EDIT_DISCARDED) {
                 Bundle bundle = data.getExtras();
-                elementsAdapter.reAdd(editElement);
+                metricsAdapter.reAdd(editElement);
             }
     }
 
@@ -320,7 +320,7 @@ public class EditForm extends AppCompatActivity implements View.OnClickListener,
         RForm form = new Loader(getApplicationContext()).loadForm(eventID);
         tempPit = form.getPit();
         tempMatch = form.getMatch();
-        elementsAdapter.pushElements(tempMatch);
+        metricsAdapter.pushElements(tempMatch);
         onTabSelected(R.id.tab_pit);
         bBar.getChildAt(0).setSelected(true);
     }

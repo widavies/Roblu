@@ -45,7 +45,7 @@
                 android:value="com.cpjd.roblu.ui.events.CreateEventPicker"/>
         </activity>
         <activity
-            android:name=".ui.teams.customsort.CustomSort"
+            android:name=".ui.teamsSorting.CustomSort"
             android:label="">
         </activity>
         <activity

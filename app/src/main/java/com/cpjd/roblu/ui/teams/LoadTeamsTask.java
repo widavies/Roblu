@@ -66,8 +66,9 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      */
     private String customSortToken;
 
-    /*
-     * UI elements that need to be accessed.
+    /**
+     * IO must be kept in a weak reference because it holds a context reference and we don't
+     * want to risk leaking memory accidentally
      */
     private WeakReference<IO> ioWeakReference;
 
@@ -108,7 +109,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      * @param query search query string
      * @param customSortToken custom sort token string in format [TeamMetricProcessor.PROCESS_METHOD:ID], example: 2:2
      */
-    public void setTaskParameters(int eventID, boolean reload, int filter, String query, String customSortToken) {
+    void setTaskParameters(int eventID, boolean reload, int filter, String query, String customSortToken) {
         this.eventID = eventID;
         this.reload = reload;
         this.filter = filter;
@@ -213,6 +214,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
              * -Elements Processor will attach a string to filterTag and a relevance to customRelevance and return the team object, then just sort
              */
             TeamMetricProcessor teamMetricProcessor = new TeamMetricProcessor();
+
             /*
              * TeamMetricProcessor requires all inputted teams to be synced with the form, so let's do that
              */
@@ -229,10 +231,16 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             int metricID = Integer.parseInt(customSortToken.split(":")[1]);
 
             /*
+             * Make sure to set the extra "matchTitle" parameter if processMethod==PROCESS_METHOD.IN_MATCH
+             */
+            if(methodID == TeamMetricProcessor.PROCESS_METHOD.IN_MATCH && customSortToken.split(":").length == 3) {
+                teamMetricProcessor.setInMatchTitle(customSortToken.split(":")[2]);
+            }
+
+            /*
              * Next, perform the operation
              */
             for(RTeam team : teams) teamMetricProcessor.process(team, methodID, metricID);
-
 
             /*
              * Finally, check to see if the user also wants to sort through the array

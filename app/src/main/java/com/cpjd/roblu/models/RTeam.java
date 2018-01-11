@@ -77,7 +77,11 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * of other internal RTeam variables.
      */
     private transient int filter;
-    private transient int customRelevance;
+    /**
+     * Custom double that is used for custom sorting. Double gives more flexibility to TeamMetricProcessor for values
+     * that can be stored.
+     */
+    private transient double customRelevance;
     /**
      * If desired, a filterTag can be attached that will display extra information when this team is sorted.
      * For example, searching for a match to find teams that contain the queried match might want this tag to
@@ -294,6 +298,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         if(filter == TeamsView.SORT_TYPE.ALPHABETICAL) return name.compareTo(team.getName());
         else if(filter == TeamsView.SORT_TYPE.NUMERICAL) return ((Integer)number).compareTo(team.getNumber());
         else if(filter == TeamsView.SORT_TYPE.LAST_EDIT) return ((Long)lastEdit).compareTo(team.getLastEdit());
-        else return ((Integer)customRelevance).compareTo(customRelevance);
+        else return ((Double)customRelevance).compareTo(customRelevance);
     }
 }

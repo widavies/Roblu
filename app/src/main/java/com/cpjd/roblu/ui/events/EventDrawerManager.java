@@ -40,9 +40,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Helps reduce the amount of code in TeamsView by managing the event drawer
+ * Helps reduce the amount of code in TeamsView by managing the event drawer and its contents
  */
-public class EventManager implements Drawer.OnDrawerItemClickListener {
+public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
 
     /**
      * A reference to the TeamsView activity
@@ -82,12 +82,12 @@ public class EventManager implements Drawer.OnDrawerItemClickListener {
     private EventSelectListener listener;
 
     /**
-     * Instantiates an EventManager that will handle loading and receiving actions from the REvent ui drawer
+     * Instantiates an EventDrawerManager that will handle loading and receiving actions from the REvent ui drawer
      * @param activity the TeamsView activity reference
      * @param toolbar the TeamsView toolbar (the UI drawer will insert a hamburger button)
      * @param listener an EventSelectListener that will be called when the TeamsView activity should reload the teams list
      */
-    public EventManager(Activity activity, Toolbar toolbar, EventSelectListener listener) {
+    public EventDrawerManager(Activity activity, Toolbar toolbar, EventSelectListener listener) {
         this.activity = activity;
         this.listener = listener;
 
@@ -296,7 +296,7 @@ public class EventManager implements Drawer.OnDrawerItemClickListener {
     /**
      * This is only down here so that it isn't wasting space some where else
      */
-    public class DividerDrawerItem extends AbstractDrawerItem<com.cpjd.roblu.ui.events.EventManager.DividerDrawerItem, com.cpjd.roblu.ui.events.EventManager.DividerDrawerItem.ViewHolder> {
+    public class DividerDrawerItem extends AbstractDrawerItem<EventDrawerManager.DividerDrawerItem, EventDrawerManager.DividerDrawerItem.ViewHolder> {
 
         private final int color;
 
@@ -316,7 +316,7 @@ public class EventManager implements Drawer.OnDrawerItemClickListener {
         }
 
         @Override
-        public void bindView(com.cpjd.roblu.ui.events.EventManager.DividerDrawerItem.ViewHolder viewHolder, List payloads) {
+        public void bindView(EventDrawerManager.DividerDrawerItem.ViewHolder viewHolder, List payloads) {
             super.bindView(viewHolder, payloads);
 
             //set the identifier from the drawerItem here. It can be used to run tests
@@ -337,8 +337,8 @@ public class EventManager implements Drawer.OnDrawerItemClickListener {
         }
 
         @Override
-        public com.cpjd.roblu.ui.events.EventManager.DividerDrawerItem.ViewHolder getViewHolder(View v) {
-            return new com.cpjd.roblu.ui.events.EventManager.DividerDrawerItem.ViewHolder(v);
+        public EventDrawerManager.DividerDrawerItem.ViewHolder getViewHolder(View v) {
+            return new EventDrawerManager.DividerDrawerItem.ViewHolder(v);
         }
 
         class ViewHolder extends RecyclerView.ViewHolder {

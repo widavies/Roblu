@@ -9,7 +9,6 @@ import android.widget.TextView;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.ui.teams.customsort.SelectListener;
 
 import java.util.LinkedList;
 

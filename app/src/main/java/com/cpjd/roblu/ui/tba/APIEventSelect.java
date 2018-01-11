@@ -32,7 +32,6 @@ import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.teams.customsort.SelectListener;
 import com.cpjd.roblu.ui.tutorials.TutorialTouchHelper;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;

@@ -15,7 +15,6 @@ import android.view.MenuItem;
 import android.view.View;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.teams.customsort.SelectListener;
 import com.cpjd.roblu.ui.UIHandler;
 
 import java.util.LinkedList;
