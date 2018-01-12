@@ -36,7 +36,7 @@
         </provider>
 
         <activity
-            android:name=".ui.events.CreateEvent"
+            android:name=".ui.events.EventEditor"
             android:label="@string/title_activity_create_event_view"
             android:parentActivityName=".ui.events.CreateEventPicker"
             android:windowSoftInputMode="adjustPan">
@@ -52,7 +52,7 @@
             android:name=".ui.forms.EditForm"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_create_form"
-            android:parentActivityName=".ui.events.CreateEvent">
+            android:parentActivityName=".ui.events.EventEditor">
         </activity>
         <activity
             android:name=".ui.teams.TeamsView"
@@ -95,10 +95,10 @@
         <activity
             android:name=".ui.forms.Predefined"
             android:label="@string/title_activity_predefined"
-            android:parentActivityName=".ui.events.CreateEvent">
+            android:parentActivityName=".ui.events.EventEditor">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.cpjd.roblu.ui.events.CreateEvent"/>
+                android:value="com.cpjd.roblu.ui.events.EventEditor"/>
         </activity>
         <activity
             android:name=".ui.events.EventSettings"

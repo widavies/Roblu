@@ -22,11 +22,9 @@ public class REvent implements Serializable, Comparable<REvent> {
     private int ID;
 
     /**
-     * Attributes of the event
+     * The name of the REvent
      */
     private String name;
-    private long startTime;
-    private long endTime;
 
     /**
      * This is the TBA key of the event, used for automatically syncing stuff
@@ -43,16 +41,13 @@ public class REvent implements Serializable, Comparable<REvent> {
      */
     private boolean cloudEnabled;
 
-    public REvent(int ID, String name, long startTime, long endTime) {
-        this.startTime = startTime;
-        this.endTime = endTime;
+    public REvent(int ID, String name) {
         this.ID = ID;
         this.name = name;
     }
 
     @Override
     public int compareTo(@NonNull REvent event) {
-        if(ID > event.getID())  return 0;
-        else return 1;
+        return ((Integer)ID).compareTo(event.getID());
     }
 }

@@ -101,6 +101,7 @@ public class IO {
         if(settings == null) {
             settings = new RSettings();
             settings.setRui(new RUI());
+            settings.setMaster(Utils.createEmpty());
             new IO(context).saveSettings(settings);
             return true;
         }
@@ -218,7 +219,7 @@ public class IO {
         RForm form = loadForm(event.getID());
         event.setID(newID);
         saveEvent(event);
-        saveForm(form, newID);
+        saveForm(newID, form);
 
         RTeam temp;
         for(int i = 0; teams != null && i < teams.length; i++) {
@@ -348,10 +349,10 @@ public class IO {
 
     /**
      * Saves the form to the file system
-     * @param form the form to save
      * @param eventID the ID of the event to save the form to, USE ID == -1 to save the master form
+     * @param form the form to save
      */
-    public void saveForm(RForm form, int eventID) {
+    public void saveForm(int eventID, RForm form) {
         if(eventID == -1) serializeObject(form, new File(PREFIX+File.separator+"master_form.ser"));
 
         serializeObject(form, new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser"));
@@ -489,9 +490,9 @@ public class IO {
 
     /**
      * Saves a checkout to the /pending/ directory, presumably because an import has occurred
-     * @param checkout the RCheckout object instance to save
+     * @param checkout the RCheckout instance to save
      */
-    public void savePendingCheckout(RCheckout checkout) {
+    public void savePendingObject(RCheckout checkout) {
         serializeObject(checkout, new File(PREFIX+File.separator+"pending"+File.separator+checkout.getID()+".ser"));
     }
 

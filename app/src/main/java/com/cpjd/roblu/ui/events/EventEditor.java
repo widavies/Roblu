@@ -1,0 +1,307 @@
+package com.cpjd.roblu.ui.events;
+
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.os.Bundle;
+import android.support.design.widget.TextInputLayout;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatEditText;
+import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.EditText;
+import android.widget.RelativeLayout;
+import android.widget.Spinner;
+import android.widget.TextView;
+
+import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.forms.EditForm;
+import com.cpjd.roblu.ui.forms.Predefined;
+import com.cpjd.roblu.utils.Constants;
+import com.cpjd.roblu.utils.Utils;
+
+import java.util.ArrayList;
+
+/**
+ * EventEditor can be used for the manual creation or editing of an REvent object.
+ * It's recommended that the user uses the TBA event important option instead.
+ *
+ * Parameters (in incoming Intent):
+ * -"editing" - true to edit and event, false to create an event
+ *
+ * @version 2
+ * @since 3.0.0
+ * @author Will Davies
+ */
+public class EventEditor extends AppCompatActivity {
+
+    /**
+     * This boolean represents which mode the EventEditor is in, if true, an already existing event
+     * is being edited, if false, a new REvent is being created
+     */
+    private boolean editing;
+
+    /**
+     * The user is allowed to work on edited and form and go back to the event page without losing their progress,
+     * EventEditor doesn't need access to the form, it just keeps a reference to it for it's children purposes
+     */
+    private RForm tempFormHolder;
+
+    /**
+     * UI element where the event name can be typed
+     */
+    private EditText eventName;
+    /**
+     * UI element where the user can manually change TheBlueAlliance event key
+     */
+    private EditText tbaKeyText;
+
+    @Override
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+
+		/*
+		 * Load dependencies
+		 */
+        editing = getIntent().getBooleanExtra("editing", false);
+        RUI rui = new IO(getApplicationContext()).loadSettings().getRui();
+
+        /*
+         * Setup UI
+         */
+        // Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(editing) setTitle("Edit event");
+        else setTitle("Create event");
+
+        // decide whether to use create event or edit event UI scheme
+        if(editing) setContentView(R.layout.activity_edit_event);
+        else setContentView(R.layout.activity_create_event);
+
+        // event name
+        eventName = findViewById(R.id.event_create_name_edit);
+
+        /*
+         * Bind user color preferences to the UI elements
+         */
+        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.name_wrapper), (AppCompatEditText)findViewById(R.id.event_create_name_edit));
+        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.start_wrapper), (AppCompatEditText)findViewById(R.id.editText1));
+        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.end_wrapper), (AppCompatEditText)findViewById(R.id.editText2));
+
+        /*
+         * Setup editing/non-editing UI specifics
+         */
+        if(!editing) {
+            TextView t = findViewById(R.id.event_create_form_label);
+            t.setTextColor(rui.getAccent());
+        } else {
+            RelativeLayout layout = findViewById(R.id.create_layout);
+            for(int i = 0; i < layout.getChildCount(); i++) {
+                if(layout.getChildAt(i).getId() == R.id.form_type || layout.getChildAt(i).getId() == R.id.event_create_form_label) {
+                    layout.removeViewAt(i);
+                    i = 0;
+                }
+            }
+            tbaKeyText = findViewById(R.id.key_edit);
+            tbaKeyText.setText(getIntent().getStringExtra("key"));
+            eventName.setText(getIntent().getStringExtra("name"));
+        }
+
+        // General UI syncing
+        new UIHandler(this, toolbar).update();
+	}
+
+    /**
+     * User selected the confirm button (or home, but we don't care about the home button as much as the event confirm button)
+     * @param item the UI item that was tapped
+     * @return true if the event was consumed
+     */
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		if(item.getItemId() == android.R.id.home) {
+		    launchParent();
+        }
+        // user clicked the confirm button
+        else if(item.getItemId() == R.id.action_event_create_confirm) {
+		    /*
+		     * User was editing an event and selected confirm, return the data to the parent calling activity
+		     * to be set to the REvent and saved
+		     */
+            if(editing) {
+                Intent result = new Intent();
+                result.putExtra("name", eventName.getText().toString());
+                result.putExtra("key", tbaKeyText.getText().toString());
+                setResult(Constants.EVENT_INFO_EDITED, result);
+                finish();
+            }
+            /*
+             * User was creating a new event and selected confirm, decide which form dialog needs to be launched
+             */
+            else {
+                Spinner spinner = findViewById(R.id.form_type);
+
+                /*
+                 * User selected "Create custom form" option
+                 */
+                if(spinner.getSelectedItemPosition() == 0) {
+                    Intent startView = new Intent(this, EditForm.class);
+                    // Package a form with any old data that the user was working on (might be null)
+                    startView.putExtra("form", tempFormHolder);
+                    startActivityForResult(startView, Constants.GENERAL);
+                }
+                /*
+                 * User selected "Import predefined form" option
+                 */
+                else if(spinner.getSelectedItemPosition() == 1)  {
+                    startActivityForResult(new Intent(this, Predefined.class), Constants.GENERAL);
+                }
+                /*
+                 * User selected "Use master form" option
+                 */
+                else if(spinner.getSelectedItemPosition() == 2) {
+                    /*
+                     * Create the event
+                     */
+                    IO io = new IO(getApplicationContext());
+                    RForm masterForm = io.loadSettings().getMaster();
+                    createEvent(masterForm);
+                    /*
+                     * Send the event back to TeamsView to be processed
+                     */
+                    setResult(Constants.MANUAL_CREATED);
+                    finish();
+                }
+                /*
+                 * User selected "No form (create form later)" option
+                 */
+                else {
+                    /*
+                     * Create the event
+                     */
+                    createEvent(Utils.createEmpty());
+                    setResult(Constants.MANUAL_CREATED);
+                    finish();
+                }
+
+            }
+        }
+        return true;
+	}
+
+    /**
+     * A result has been received from a child activity.
+     * 1 of 3 things happened:
+     * -User exited EditForm activity
+     * -User created a form successfully with EditForm activity
+     * -User selected a predefined form successfully
+     * @param requestCode the code the child activity was started with
+     * @param resultCode the code the child activity returned
+     * @param data any data included with teh return
+     */
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        /*
+         * User tapped back on the custom form editor (essentially a discard, expect if they re-enter
+         * the custom form editor, their data will be saved because this activity keeps track of it)
+         */
+        if(resultCode == Constants.FORM_DISCARDED) {
+            Bundle bundle = data.getExtras();
+            tempFormHolder = new RForm((ArrayList<RMetric>)bundle.getSerializable("pit"), (ArrayList<RMetric>)bundle.getSerializable("match"));
+        }
+        /*
+         * User tapped confirm on the custom form editor, so let's create an event with form they created
+         */
+        else if(resultCode == Constants.FORM_CONFIMRED) {
+            Bundle bundle = data.getExtras();
+            tempFormHolder = new RForm((ArrayList<RMetric>)bundle.getSerializable("pit"), (ArrayList<RMetric>)bundle.getSerializable("match"));
+
+            /*
+             * Create the event!
+             */
+            createEvent(tempFormHolder);
+            setResult(Constants.MANUAL_CREATED);
+            finish();
+        }
+        /*
+         * User tapped a predefined form, so let's create an event with the specified predefined form
+         */
+        else if(resultCode == Constants.PREDEFINED_CONFIMRED) {
+            /*
+             * Create the event!
+             */
+            tempFormHolder = (RForm) data.getSerializableExtra("form");
+            createEvent(tempFormHolder);
+            setResult(Constants.MANUAL_CREATED);
+            finish();
+        }
+    }
+
+    /**
+     * This method is more of a courtesy method to the source code reader,
+     * an event will get created from EventEditor whenever this method is called, no exceptions.
+     * @param form the form to save with the event
+     */
+    private void createEvent(RForm form) {
+        IO io = new IO(getApplicationContext());
+        REvent event = new REvent(io.getNewEventID(), eventName.getText().toString());
+        io.saveEvent(event);
+        io.saveForm(event.getID(), form);
+    }
+
+    /**
+     * Launch parent asks for user confirmation before discarding any data they might have started on
+     */
+    private void launchParent() {
+        // if this statement is true, the user didn't enter enough information for a "discard changes?" dialog to be required, so exit automatically
+        if(eventName.getText().toString().equals("") && tempFormHolder != null
+                && (tempFormHolder.getPit() == null || tempFormHolder.getPit().size() <= 2)
+                && (tempFormHolder.getMatch() == null || tempFormHolder.getMatch().size() == 0)) {
+            setResult(Constants.MANUAL_DISCARDED);
+            finish();
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+
+            builder.setTitle("Discard changes?");
+            builder.setMessage("Really discard changes you've made to the event?");
+
+            builder.setPositiveButton("Discard", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    setResult(Constants.MANUAL_DISCARDED);
+                    finish();
+                }
+            });
+            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog dialog = builder.create();
+            if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
+            dialog.show();
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        launchParent();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.event_create_actionbar, menu);
+        new UIHandler(this, menu).updateMenu();
+        return true;
+    }
+}

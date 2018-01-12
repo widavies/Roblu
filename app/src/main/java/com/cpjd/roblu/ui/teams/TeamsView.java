@@ -498,6 +498,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         else if(resultCode == Constants.SETTINGS_CHANGED) { // user changed application settings
 
         }
+        /*
+         * The user created a new event, let's make sure the eventDrawerManager
+         * knows about it
+         */
+        else if(resultCode == Constants.MANUAL_CREATED) {
+            eventDrawerManager.loadEventsToDrawer();
+            eventDrawerManager.selectEvent(settings.getLastEventID());
+        }
     }
 
     @Override

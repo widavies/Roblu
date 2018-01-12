@@ -235,7 +235,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      * Note: loadEvents() must be called after the drawer UI is setup, it will insert
      * REvents into the pre-created UI drawer
      */
-    private void loadEventsToDrawer() {
+    public void loadEventsToDrawer() {
         /*
          * Load events
          */

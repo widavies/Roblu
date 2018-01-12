@@ -98,7 +98,7 @@ public class CreateEventPicker extends AppCompatActivity implements AdapterView.
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         if(position == 0) {
-            startActivityForResult(new Intent(this, CreateEvent.class), Constants.GENERAL);
+            startActivityForResult(new Intent(this, EventEditor.class), Constants.GENERAL);
         }
         if(position == 1) {
             Intent intent = new Intent(this, APIEventSelect.class);

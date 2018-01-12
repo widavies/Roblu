@@ -30,6 +30,13 @@ public class RForm implements Serializable {
     private ArrayList<RMetric> match;
 
     /**
+     * If this is true, this form needs to be sent to the server again.
+     * However, Roblu Scouter doesn't have this object in it's model, so
+     * make sure it's ignored.
+     */
+    private boolean uploadRequired;
+
+    /**
      * Creates a form model
      * @param pit ArrayList of pit metrics
      * @param match ArrayList of match metrics

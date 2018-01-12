@@ -1,7 +1,5 @@
 package com.cpjd.roblu.ui.teams;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -12,6 +10,7 @@ import android.view.View;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 
 /**
  * This class manages the UI gestures available in the teams view.
@@ -56,36 +55,33 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
          * User wants to delete a team, let's confirm it with them
          */
         if(direction == ItemTouchHelper.LEFT) {
-            AlertDialog.Builder builder = new AlertDialog.Builder(teamsAdapter.getContext());
-
             final RTeam team = TeamsView.teams.get(viewHolder.getAdapterPosition());
 
-            builder.setTitle("Are you sure?");
-            builder.setMessage("Are you sure you want to delete team " + team.getName() + "?");
+            new FastDialogBuilder()
+                    .setTitle("Are you sure?")
+                    .setMessage("Are you sure you want to delete team "+team.getName()+"?")
+                    .setPositiveButtonText("Delete")
+                    .setNegativeButtonText("Cancel")
+                    .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                        @Override
+                        public void accepted() {
+                            teamsAdapter.remove(viewHolder.getAdapterPosition());
+                            teamsAdapter.notifyDataSetChanged();
+                            /*
+                             * Also, we need to tell TeamsView that the LoadTeamsTask now contains an invalid internal teams array and must
+                             * refresh it from the local disk
+                             */
+                            teamsAdapter.getListener().teamDeleted(team);
+                        }
 
-            builder.setPositiveButton("Delete", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    teamsAdapter.remove(viewHolder.getAdapterPosition());
-                    teamsAdapter.notifyDataSetChanged();
-                    /*
-                     * Also, we need to tell TeamsView that the LoadTeamsTask now contains an invalid internal teams array and must
-                     * refresh it from the local disk
-                     */
-                    teamsAdapter.getListener().teamDeleted(team);
-                    dialog.dismiss();
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    teamsAdapter.reAdd(team);
-                }
-            });
-            AlertDialog dialog = builder.create();
-            if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
-            dialog.setCancelable(false);
-            dialog.show();
+                        @Override
+                        public void denied() {
+                            teamsAdapter.reAdd(team);
+                        }
+
+                        @Override
+                        public void neutral() {}
+                    }).build(teamsAdapter.getContext());
         }
     }
 
