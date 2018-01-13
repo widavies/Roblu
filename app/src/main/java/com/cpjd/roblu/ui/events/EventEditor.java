@@ -3,6 +3,7 @@ package com.cpjd.roblu.ui.events;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -15,10 +16,13 @@ import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import com.cpjd.models.Event;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RTab;
+import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
@@ -27,7 +31,10 @@ import com.cpjd.roblu.ui.forms.Predefined;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * EventEditor can be used for the manual creation or editing of an REvent object.
@@ -35,6 +42,12 @@ import java.util.ArrayList;
  *
  * Parameters (in incoming Intent):
  * -"editing" - true to edit and event, false to create an event
+ * -"key" - the tba key (available while not editing also, for the TBA import)
+ * -"name" - the event name (available while not editing also, for the TBA import)
+ * -"tbaEvent" - extra data that should be included when an event is created
+ *
+ * Also: requests from TBAEventSelector should use editing==true since the user is essentially just editing a couple things off data
+ * that's already been downloaded
  *
  * @version 2
  * @since 3.0.0
@@ -62,6 +75,11 @@ public class EventEditor extends AppCompatActivity {
      * UI element where the user can manually change TheBlueAlliance event key
      */
     private EditText tbaKeyText;
+    /**
+     * This item will be set if this activity is called form the TBAEventSelector activity, all it's saying is that
+     * all the data within this Event model should be included when creating the REvent
+     */
+    private Event event;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -205,7 +223,7 @@ public class EventEditor extends AppCompatActivity {
      * -User selected a predefined form successfully
      * @param requestCode the code the child activity was started with
      * @param resultCode the code the child activity returned
-     * @param data any data included with teh return
+     * @param data any data included with the return
      */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -228,7 +246,7 @@ public class EventEditor extends AppCompatActivity {
              * Create the event!
              */
             createEvent(tempFormHolder);
-            setResult(Constants.MANUAL_CREATED);
+            setResult(Constants.NEW_EVENT_CREATED);
             finish();
         }
         /*
@@ -240,7 +258,7 @@ public class EventEditor extends AppCompatActivity {
              */
             tempFormHolder = (RForm) data.getSerializableExtra("form");
             createEvent(tempFormHolder);
-            setResult(Constants.MANUAL_CREATED);
+            setResult(Constants.NEW_EVENT_CREATED);
             finish();
         }
     }
@@ -255,6 +273,14 @@ public class EventEditor extends AppCompatActivity {
         REvent event = new REvent(io.getNewEventID(), eventName.getText().toString());
         io.saveEvent(event);
         io.saveForm(event.getID(), form);
+
+        /*
+         * We need to check if the user included any TBA information that we should include in this event creation
+         */
+        if(editing && getIntent().getSerializableExtra("tbaEvent") != null) {
+            new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), new IO(getApplicationContext())).execute();
+        }
+
     }
 
     /**
@@ -265,7 +291,7 @@ public class EventEditor extends AppCompatActivity {
         if(eventName.getText().toString().equals("") && tempFormHolder != null
                 && (tempFormHolder.getPit() == null || tempFormHolder.getPit().size() <= 2)
                 && (tempFormHolder.getMatch() == null || tempFormHolder.getMatch().size() == 0)) {
-            setResult(Constants.MANUAL_DISCARDED);
+            setResult(Constants.EVENT_DISCARDED);
             finish();
         } else {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -277,7 +303,7 @@ public class EventEditor extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     dialog.dismiss();
-                    setResult(Constants.MANUAL_DISCARDED);
+                    setResult(Constants.EVENT_DISCARDED);
                     finish();
                 }
             });
@@ -303,5 +329,84 @@ public class EventEditor extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.event_create_actionbar, menu);
         new UIHandler(this, menu).updateMenu();
         return true;
+    }
+
+    /**
+     * UnpackTBAEvent takes the data within an Event model (teams, matches, wins, etc.) and converts
+     * it into the Roblu format. This task will save a whole bunch of RTeams to the file system,
+     * so the EventEditor really isn't dependent on it.
+     *
+     * Note: An AsyncTask will continue to run even if the original activity is destroyed
+     */
+    private static class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
+
+        private Event event;
+        private int eventID;
+
+        private WeakReference<IO> ioWeakReference;
+
+        UnpackTBAEvent(Event e, int eventID, IO io) {
+            this.eventID = eventID;
+            this.event = e;
+            this.ioWeakReference = new WeakReference<>(io);
+        }
+
+        protected Void doInBackground(Void... params) {
+            /*
+             * No teams were contained within the event, so exit, nothing here is relevant
+             * to a TBA event that doesn't contain any team models
+             */
+            if(event.teams == null || event.teams.length == 0) return null;
+
+            /*
+             * Create an array of team models from the ones contained in the event
+             */
+            ArrayList<RTeam> teams = new ArrayList<>();
+            for(int i = 0; i < event.teams.length; i++) {
+                // i can be used as the ID because we are creating a fresh event, io.getNewTeamID is irrelevant
+                teams.add(new RTeam(event.teams[i].nickname, (int) event.teams[i].team_number, i));
+            }
+
+            /*
+             * Sort the matches in the event
+             */
+            Collections.sort(Arrays.asList(event.matches));
+
+            /*
+             * Add the matches to the respective team models
+             */
+            IO io = ioWeakReference.get();
+            RForm form = io.loadForm(eventID);
+
+            int result;
+            for(RTeam t : teams) {
+                t.verify(form);
+                for(int j = 0; j < event.matches.length; j++) {
+                    result = event.matches[j].doesMatchContainTeam(t.getNumber());
+                    if(result > 0) {
+                        String name = "Match";
+                        // process the correct match name
+                        switch(event.matches[j].comp_level) {
+                            case "qm":
+                                name = "Quals " + event.matches[j].match_number;
+                                break;
+                            case "qf":
+                                name = "Quarters " + event.matches[j].set_number + " Match " + event.matches[j].match_number;
+                                break;
+                            case "sf":
+                                name = "Semis " + event.matches[j].set_number + " Match " + event.matches[j].match_number;
+                                break;
+                            case "f":
+                                name = "Finals " + event.matches[j].match_number;
+                        }
+                        boolean isRed = result == com.cpjd.main.Constants.CONTAINS_TEAM_RED;
+                        // add the match to the team, make sure to multiple the Event model's matches times by 1000 (seconds to milliseconds, Roblu works with milliseconds!)
+                        t.addTab(new RTab(name, form.getMatch(), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000));
+                        io.saveTeam(eventID, t);
+                    }
+                }
+            }
+            return null;
+        }
     }
 }

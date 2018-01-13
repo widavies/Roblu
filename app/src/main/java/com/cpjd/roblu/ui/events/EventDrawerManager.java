@@ -156,7 +156,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         long identifier = drawerItem.getIdentifier();
 
         if(identifier == Constants.CREATE_EVENT) {
-            activity.startActivityForResult(new Intent(activity, CreateEventPicker.class), Constants.CREATE_EVENT_PICKER);
+            activity.startActivityForResult(new Intent(activity, EventCreateMethodPicker.class), Constants.CREATE_EVENT_PICKER);
             eventDrawer.setSelectionAtPosition(-1);
         }
         else if(identifier == Constants.SETTINGS) {

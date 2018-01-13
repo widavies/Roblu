@@ -16,7 +16,7 @@ import com.cpjd.roblu.ui.UIHandler;
  * CustomSort manages advanced sorting methods that can't be achieved with regular sorting.
  * CustomSort is the UI selector that allows a user to select the custom sorting method they want to
  * use. CustomSort needs to output IDs that can be processed by
- * @see com.cpjd.roblu.ui.forms.TeamMetricProcessor
+ * @see TeamMetricProcessor
  *
  * This physical class doesn't actually do much, since custom sort methods are contained under tabs.
  *

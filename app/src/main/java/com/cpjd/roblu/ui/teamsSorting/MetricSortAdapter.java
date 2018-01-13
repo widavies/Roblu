@@ -7,7 +7,6 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.ui.forms.TeamMetricProcessor;
 
 import java.util.ArrayList;
 

@@ -9,30 +9,72 @@ import android.widget.TextView;
 
 import com.cpjd.models.Event;
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
 
 import java.util.ArrayList;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
+ * TBAEventAdapter is a simple adapter (a sort of backend) to the TBA event list.
+ *
+ * Note: The events array here is what is ACTUALLY displaying on the UI. TBAEventSelector obtains a static
+ * list (static in the sense that it doesn't change) so that it can be searched without being reloaded (items can
+ * be removed and replaced without reloading)
+ *
+ * @version 2
  * @since 3.5.9
+ * @author Will Davies
  */
-class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
+class TBAEventAdapter extends RecyclerView.Adapter<TBAEventAdapter.ViewHolder> {
+
+    /**
+     * A context reference
+     */
     private final Context context;
+
+    /**
+     * The array that this adapter is managing, in this case, Event is a model defined by the TBA-API
+     */
+    @Setter
+    @Getter
     private ArrayList<Event> events;
 
-    private final SelectListener listener;
+    interface TBAEventSelectListener {
+        void tbaEventSelected(View v);
+    }
 
+    /**
+     * This listener will be notified when the user taps on an Event
+     */
+    private TBAEventSelectListener listener;
+
+    /**
+     * Stores a UI reference to the user's color preferences
+     */
     private final RUI rui;
 
-    EventAdapter(Context context, SelectListener listener) {
+    /**
+     * Creates an event adapter
+     * @param context context reference for loading UI preferences
+     * @param listener a TBAEventSelectListener that will be notified when an event is tapped
+     */
+    TBAEventAdapter(Context context, TBAEventSelectListener listener) {
         this.context = context;
         this.listener = listener;
 
         events = new ArrayList<>();
-
-        rui = new Loader(context).loadSettings().getRui();
+        rui = new IO(context).loadSettings().getRui();
     }
 
+    /**
+     * Creates a view holder that will hold the UI of an TBA Event model
+     * @param parent the parent view group
+     * @param viewType the view type
+     * @return a created ViewHolder
+     */
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(context).inflate(R.layout.teams_item, parent, false);
@@ -40,37 +82,30 @@ class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.onItemClick(v);
+                listener.tbaEventSelected(v);
             }
         });
         return holder;
     }
 
-    public void setEvents(ArrayList<Event> events) {
-        if(events == null) return;
-        this.events.addAll(events);
-    }
-
-    public void removeAll() {
-        this.events.clear();
-        notifyDataSetChanged();
-    }
-
+    /**
+     * Binds TBA Event model data into the UI
+     * @param holder the holder to configure UI to
+     * @param position the position of the view holder
+     */
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         holder.bindEvent(events.get(position));
     }
 
-    public Event getEvent(int position) {
-        return events.get(position);
-    }
-
     @Override
     public int getItemCount() {
-        if (events == null) events = new ArrayList<>();
         return events.size();
     }
 
+    /**
+     * Specifies how data will be mapped to the UI
+     */
     class ViewHolder extends RecyclerView.ViewHolder {
         public final TextView title;
         public final TextView subtitle;
@@ -78,9 +113,9 @@ class EventAdapter extends RecyclerView.Adapter<EventAdapter.ViewHolder> {
 
         ViewHolder(View view) {
             super(view);
-            title = (TextView) view.findViewById(R.id.title);
-            subtitle = (TextView) view.findViewById(R.id.subtitle);
-            number = (TextView) view.findViewById(R.id.number);
+            title = view.findViewById(R.id.title);
+            subtitle = view.findViewById(R.id.subtitle);
+            number = view.findViewById(R.id.number);
         }
 
         void bindEvent(Event e) {

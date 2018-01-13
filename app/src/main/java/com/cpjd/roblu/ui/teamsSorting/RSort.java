@@ -4,7 +4,7 @@ import com.cpjd.roblu.models.metrics.RMetric;
 
 /**
  * RSort IS NOT an official RMetric. It's a simple utility class that allows us (the developers) to
- * add custom sort methods that aren't just based of a RMetric.
+ * add custom sort methods that aren't just based of a RMetric from the form.
  *
  * THIS CLASS SHOULD NEVER BE SERIALIZED!
  *

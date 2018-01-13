@@ -65,7 +65,7 @@ public class RTab implements Serializable, Comparable<RTab> {
      * @param won whether this match is won
      * @param time millisecond timestamp for when this match is scheduled for
      */
-    RTab(String title, ArrayList<RMetric> metrics, boolean redAlliance, boolean won, long time) {
+    public RTab(String title, ArrayList<RMetric> metrics, boolean redAlliance, boolean won, long time) {
         this.metrics = metrics;
         this.title = title;
         this.redAlliance = redAlliance;

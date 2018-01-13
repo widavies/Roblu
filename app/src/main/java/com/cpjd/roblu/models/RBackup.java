@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models;
 
+import com.cpjd.roblu.io.IO;
+
 import java.io.Serializable;
 
 import lombok.Data;
@@ -23,6 +25,6 @@ public class RBackup implements Serializable {
         this.teams = teams;
         this.form = form;
 
-        fileVersion = Loader.PREFIX;
+        fileVersion = IO.PREFIX;
     }
 }

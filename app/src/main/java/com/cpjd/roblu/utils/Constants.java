@@ -17,6 +17,23 @@ public abstract class Constants {
 
     public static final int VERSION = 11; // used for updating the changelist
 
+    /*
+     * v4.0.0 cross activity codes
+     */
+    /**
+     * Code used to identify to TeamsView that a new event was created and the events list need to be refreshed
+     */
+    public static final int NEW_EVENT_CREATED = 123;
+    /**
+     * Code used to identify to TeamsView that a user was creating a new event and discarded it (also called if user
+     * was editing an existing event and discarded it)
+     */
+    public static final int EVENT_DISCARDED = 1238;
+    /**
+     * Called when a user discards or exits from activity without confirming some action
+     */
+    public static final int CANCELLED = 1298754;
+
     // Drawer identifier codes
     public static final int CREATE_EVENT = 1;
     public static final int SCOUT = 2;
@@ -46,7 +63,6 @@ public abstract class Constants {
     public static final int EVENT_IMPORT_CANCELLED = 17; // import was cancelled
     public static final int REQUEST_IMPORT_FORM = 18; // imported event w/edit form
     public static final int REQUEST_IMPORTED_PREDEFINED = 19; // import event w/predefined form
-    public static final int PICKER_EVENT_CREATED = 20; // event was created
     public static final int CAMERA_REQUEST = 21; // request to take a picture
     public static final int GALLERY_EXIT = 22;
     public static final int CUSTOM_SORT_CONFIRMED = 23;

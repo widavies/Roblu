@@ -49,7 +49,7 @@ import java.io.ObjectOutputStream;
 public class IO {
 
     private Context context;
-    private static final String PREFIX = "v14";
+    public static final String PREFIX = "v14";
 
     public IO(Context context) {
         this.context = context;
@@ -226,7 +226,7 @@ public class IO {
             temp = teams[i];
             if(!keepScoutingData) temp.setTabs(null);
             temp.setPage(1);
-            saveTeam(temp, newID);
+            saveTeam(newID, temp);
         }
     }
     // End event methods
@@ -275,10 +275,10 @@ public class IO {
      * Saves the specified team
      *
      * This method will create the /teams/ sub-event-dir if neccessary
-     * @param team the team to save
      * @param eventID the event ID to save the team under
+     * @param team the team to save
      */
-    public void saveTeam(RTeam team, int eventID) {
+    public void saveTeam(int eventID, RTeam team) {
         File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+ File.separator+eventID+ File.separator+"teams"+File.separator+team.getID()+".ser");
         if(!file.getParentFile().exists()) {
             if(file.getParentFile().mkdir()) Log.d("RBS", "Team directory successfully created for event with ID: "+team.getID());

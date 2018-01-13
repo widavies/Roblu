@@ -38,11 +38,11 @@
         <activity
             android:name=".ui.events.EventEditor"
             android:label="@string/title_activity_create_event_view"
-            android:parentActivityName=".ui.events.CreateEventPicker"
+            android:parentActivityName=".ui.events.EventCreateMethodPicker"
             android:windowSoftInputMode="adjustPan">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.cpjd.roblu.ui.events.CreateEventPicker"/>
+                android:value="com.cpjd.roblu.ui.events.EventCreateMethodPicker"/>
         </activity>
         <activity
             android:name=".ui.teamsSorting.CustomSort"
@@ -105,11 +105,11 @@
             android:label="@string/title_activity_predefined">
         </activity>
         <activity
-            android:name=".ui.events.CreateEventPicker"
+            android:name=".ui.events.EventCreateMethodPicker"
             android:label="@string/title_activity_create_event_picker">
         </activity>
         <activity
-            android:name=".ui.tba.APIEventSelect"
+            android:name=".ui.tba.TBAEventSelector"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_apievent_select">
         </activity>
