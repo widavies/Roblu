@@ -49,7 +49,7 @@
             android:label="">
         </activity>
         <activity
-            android:name=".ui.forms.EditForm"
+            android:name=".ui.forms.FormViewer"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_create_form"
             android:parentActivityName=".ui.events.EventEditor">
@@ -93,7 +93,7 @@
                 android:value="com.cpjd.roblu.ui.settings.AdvSettings"/>
         </activity>
         <activity
-            android:name=".ui.forms.Predefined"
+            android:name=".ui.forms.PredefinedFormSelector"
             android:label="@string/title_activity_predefined"
             android:parentActivityName=".ui.events.EventEditor">
             <meta-data
@@ -114,7 +114,7 @@
             android:label="@string/title_activity_apievent_select">
         </activity>
         <activity
-            android:name=".ui.forms.AddElement"
+            android:name=".ui.forms.MetricEditor"
             android:configChanges="orientation|screenSize"
             android:label="@string/title_activity_add_element">
         </activity>
@@ -122,7 +122,7 @@
             android:name=".ui.tutorials.Tutorial"
             android:label="@string/title_activity_tutorial">
         </activity>
-        <activity android:name=".sync.cloud.ui.Mailbox"
+        <activity android:name=".ui.mailbox.Mailbox"
                   android:label="Mailbox"/>
         <activity android:name =".forms.images.Drawing"
                   android:label="Drawing"/>

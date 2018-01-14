@@ -18,6 +18,7 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference;
 import com.jrummyapps.android.colorpicker.ColorPickerView;
 import com.jrummyapps.android.colorpicker.ColorPreference;
 
@@ -88,10 +89,10 @@ public class UICustomizer extends AppCompatActivity {
             findPreference("text").setOnPreferenceChangeListener(this);
             findPreference("animation").setOnPreferenceClickListener(this);
             findPreference("presets").setOnPreferenceClickListener(this);
-            MyEditPreference forms = (MyEditPreference) findPreference("forms_radius");
+            RUIEditPreference forms = (RUIEditPreference) findPreference("forms_radius");
             forms.setDefaultValue(rui.getFormRadius());
             forms.setOnPreferenceChangeListener(this);
-            MyEditPreference teams = (MyEditPreference) findPreference("teams_radius");
+            RUIEditPreference teams = (RUIEditPreference) findPreference("teams_radius");
             teams.setDefaultValue(rui.getTeamsRadius());
             teams.setOnPreferenceChangeListener(this);
         }

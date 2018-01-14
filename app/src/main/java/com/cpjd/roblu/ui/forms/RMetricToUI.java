@@ -11,7 +11,7 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
@@ -43,48 +43,67 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.forms.images.FullScreenImageGalleryActivity;
-import com.cpjd.roblu.forms.images.FullScreenImageGalleryAdapter;
-import com.cpjd.roblu.forms.images.ImageGalleryActivity;
-import com.cpjd.roblu.forms.images.ImageGalleryAdapter;
-import com.cpjd.roblu.models.REvent;
-import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCheckbox;
+import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RGallery;
+import com.cpjd.roblu.models.metrics.RSlider;
+import com.cpjd.roblu.models.metrics.RStopwatch;
+import com.cpjd.roblu.models.metrics.RTextfield;
+import com.cpjd.roblu.ui.team.forms.images.FullScreenImageGalleryActivity;
+import com.cpjd.roblu.ui.team.forms.images.FullScreenImageGalleryAdapter;
+import com.cpjd.roblu.ui.team.forms.images.ImageGalleryActivity;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import lombok.Setter;
 
 /**
- * This is the most janky class in the entire project, fear not (it works).
+ * RMetricToUI loads a RMetric instance into a UI element (a CardView).
+ * Make sure to attach an ElementsListener to listener for updated UI elements
  *
- * Elements produces, programmatically, form cards that can be edited and interacted with. They match the color scheme defined by RUI too!
- *
+ * @version 2
  * @since 3.2.0
  * @author Will Davies
  */
-public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullScreenImageGalleryAdapter.FullScreenImageLoader {
-
+public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGalleryAdapter.ImageThumbnailLoader, FullScreenImageGalleryAdapter.FullScreenImageLoader {
+    /**
+     * Activity reference
+     */
     private final Activity activity;
-    private final ElementsListener listener;
-    private final boolean modifyMode;
-    private final int width;
-    @Setter
-    private boolean readOnly;
-
-    // Values that might need to be modified
-    public static int min, max, increment;
-
+    /**
+     * True if we're allowed to edit the forms
+     */
+    private final boolean editable;
+    /**
+     * UI config
+     */
     private final RUI rui;
+    private final int width;
 
-    public Elements(Activity activity, RUI rui, ElementsListener listener, boolean modifyMode) {
-        this.listener = listener;
+    /**
+     * Make sure to attach a listener to this!
+     */
+    @Setter
+    private MetricListener listener;
+
+    public interface MetricListener {
+        /**
+         * Called when a change is made to ANY element, since this class stores all the references, just save everything and you're good to go.
+         */
+        void changeMade();
+    }
+
+    public RMetricToUI(Activity activity, RUI rui, boolean editable) {
         this.activity = activity;
-        this.modifyMode = modifyMode;
+        this.editable = editable;
         this.rui = rui;
 
         Display display = activity.getWindowManager().getDefaultDisplay();
@@ -93,17 +112,18 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         width = size.x / 2;
     }
 
-    public CardView getBoolean(final int ID, final String name, final int value, final boolean usingNA) {
-        listener.nameInited(name);
-
+    /**
+     * Gets the Boolean UI card from an RBoolean reference
+     * @param bool RBoolean reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getBoolean(final RBoolean bool) {
         RadioGroup group = new RadioGroup(activity);
         AppCompatRadioButton yes = new AppCompatRadioButton(activity);
         AppCompatRadioButton no = new AppCompatRadioButton(activity);
-        AppCompatRadioButton na = new AppCompatRadioButton(activity);
 
-        yes.setEnabled(!readOnly);
-        no.setEnabled(!readOnly);
-        na.setEnabled(!readOnly);
+        yes.setEnabled(!editable);
+        no.setEnabled(!editable);
 
         ColorStateList colorStateList = new ColorStateList(
                 new int[][] {
@@ -115,48 +135,35 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                         rui.getAccent()
                 }
         );
-        if(readOnly) colorStateList = new ColorStateList(
-                new int[][] {
-                        new int[] { -android.R.attr.state_checked }, // unchecked
-                        new int[] {  android.R.attr.state_checked }  // checked
-                },
-                new int[] {
-                        rui.darker(rui.getText(), 0.75f),
-                        rui.getAccent()
-                }
-        );
-        yes.setSupportButtonTintList(colorStateList);
-        no.setSupportButtonTintList(colorStateList);
-        na.setSupportButtonTintList(colorStateList);
+        //yes.setSupportButtonTintList(colorStateList);
+        //no.setSupportButtonTintList(colorStateList);
         group.setId(Utils.generateViewId());
         yes.setId(Utils.generateViewId());
         no.setId(Utils.generateViewId());
-        na.setId(Utils.generateViewId());
         yes.setText(R.string.yes);
         no.setText(R.string.no);
-        na.setText("N.O.");
 
-        if(value == 1) yes.setChecked(true);
-        else if(value == 0) no.setChecked(true);
-        else na.setChecked(true);
+        // don't check either if the boolean isn't modified
+        if(bool.isModified()) {
+            yes.setChecked(bool.isValue());
+            no.setChecked(!bool.isValue());
+        }
+
 
         group.addView(yes);
         group.addView(no);
-        if(usingNA) group.addView(na);
 
         group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
-                int value = -1;
-                if(((RadioButton)radioGroup.getChildAt(0)).isChecked()) value = 1;
-                else if(((RadioButton)radioGroup.getChildAt(1)).isChecked()) value = 0;
-                listener.booleanUpdated(ID, value);
+                bool.setValue(((RadioButton)radioGroup.getChildAt(0)).isChecked());
+                listener.changeMade();
             }
         });
 
         TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
-        title.setText(name);
+        title.setText(bool.getTitle());
         title.setMaxWidth(width);
         title.setTextSize(20);
         title.setId(Utils.generateViewId());
@@ -177,38 +184,39 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getCounter(final int ID, final String name, final int initMin, final int initMax, final int initIncrement, final int value, final boolean notObserved) {
-        listener.nameInited(name);
-
-        min = initMin;
-        max = initMax;
-        increment = initIncrement;
-
+    /**
+     * Gets the Counter UI card from an RCounter reference
+     * @param counter RCounter reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getCounter(final RCounter counter) {
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
         title.setTextSize(20);
         title.setId(Utils.generateViewId());
-        title.setText(name);
+        title.setText(counter.getTitle());
         title.setMaxWidth(width);
         title.setPadding(Utils.DPToPX(activity, 8), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
         title.setLayoutParams(params);
 
         Drawable add = ContextCompat.getDrawable(activity, R.drawable.add_small);
-        add.mutate();
-        add.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
-        if(readOnly) add.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
+        if(add != null) {
+            add.mutate();
+            add.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        }
         Drawable minus = ContextCompat.getDrawable(activity,R.drawable.minus_small);
-        minus.mutate();
-        minus.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
-        if(readOnly) minus.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
+        if(minus != null) {
+            minus.mutate();
+            minus.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        }
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         ImageView addButton = new ImageView(activity);
         addButton.setId(Utils.generateViewId());
-        addButton.setEnabled(!readOnly);
+        addButton.setEnabled(!editable);
         addButton.setBackground(add);
         addButton.setPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6));
         addButton.setLayoutParams(params);
@@ -219,32 +227,18 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         final TextView number = new TextView(activity);
         number.setTextSize(25);
         number.setTextColor(rui.getText());
-        if(readOnly) number.setTextColor(rui.darker(rui.getText(), 0.75f));
         number.setId(Utils.generateViewId());
-        number.setText(String.valueOf(value));
-        if(notObserved) number.setText("N.O.");
+        number.setText(String.valueOf(counter.getTextValue()));
+        if(!counter.isModified()) number.setText("N.O.");
         number.setLayoutParams(params);
         number.setPadding(Utils.DPToPX(activity, 20), number.getPaddingTop(), Utils.DPToPX(activity, 20), number.getPaddingBottom());
 
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(number.getText().toString().equals("N.O.")) {
-                    number.setText(String.valueOf(value));
-                    listener.counterUpdated(ID, value);
-                    return;
-                }
-
-                int value = Integer.parseInt(number.getText().toString());
-                if(modifyMode) {
-                    value += increment;
-                    if(value > max) value = max;
-                } else {
-                    value += initIncrement;
-                    if(value > initMax) value = initMax;
-                }
-                number.setText(String.valueOf(value));
-                listener.counterUpdated(ID, value);
+                counter.add();
+                number.setText(String.valueOf(counter.getValue()));
+                listener.changeMade();
             }
         });
 
@@ -254,28 +248,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         ImageView minusButton = new ImageView(activity);
         minusButton.setBackground(minus);
         minusButton.setId(Utils.generateViewId());
-        minusButton.setEnabled(!readOnly);
+        minusButton.setEnabled(!editable);
         minusButton.setLayoutParams(params);
         minusButton.setPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6));
         minusButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View view) {
-                if(number.getText().toString().equals("N.O.")) {
-                    number.setText(String.valueOf(value));
-                    listener.counterUpdated(ID, value);
-                    return;
-                }
-                int value = Integer.parseInt(number.getText().toString());
-                if(modifyMode) {
-                    value -= increment;
-                    if(value < min) value = min;
-                } else {
-                    value -= initIncrement;
-                    if(value < initMin) value = initMin;
-                }
-                number.setText(String.valueOf(value));
-                listener.counterUpdated(ID, value);
+                counter.minus();
+                number.setText(String.valueOf(counter.getValue()));
+                listener.changeMade();
             }
         });
 
@@ -286,14 +268,15 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         layout.addView(addButton);
         return getCard(layout);
     }
-
-    public CardView getSlider(final int ID, final String name, final int initMax, final int value, final boolean notObserved) {
-        listener.nameInited(name);
-        max = initMax;
-
+    /**
+     * Gets the Slider UI card from an RSlider reference
+     * @param slider RSlider reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getSlider(final RSlider slider) {
         TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
-        title.setText(name);
+        title.setText(slider.getTitle());
         title.setTextSize(15);
         title.setMaxWidth(width);
         title.setId(Utils.generateViewId());
@@ -301,9 +284,12 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         SeekBar sb = new SeekBar(activity);
         sb.getThumb().setColorFilter(rui.getAccent(), PorterDuff.Mode.SRC_IN);
         sb.getProgressDrawable().setColorFilter(rui.getAccent(), PorterDuff.Mode.SRC_IN);
-        sb.setMax(max);
-        sb.setEnabled(!readOnly);
-        sb.setProgress(value);
+        sb.setMax(slider.getMax());
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            sb.setMin(slider.getMin());
+        }
+        sb.setEnabled(!editable);
+        sb.setProgress(slider.getValue());
         sb.setId(Utils.generateViewId());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_HORIZONTAL);
@@ -312,28 +298,26 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         TextView minv = new TextView(activity);
         minv.setTextColor(rui.getText());
-        if(readOnly) minv.setTextColor(rui.darker(rui.getText(), 0.75f));
         minv.setId(Utils.generateViewId());
         TextView max = new TextView(activity);
         max.setTextColor(rui.getText());
-        if(readOnly) max.setTextColor(rui.darker(rui.getText(), 0.75f));
         max.setId(Utils.generateViewId());
         final TextView current = new TextView(activity);
         current.setTextColor(rui.getText());
-        if(readOnly) current.setTextColor(rui.darker(rui.getText(), 0.75f));
         current.setId(Utils.generateViewId());
-        current.setText(String.valueOf(value));
-        if(notObserved) current.setText("N.O.");
+        current.setText(String.valueOf(slider.getValue()));
+        if(!slider.isModified()) current.setText("N.O.");
         current.setTextColor(Color.WHITE);
-        minv.setText(String.valueOf(0));
-        max.setText(String.valueOf(initMax));
+        minv.setText(String.valueOf(slider.getMin()));
+        max.setText(String.valueOf(slider.getMax()));
 
         sb.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean b) {
                 current.setText(String.valueOf(progress));
+                slider.setValue(progress);
                 seekBar.setProgress(progress);
-                listener.sliderUpdated(ID, progress);
+                listener.changeMade();
             }
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {}
@@ -364,15 +348,19 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getChooser(final int ID, final String name, final ArrayList<String> values, final int selected) {
-        listener.nameInited(name);
+    /**
+     * Gets the Chooser UI card from an RChooser reference
+     * @param chooser RChooser reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getChooser(final RChooser chooser) {
         Spinner spinner = new Spinner(activity);
         spinner.setId(Utils.generateViewId());
-        spinner.setEnabled(!readOnly);
+        spinner.setEnabled(!editable);
         spinner.setPadding(400, spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
-        if(values != null) {
+        if(chooser.getValues() != null) {
             ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>(activity, R.layout.spinner_item, values)
+                    new ArrayAdapter<String>(activity, R.layout.spinner_item, chooser.getValues())
                     {
                         @NonNull
                         public View getView(int position, View convertView, @NonNull ViewGroup parent) {
@@ -380,7 +368,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
                             ((TextView) v).setTextSize(16);
                             ((TextView) v).setTextColor(rui.getText());
-                            if(readOnly) ((TextView) v).setTextColor(rui.darker(rui.getText(), 0.75f));
+
                             return v;
                         }
 
@@ -390,23 +378,24 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                             v.setBackgroundColor(rui.getBackground());
 
                             ((TextView) v).setTextColor(rui.getText());
-                            if(readOnly) ((TextView) v).setTextColor(rui.darker(rui.getText(), 0.75f));
                             ((TextView) v).setGravity(Gravity.CENTER);
                             return v;
                         }
                     };
             spinner.setAdapter(adapter);
-            spinner.setSelection(selected);
+            spinner.setSelection(chooser.getSelectedIndex());
         }
+
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             boolean first;
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
                 if(!first) {
                     first = true;
-                    return;
+                } else {
+                    chooser.setSelectedIndex(i);
+                    listener.changeMade();
                 }
-                if(first) listener.chooserUpdated(ID, i);
             }
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {}
@@ -414,7 +403,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
-        title.setText(name);
+        title.setText(chooser.getTitle());
         title.setTextSize(20);
         title.setMaxWidth(width);
         title.setId(Utils.generateViewId());
@@ -434,9 +423,12 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
         return getCard(layout);
     }
-
-    public CardView getCheckbox(final int ID, final String name, final ArrayList<String> values, final ArrayList<Boolean> checked) {
-        listener.nameInited(name);
+    /**
+     * Gets the Counter UI card from an RCheckbox reference
+     * @param checkbox RCheckbox reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getCheckbox(final RCheckbox checkbox) {
         TextView title = new TextView(activity);
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -448,25 +440,28 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         title.setPadding(18, title.getPaddingTop(), 100, title.getPaddingBottom());
         title.setTextSize(20);
         title.setTextColor(rui.getText());
-        title.setText(name);
+        title.setText(checkbox.getTitle());
         title.setLayoutParams(params);
 
         RelativeLayout layout = new RelativeLayout(activity);
         layout.addView(title);
 
-        if(values != null && checked != null) {
-            final AppCompatCheckBox[] boxes = new AppCompatCheckBox[values.size()];
-            for (int i = 0; i < boxes.length; i++) {
+        if(checkbox.getValues() != null) {
+            final AppCompatCheckBox[] boxes = new AppCompatCheckBox[checkbox.getValues().size()];
+            int i = 0;
+            for(Object o : checkbox.getValues().keySet()) {
+                Map.Entry pair = (Map.Entry) o;
+
                 params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                 params.addRule(RelativeLayout.RIGHT_OF, title.getId());
                 if (i > 0) params.addRule(RelativeLayout.BELOW, boxes[i - 1].getId());
                 AppCompatCheckBox box = new AppCompatCheckBox(activity);
-                box.setText(values.get(i));
+                box.setText(pair.getKey().toString());
+                box.setTag(pair.getKey());
                 box.setId(Utils.generateViewId());
                 box.setTextColor(rui.getText());
-                if(readOnly) box.setTextColor(rui.darker(rui.getText(), 0.75f));
-                box.setChecked(checked.get(i));
-                box.setEnabled(!readOnly);
+                box.setChecked((Boolean)pair.getValue());
+                box.setEnabled(!editable);
                 box.setLayoutParams(params);
                 ColorStateList colorStateList = new ColorStateList(
                         new int[][] {
@@ -478,40 +473,34 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                                 rui.getAccent()
                         }
                 );
-                if(readOnly) colorStateList = new ColorStateList(
-                        new int[][] {
-                                new int[] { -android.R.attr.state_checked }, // unchecked
-                                new int[] {  android.R.attr.state_checked }  // checked
-                        },
-                        new int[] {
-                                rui.darker(rui.getText(), 0.75f),
-                                rui.getAccent()
-                        }
-                );
-                box.setSupportButtonTintList(colorStateList);
+                //box.setSupportButtonTintList(colorStateList);
                 box.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                        ArrayList<Boolean> newValues = new ArrayList<>();
-                        for(AppCompatCheckBox box : boxes) newValues.add(box.isChecked());
-                        listener.checkboxUpdated(ID, newValues);
+                        checkbox.getValues().put(compoundButton.getTag().toString(), b);
+                        listener.changeMade();
                     }
                 });
                 boxes[i] = box;
                 layout.addView(boxes[i]);
+                i++;
             }
         }
 
         return getCard(layout);
     }
 
-    public CardView getStopwatch(final int ID, final String name, final double time, final boolean notObserved) {
-        listener.nameInited(name);
+    /**
+     * Gets the Slider UI card from an RSliderreference
+     * @param stopwatch RSlider reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getStopwatch(final RStopwatch stopwatch) {
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
-        title.setText(name);
+        title.setText(stopwatch.getTitle());
         title.setTextSize(20);
         title.setMaxWidth((int)(width * 0.8));
         title.setId(Utils.generateViewId());
@@ -522,20 +511,24 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         final Drawable pause = ContextCompat.getDrawable(activity,R.drawable.pause);
         final Drawable reset = ContextCompat.getDrawable(activity,R.drawable.replay);
 
-        play.mutate();
-        play.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
-        if(readOnly) play.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
+        if(play != null) {
+            play.mutate();
+            play.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        }
 
-        pause.mutate();
-        pause.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        if(pause != null) {
+            pause.mutate();
+            pause.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        }
 
-        reset.mutate();
-        reset.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
-        if(readOnly) reset.setColorFilter(rui.darker(rui.getButtons(), 0.75f), PorterDuff.Mode.SRC_IN);
+        if(reset != null) {
+            reset.mutate();
+            reset.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        }
 
         final ImageView playButton = new ImageView(activity);
         playButton.setBackground(play);
-        playButton.setEnabled(!readOnly);
+        playButton.setEnabled(!editable);
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         playButton.setId(Utils.generateViewId());
@@ -547,16 +540,14 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         final ImageView button = new ImageView(activity);
         button.setBackground(reset);
         button.setId(Utils.generateViewId());
-        button.setEnabled(!readOnly);
+        button.setEnabled(!editable);
         button.setLayoutParams(params);
         final TextView timer = new TextView(activity);
         timer.setTextSize(25);
         timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Utils.DPToPX(activity, 15), timer.getPaddingBottom());
-        String timerText = time+"s";
-        timer.setText(timerText);
-        if(notObserved) timer.setText("N.O.");
+        timer.setText(stopwatch.getTime()+"s");
+        if(!stopwatch.isModified()) timer.setText("N.O.");
         timer.setTextColor(rui.getText());
-        if(readOnly) timer.setTextColor(rui.darker(rui.getText(), 0.75f));
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, button.getId());
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -568,7 +559,6 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                     @Override
                     public void run() {
                         timer.setText(R.string.no_time);
-                        listener.stopwatchUpdated(ID, 0.0);
                     }
                 });
             }
@@ -592,8 +582,7 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
                                     if(timer.getText().equals("N.O.")) t = 0;
                                     else t = Double.parseDouble(timer.getText().toString().replace("s", ""));
                                     t+=0.1;
-                                    String timerText = String.valueOf(Utils.round(t, 1))+"s";
-                                    timer.setText(timerText);
+                                    timer.setText(String.valueOf(Utils.round(t, 1))+"s");
 
                                 }
                             });
@@ -614,7 +603,8 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
                     playButton.setBackground(play);
                     mode = 0;
-                    listener.stopwatchUpdated(ID, t);
+                    stopwatch.setTime(t);
+                    listener.changeMade();
                 }
             }
         });
@@ -626,13 +616,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         layout.addView(playButton);
         return getCard(layout);
     }
-
-    public CardView getTextfield(final int ID, final String name, final String value) {
-        listener.nameInited(name);
+    /**
+     * Gets the Textfield UI card from an RTextfield reference
+     * @param textfield RTextfield reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getTextfield(final RTextfield textfield) {
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
         textView.setTextColor(rui.getText());
-        textView.setText(name);
+        textView.setText(textfield.getTitle());
         textView.setId(Utils.generateViewId());
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -642,15 +635,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
                 AppCompatEditText et2 = (AppCompatEditText)v;
-                if(hasFocus) et2.setSupportBackgroundTintList(ColorStateList.valueOf(rui.getAccent()));
-                else et2.setSupportBackgroundTintList(ColorStateList.valueOf(rui.getText()));
+               // if(hasFocus) et2.setSupportBackgroundTintList(ColorStateList.valueOf(rui.getAccent()));
+                //else et2.setSupportBackgroundTintList(ColorStateList.valueOf(rui.getText()));
             }
         });
         Utils.setCursorColor(et, rui.getAccent());
-        et.setText(value);
-        et.setEnabled(!readOnly);
+        et.setText(textfield.getText());
+        et.setEnabled(!editable);
         et.setTextColor(rui.getText());
-        if(readOnly) et.setTextColor(rui.darker(rui.getText(), 0.75f));
+        if(textfield.isNumericalOnly()) et.setInputType(InputType.TYPE_CLASS_NUMBER);
+        if(textfield.isOneLine()) et.setMaxLines(1);
         et.setHighlightColor(rui.getAccent());
         Drawable d = et.getBackground();
         d.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
@@ -661,7 +655,8 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
 
             @Override
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                listener.textfieldUpdated(ID, charSequence.toString());
+                textfield.setText(charSequence.toString());
+                listener.changeMade();
             }
 
             @Override
@@ -676,12 +671,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         return getCard(layout);
     }
 
-    public CardView getGallery(final int ID, final String name, final boolean demo, final REvent event, final RTeam team, final int tabID) {
-        listener.nameInited(name);
+    /**
+     * Gets the Gallery UI card from an RGallery reference
+     * @param gallery RGallery reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getGallery(final boolean demo, final RCheckout handoff, final RGallery gallery) {
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
         textView.setTextColor(rui.getText());
-        textView.setText(name);
+        textView.setText(gallery.getTitle());
         textView.setId(Utils.generateViewId());
         textView.setMaxWidth(width);
         textView.setWidth(width);
@@ -696,15 +695,15 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
             @Override
             public void onClick(View v) {
                 if(demo) return;
-                ImageGalleryActivity.setImageThumbnailLoader(Elements.this);
-                FullScreenImageGalleryActivity.setFullScreenImageLoader(Elements.this);
+                ImageGalleryActivity.setImageThumbnailLoader(RMetricToUI.this);
+                FullScreenImageGalleryActivity.setFullScreenImageLoader(RMetricToUI.this);
                 Intent intent = new Intent(activity, ImageGalleryActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putString(ImageGalleryActivity.KEY_TITLE, name);
-                bundle.putInt("ID", ID);
-                bundle.putSerializable("event", event);
-                bundle.putInt("tabID", tabID);
-                bundle.putBoolean("readOnly", readOnly);
+                bundle.putString(ImageGalleryActivity.KEY_TITLE, gallery.getTitle());
+                bundle.putInt("ID", gallery.getID());
+                bundle.putInt("checkout", handoff.getID());
+                //bundle.putInt("tabID", tabID);
+                bundle.putBoolean("readOnly", editable);
                 intent.putExtras(bundle);
                 activity.startActivityForResult(intent, Constants.GENERAL);
             }
@@ -719,139 +718,16 @@ public class Elements implements ImageGalleryAdapter.ImageThumbnailLoader, FullS
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         textView.setPadding(Utils.DPToPX(activity, 8), textView.getPaddingTop(),textView.getPaddingRight(), textView.getPaddingBottom());
         textView.setLayoutParams(params);
-        layout.setTag(ID);
+        layout.setTag(gallery.getID());
 
         layout.addView(textView);
         layout.addView(open);
         return getCard(layout);
     }
 
-    public CardView getEditHistory(ArrayList<String> edits, ArrayList<Long> editTimes) {
-        RelativeLayout layout = new RelativeLayout(activity);
-        TextView textView = new TextView(activity);
-        textView.setText(R.string.edit_history);
-        textView.setTextColor(rui.getText());
-        textView.setId(Utils.generateViewId());
-
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.BELOW, textView.getId());
-        TextView et = new TextView(activity);
-        et.setId(Utils.generateViewId());
-        et.setTextColor(rui.getText());
-        String text = "";
-        for(int i = 0; edits != null && i < edits.size(); i++) text += edits.get(i) + " on "+ Utils.convertTime(editTimes.get(i))+"\n";
-        et.setText(text);
-        et.setSingleLine(false);
-        et.setEnabled(false);
-        et.setFocusableInTouchMode(false);
-        et.setLayoutParams(params);
-
-        layout.addView(textView); layout.addView(et);
-        return getCard(layout);
-    }
-
-    public CardView getInfoField(final String name, String data, final String website, final int number) {
-        RelativeLayout layout = new RelativeLayout(activity);
-        TextView textView = new TextView(activity);
-        textView.setText(name);
-        textView.setTextColor(rui.getText());
-        textView.setId(Utils.generateViewId());
-
-        if(number != -1) {
-            final Drawable reset = ContextCompat.getDrawable(activity, R.drawable.export);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            final ImageView page = new ImageView(activity);
-            page.setBackground(reset);
-            page.setLayoutParams(params);
-            page.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse("https://www.thebluealliance.com/team/" + number));
-                    activity.startActivity(i);
-                }
-            });
-            layout.addView(page);
-        }
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.BELOW, textView.getId());
-        TextView et = new TextView(activity);
-        et.setId(Utils.generateViewId());
-        et.setTextColor(rui.getText());
-        et.setText(data);
-        et.setSingleLine(false);
-        et.setEnabled(false);
-        et.setFocusableInTouchMode(false);
-        et.setLayoutParams(params);
-
-        if(website != null && !website.equals("")) {
-            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.BELOW, et.getId());
-            Button b = new Button(activity);
-            b.setTextColor(rui.getText());
-            b.setText(website);
-            b.setLayoutParams(params);
-            b.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse(website));
-                    activity.startActivity(i);
-                }
-            });
-            layout.addView(b);
-        }
-
-        layout.addView(textView); layout.addView(et);
-        return getCard(layout);
-    }
-    public CardView getSTextfield(final int ID, final String name, final String value, final boolean numberOnly) {
-        listener.nameInited(name);
-        RelativeLayout layout = new RelativeLayout(activity);
-        TextView textView = new TextView(activity);
-        textView.setText(name);
-        textView.setTextColor(rui.getText());
-        textView.setId(Utils.generateViewId());
-
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.BELOW, textView.getId());
-        AppCompatEditText et = new AppCompatEditText(activity);
-        Utils.setCursorColor(et, rui.getAccent());
-        if(numberOnly) et.setInputType(InputType.TYPE_CLASS_NUMBER);
-        et.setMaxLines(1);
-        et.setEnabled(!readOnly);
-        et.setTextColor(rui.getText());
-        if(readOnly) et.setTextColor(rui.darker(rui.getText(), 0.75f));
-        et.setHighlightColor(rui.getAccent());
-        Drawable d = et.getBackground();
-        d.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
-        et.setBackground(d);
-
-        et.setText(value);
-        et.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                listener.textfieldUpdated(ID, charSequence.toString());
-            }
-
-            @Override
-            public void afterTextChanged(Editable editable) {}
-        });
-        et.setFocusableInTouchMode(true);
-        et.setLayoutParams(params);
-
-        layout.addView(textView); layout.addView(et);
-        return getCard(layout);
-    }
-
     private CardView getCard(View layout) {
         CardView card = new CardView(activity);
-        if(modifyMode) {
+        if(editable) {
             Toolbar.LayoutParams params = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT, Gravity.CENTER);
             params.rightMargin = 65;
             card.setLayoutParams(params);

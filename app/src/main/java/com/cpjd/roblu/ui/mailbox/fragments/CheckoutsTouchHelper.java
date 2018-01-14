@@ -1,4 +1,4 @@
-package com.cpjd.roblu.sync.cloud.ui.fragments;
+package com.cpjd.roblu.ui.mailbox.fragments;
 
 import android.content.Intent;
 import android.graphics.Canvas;
@@ -10,7 +10,7 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.ui.Mailbox;
+import com.cpjd.roblu.ui.mailbox.Mailbox;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;

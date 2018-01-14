@@ -46,6 +46,7 @@ import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.sync.cloud.api.CloudRequest;
+import com.cpjd.roblu.ui.events.EventDrawerManager;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -383,7 +384,7 @@ public class Utils {
      * @param listener
      * @return
      */
-	public static boolean launchEventPicker(Context context, final EventSelectListener listener) {
+	public static boolean launchEventPicker(Context context, final EventDrawerManager.EventSelectListener listener) {
         final Dialog d = new Dialog(context);
         d.setTitle("Pick event:");
         d.setContentView(R.layout.event_import_dialog);

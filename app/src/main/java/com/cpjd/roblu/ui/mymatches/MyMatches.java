@@ -18,9 +18,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.ui.CheckoutListener;
-import com.cpjd.roblu.sync.cloud.ui.fragments.CheckoutsTouchHelper;
-import com.cpjd.roblu.sync.cloud.ui.fragments.CheckoutAdapter;
+import com.cpjd.roblu.ui.mailbox.CheckoutListener;
+import com.cpjd.roblu.ui.mailbox.fragments.CheckoutsTouchHelper;
+import com.cpjd.roblu.ui.mailbox.fragments.CheckoutAdapter;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;

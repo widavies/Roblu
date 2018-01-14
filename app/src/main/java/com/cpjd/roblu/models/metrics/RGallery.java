@@ -29,7 +29,7 @@ public class RGallery extends RMetric {
      * @param ID the unique identifier for this object
      * @param title object title
      */
-    private RGallery(int ID, String title) {
+    public RGallery(int ID, String title) {
         super(ID, title);
     }
 

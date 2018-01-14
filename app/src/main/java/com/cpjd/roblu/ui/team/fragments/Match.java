@@ -10,8 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.forms.Elements;
-import com.cpjd.roblu.ui.forms.ElementsListener;
 import com.cpjd.roblu.forms.elements.EBoolean;
 import com.cpjd.roblu.forms.elements.ECheckbox;
 import com.cpjd.roblu.forms.elements.EChooser;

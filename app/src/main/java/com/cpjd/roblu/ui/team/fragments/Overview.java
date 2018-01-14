@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 
 import com.cpjd.models.Team;
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.forms.Elements;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.teams.statistics.DATThread;

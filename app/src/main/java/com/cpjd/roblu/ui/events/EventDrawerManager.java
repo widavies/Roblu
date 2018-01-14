@@ -17,8 +17,8 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.sync.cloud.ui.Mailbox;
-import com.cpjd.roblu.ui.forms.EditForm;
+import com.cpjd.roblu.ui.mailbox.Mailbox;
+import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.settings.AdvSettings;
 import com.cpjd.roblu.ui.tutorials.Tutorial;
 import com.cpjd.roblu.utils.Constants;
@@ -73,7 +73,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
     private RUI rui;
 
     public interface EventSelectListener {
-        void eventSelected();
+        void eventSelected(REvent event);
     }
 
     /**
@@ -182,8 +182,8 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             }
         }
         else if(identifier == Constants.EDIT_MASTER_FORM) {
-            Intent start = new Intent(activity, EditForm.class);
-            start.putExtra("master", true);
+            Intent start = new Intent(activity, FormViewer.class);
+            start.putExtra("master", new IO(activity).loadSettings().getMaster());
             activity.startActivityForResult(start, Constants.MASTER_FORM);
             eventDrawer.setSelectionAtPosition(-1);
         }
@@ -224,7 +224,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 new IO(activity).saveSettings(settings);
 
                 // Tell the main activity to start loading the teams
-                listener.eventSelected(); // we'll provide a REvent reference for convenience, but TeamsView still has access to it with a getter
+                listener.eventSelected(event); // we'll provide a REvent reference for convenience, but TeamsView still has access to it with a getter
                 return;
             }
         }

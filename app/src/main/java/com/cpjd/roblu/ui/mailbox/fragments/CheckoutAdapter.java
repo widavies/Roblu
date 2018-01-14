@@ -1,4 +1,4 @@
-package com.cpjd.roblu.sync.cloud.ui.fragments;
+package com.cpjd.roblu.ui.mailbox.fragments;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.ui.CheckoutListener;
+import com.cpjd.roblu.ui.mailbox.CheckoutListener;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Utils;

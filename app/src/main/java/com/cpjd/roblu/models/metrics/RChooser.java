@@ -29,7 +29,7 @@ public class RChooser extends RMetric {
      * @param values String[] containing possible item selections
      * @param selectedIndex the index of the currently selected value within values[]
      */
-    private RChooser(int ID, String title, String[] values, int selectedIndex) {
+    public RChooser(int ID, String title, String[] values, int selectedIndex) {
         super(ID, title);
         this.values = values;
         this.selectedIndex = selectedIndex;

@@ -35,7 +35,7 @@ public class RCounter extends RMetric {
      * @param increment an integer value representing the amount to add or remove to value each time
      * @param value the current integer or double value
      */
-    private RCounter(int ID, String title, double increment, double value) {
+    public RCounter(int ID, String title, double increment, double value) {
         super(ID, title);
         this.value = value;
         this.increment = increment;

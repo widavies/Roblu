@@ -7,7 +7,7 @@ import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.ui.Mailbox;
+import com.cpjd.roblu.ui.mailbox.Mailbox;
 
 
 /*

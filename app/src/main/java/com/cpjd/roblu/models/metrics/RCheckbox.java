@@ -28,7 +28,7 @@ public class RCheckbox extends RMetric {
      * @param title object title
      * @param values non-null, no duplicates map containing title and boolean key pairs
      */
-    private RCheckbox(int ID, String title, LinkedHashMap<String, Boolean> values) {
+    public RCheckbox(int ID, String title, LinkedHashMap<String, Boolean> values) {
         super(ID, title);
         this.values = values;
         if(this.values == null || values.size() == 0) {

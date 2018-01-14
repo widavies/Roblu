@@ -19,11 +19,13 @@ public class RTextfield extends RMetric {
 
     /**
      * If true, all UI interfaces should detect this flag and only insert numerical content into this field
+     * This should really only be used for the team name or team number car.
      */
     private boolean numericalOnly;
 
     /**
      * If true, all UI interfaces should load all line breaks onto one, horizontally scrollable text input
+     * This should really only be used for the team name or team number car.
      */
     private boolean oneLine;
 

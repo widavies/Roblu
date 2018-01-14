@@ -26,8 +26,8 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
-import com.cpjd.roblu.ui.forms.EditForm;
-import com.cpjd.roblu.ui.forms.Predefined;
+import com.cpjd.roblu.ui.forms.FormViewer;
+import com.cpjd.roblu.ui.forms.PredefinedFormSelector;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
@@ -171,7 +171,7 @@ public class EventEditor extends AppCompatActivity {
                  * User selected "Create custom form" option
                  */
                 if(spinner.getSelectedItemPosition() == 0) {
-                    Intent startView = new Intent(this, EditForm.class);
+                    Intent startView = new Intent(this, FormViewer.class);
                     // Package a form with any old data that the user was working on (might be null)
                     startView.putExtra("form", tempFormHolder);
                     startActivityForResult(startView, Constants.GENERAL);
@@ -180,7 +180,7 @@ public class EventEditor extends AppCompatActivity {
                  * User selected "Import predefined form" option
                  */
                 else if(spinner.getSelectedItemPosition() == 1)  {
-                    startActivityForResult(new Intent(this, Predefined.class), Constants.GENERAL);
+                    startActivityForResult(new Intent(this, PredefinedFormSelector.class), Constants.GENERAL);
                 }
                 /*
                  * User selected "Use master form" option
@@ -218,8 +218,8 @@ public class EventEditor extends AppCompatActivity {
     /**
      * A result has been received from a child activity.
      * 1 of 3 things happened:
-     * -User exited EditForm activity
-     * -User created a form successfully with EditForm activity
+     * -User exited FormViewer activity
+     * -User created a form successfully with FormViewer activity
      * -User selected a predefined form successfully
      * @param requestCode the code the child activity was started with
      * @param resultCode the code the child activity returned
@@ -238,7 +238,7 @@ public class EventEditor extends AppCompatActivity {
         /*
          * User tapped confirm on the custom form editor, so let's create an event with form they created
          */
-        else if(resultCode == Constants.FORM_CONFIMRED) {
+        else if(resultCode == Constants.FORM_CONFIRMED) {
             Bundle bundle = data.getExtras();
             tempFormHolder = new RForm((ArrayList<RMetric>)bundle.getSerializable("pit"), (ArrayList<RMetric>)bundle.getSerializable("match"));
 
@@ -252,7 +252,7 @@ public class EventEditor extends AppCompatActivity {
         /*
          * User tapped a predefined form, so let's create an event with the specified predefined form
          */
-        else if(resultCode == Constants.PREDEFINED_CONFIMRED) {
+        else if(resultCode == Constants.PREDEFINED_FORM_SELECTED) {
             /*
              * Create the event!
              */

@@ -1,4 +1,4 @@
-package com.cpjd.roblu.sync.cloud.ui.fragments;
+package com.cpjd.roblu.ui.mailbox.fragments;
 
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -14,7 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.ui.CheckoutListener;
+import com.cpjd.roblu.ui.mailbox.CheckoutListener;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;

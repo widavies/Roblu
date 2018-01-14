@@ -1,4 +1,4 @@
-package com.cpjd.roblu.sync.cloud.ui;
+package com.cpjd.roblu.ui.mailbox;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,7 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.ui.fragments.MailAdapter;
+import com.cpjd.roblu.ui.mailbox.fragments.MailAdapter;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;

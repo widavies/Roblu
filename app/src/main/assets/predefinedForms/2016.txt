@@ -1,0 +1,9 @@
+PIT
+DEFAULTS
+textfield,Comments,
+gallery,Pictures,
+MATCH
+counter,Points possible,0,1
+chooser,Autonomous?,Yes:No:Sometimes:Unknown,3
+checkbox,Defenses,Portcullis:Cheval de Frise:Moat:Ramparts:Drawbridge:Sally port:Rock wall:Rough terrain:Low bar
+textfield,Comments,

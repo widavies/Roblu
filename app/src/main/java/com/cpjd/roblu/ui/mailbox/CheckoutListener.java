@@ -1,4 +1,4 @@
-package com.cpjd.roblu.sync.cloud.ui;
+package com.cpjd.roblu.ui.mailbox;
 
 /**
  * @since 3.5.9

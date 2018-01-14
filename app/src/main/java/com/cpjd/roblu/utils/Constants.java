@@ -33,6 +33,25 @@ public abstract class Constants {
      * Called when a user discards or exits from activity without confirming some action
      */
     public static final int CANCELLED = 1298754;
+    /**
+     * Called when the user saved changes to an existing or new metric
+     */
+    public static final int METRIC_CONFIRMED = 120398;
+    /**
+     * User saved changes to the form
+     */
+    public static final int FORM_CONFIRMED = 3; // edit form, user tapped confirm
+    /**
+     * Request to start a NEW METRIC event
+     */
+    public static final int NEW_METRIC_REQUEST = 1293;
+
+    public static final int EDIT_METRIC_REQUEST = 14;
+
+    public static final int PREDEFINED_FORM_SELECTED = 12;
+
+
+
 
     // Drawer identifier codes
     public static final int CREATE_EVENT = 1;
@@ -47,7 +66,6 @@ public abstract class Constants {
     // Intent request and result codes
     public static final int GENERAL = 1; // when the request code doesn't matter
     public static final int MASTER_FORM = 2; // request edit of master form
-    public static final int FORM_CONFIMRED = 3; // edit form, user tapped confirm
     public static final int FORM_DISCARDED = 4; // edit form, user tapped home or back
     public static final int NEW_CONFIRMED = 6; // new element was added
     public static final int NEW_DISCARDED = 7; // new element was discarded
@@ -55,8 +73,6 @@ public abstract class Constants {
     public static final int EDIT_DISCARDED = 9; // add element - editing element was discarded
     public static final int CREATE_EVENT_PICKER = 10; // start event picker
     public static final int PICKER_CANCELLED = 11; // event picker home or back pressed
-    public static final int PREDEFINED_CONFIMRED = 12; // user confirmed predefined choice
-    public static final int PREDEFINED_DISCARDED = 21; // user pressed home or back
     public static final int MANUAL_CREATED = 13; // manual event was create
     public static final int MANUAL_DISCARDED = 14; // manual event discarded
     public static final int EVENT_IMPORTED = 16; // event was imported

@@ -397,7 +397,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             public void onClick(DialogInterface dialog, int which) {
                 if(input2.getText().toString().equals("")) input2.setText("0");
                 RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), io.getNewTeamID(eventDrawerManager.getEvent().getID()));
-                io.saveTeam(team, eventDrawerManager.getEvent().getID());
+                io.saveTeam(eventDrawerManager.getEvent().getID(), team);
                 executeLoadTeamsTask(true);
             }
         });
@@ -469,7 +469,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
             io.saveSettings(settings);
         }
-        else if(resultCode == Constants.PICKER_EVENT_CREATED){ // The user created an event, let's get the ID and select it
+        else if(resultCode == Constants.NEW_EVENT_CREATED){ // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
             eventDrawerManager.selectEvent(d.getInt("eventID"));
         }
@@ -520,10 +520,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         return false;
     }
 
-
-    /*
-     * Irrelevant methods
-     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.teams_view_actionbar, menu);

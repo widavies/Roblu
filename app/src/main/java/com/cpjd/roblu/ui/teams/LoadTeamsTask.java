@@ -221,7 +221,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             RForm form = ioWeakReference.get().loadForm(eventID);
             for(RTeam team : teams) {
                 team.verify(form);
-                ioWeakReference.get().saveTeam(team, eventID);
+                ioWeakReference.get().saveTeam(eventID, team);
             }
 
             /*

@@ -20,7 +20,7 @@ public class RBoolean extends RMetric {
      * @param title object title
      * @param value boolean value to store
      */
-    private RBoolean(int ID, String title, boolean value) {
+    public RBoolean(int ID, String title, boolean value) {
         super(ID, title);
         this.value = value;
     }

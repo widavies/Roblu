@@ -1,4 +1,4 @@
-package com.cpjd.roblu.sync.cloud.ui.fragments;
+package com.cpjd.roblu.ui.mailbox.fragments;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

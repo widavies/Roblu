@@ -22,8 +22,8 @@ import android.widget.Toast;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.ui.forms.ElementTouchHelper;
-import com.cpjd.roblu.ui.forms.MetricsAdapter;
+import com.cpjd.roblu.ui.forms.FormRecyclerTouchHelper;
+import com.cpjd.roblu.ui.forms.FormRecyclerAdapter;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
@@ -45,7 +45,7 @@ import java.util.ArrayList;
  * @since 3.0.0
  * @author Will Davies
  */
-public class MetricSortFragment extends Fragment implements MetricsAdapter.MetricSelectedListener {
+public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.MetricSelectedListener {
 
     /**
      * The UI object that manages UI loading of the metrics array
@@ -87,10 +87,10 @@ public class MetricSortFragment extends Fragment implements MetricsAdapter.Metri
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
-        MetricsAdapter adapter = new MetricsAdapter(view.getContext(), this);
+        FormRecyclerAdapter adapter = new FormRecyclerAdapter(view.getContext(), this);
         rv.setAdapter(adapter);
         // setup gesture listener
-        ItemTouchHelper.Callback callback = new ElementTouchHelper(adapter, true);
+        ItemTouchHelper.Callback callback = new FormRecyclerTouchHelper(adapter, true);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
         adapter.setMetrics(metrics);

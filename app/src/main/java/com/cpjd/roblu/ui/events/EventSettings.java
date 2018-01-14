@@ -34,8 +34,8 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
-import com.cpjd.roblu.ui.forms.EditForm;
-import com.cpjd.roblu.ui.settings.MyCheckPreference;
+import com.cpjd.roblu.ui.forms.FormViewer;
+import com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference;
 import com.cpjd.roblu.ui.teams.TeamsView;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
@@ -154,7 +154,7 @@ public class EventSettings extends AppCompatActivity {
              */
             Preference teams = findPreference("delete_teams");
             Preference deleteEvent = findPreference("delete_event");
-            MyCheckPreference cloud = (MyCheckPreference) findPreference("sync");
+            RUICheckPreference cloud = (RUICheckPreference) findPreference("sync");
 
             /*
              * Set the info to the UI that needs to be
@@ -175,10 +175,10 @@ public class EventSettings extends AppCompatActivity {
         public boolean onPreferenceClick(final Preference preference) {
             /*
              * User clicked on the "Edit form" preference.
-             * Keep in mind, we'll need to listen to the EditForm activity's return
+             * Keep in mind, we'll need to listen to the FormViewer activity's return
              */
             if(preference.getKey().equals("edit_form")) {
-                Intent intent = new Intent(getActivity(), EditForm.class);
+                Intent intent = new Intent(getActivity(), FormViewer.class);
                 intent.putExtra("form", new IO(getActivity()).loadForm(event.getID()));
                 intent.putExtra("editing", true); // editing will be true
                 startActivityForResult(intent, Constants.GENERAL);

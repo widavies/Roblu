@@ -35,7 +35,7 @@ public class RSlider extends RMetric {
      * @param max the maximum, integer value
      * @param value the current value
      */
-    private RSlider(int ID, String title, int min, int max, int value) {
+    public RSlider(int ID, String title, int min, int max, int value) {
         super(ID, title);
         this.min = min;
         this.max = max;

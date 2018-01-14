@@ -21,7 +21,7 @@ public class RStopwatch extends RMetric {
      * @param title object title
      * @param time the time, in seconds
      */
-    private RStopwatch(int ID, String title, double time) {
+    public RStopwatch(int ID, String title, double time) {
         super(ID, title);
         this.time = time;
     }
