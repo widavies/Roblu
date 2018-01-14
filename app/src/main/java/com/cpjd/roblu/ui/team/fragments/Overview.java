@@ -1,6 +1,7 @@
 package com.cpjd.roblu.ui.team.fragments;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutCompat;
@@ -8,61 +9,47 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.cpjd.models.Team;
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.teams.statistics.DATThread;
-import com.cpjd.roblu.teams.statistics.StatsListener;
+import com.cpjd.roblu.ui.forms.RMetricToUI;
 import com.cpjd.roblu.utils.Utils;
 
-public class Overview extends Fragment implements StatsListener {
-    private View view;
-    private Elements els;
-    private LinearLayoutCompat layout;
-    private RTeam team;
-    private REvent event;
+/**
+ * The overview tab will display some generic information about the team,
+ * such as TBA info, size, meta information, etc.
+ *
+ * Keep in mind, TBA information is downloaded by TeamViewer.
+ *
+ * Parameters:
+ * -"teamID" - the ID of the team
+ * -"eventID" - the ID of the event
+ *
+ * @version 2
+ * @since 3.0.0
+ * @author Will Davies
+ */
+public class Overview extends Fragment {
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        view = inflater.inflate(R.layout.overview_tab, container, false);
-
-        layout = (LinearLayoutCompat) view.findViewById(R.id.overview_layout);
-
-        els = new Elements(getActivity(), new Loader(getActivity()).loadSettings().getRui(), null, false);
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.overview_tab, container, false);
 
         Bundle bundle = this.getArguments();
-        event = (REvent) bundle.getSerializable("event");
-        team = new Loader(view.getContext()).loadTeam(event.getID(), bundle.getLong("team"));
+        LinearLayoutCompat layout = view.findViewById(R.id.overview_layout);
+        RTeam team = new IO(getActivity()).loadTeam(bundle.getInt("eventID"), bundle.getInt("teamID"));
+        RMetricToUI rMetricToUI = new RMetricToUI(getActivity(), new IO(getActivity()).loadSettings().getRui(), true);
 
-        if(team.hasTBAInfo()) new DATThread(team.getNumber(), this);
-        else {
-            final String s = "Team name: "+team.getFullName()+"\n\nLocation: "+team.getLocation()+"\n\nRookie year: "+team.getRookieYear()+"\n\nMotto: "+team.getMotto();
-            layout.addView(els.getInfoField("TBA.com information", s, team.getWebsite(),team.getNumber()), 0);
-        }
-
-        // Load the other card
-        layout.addView(els.getInfoField("Other", "Last edited: "+ Utils.convertTime(team.getLastEdit())+"\nSize on disk: "+
-                new Loader(view.getContext()).getTeamSize(event.getID(), team.getID())+" KB", "", 0));
-
+        /*
+         * Add UI cards to the layout
+         */
+        // TBA info card
+        final String s = "Team name: "+ team.getFullName()+"\n\nLocation: "+ team.getLocation()+"\n\nRookie year: "+ team.getRookieYear()+"\n\nMotto: "+ team.getMotto();
+        layout.addView(rMetricToUI.getInfoField("TBA.com information", s, team.getWebsite(), team.getNumber()), 0);
+        // "Other" card
+        layout.addView(rMetricToUI.getInfoField("Other", "Last edited: "+ Utils.convertTime(team.getLastEdit())+"\nSize on disk: "+
+                new IO(view.getContext()).getTeamSize(bundle.getInt("eventID"), team.getID())+" KB", "", 0));
         return view;
-    }
-
-    @Override
-    public void retrievedDatabase(final Team team) {
-        if(team.team_number == 0) return;
-
-        this.team.setTBAInfo(team.nickname, team.location, team.motto, team.website, (int)team.rookie_year);
-        new Loader(view.getContext()).saveTeam(this.team, event.getID());
-
-        final String s = "Team name: "+team.nickname+"\n\nLocation: "+team.location+"\n\nRookie year: "+team.rookie_year+"\n\nMotto: "+team.motto;
-        if(getActivity() == null) return;
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                layout.addView(els.getInfoField("TBA.com information", s, team.website,(int) team.team_number), 0);
-            }
-        });
     }
 
 }

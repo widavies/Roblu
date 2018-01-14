@@ -11,6 +11,7 @@ import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -59,6 +60,7 @@ import com.cpjd.roblu.ui.team.forms.images.ImageGalleryActivity;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -743,6 +745,95 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         card.setCardBackgroundColor(rui.getCardColor());
         card.addView(layout);
         return card;
+    }
+
+    public CardView getInfoField(final String name, String data, final String website, final int number) {
+        RelativeLayout layout = new RelativeLayout(activity);
+        TextView textView = new TextView(activity);
+        textView.setText(name);
+        textView.setTextColor(rui.getText());
+        textView.setId(Utils.generateViewId());
+
+        if(number != -1) {
+            final Drawable reset = ContextCompat.getDrawable(activity, R.drawable.export);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            final ImageView page = new ImageView(activity);
+            page.setBackground(reset);
+            page.setLayoutParams(params);
+            page.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse("https://www.thebluealliance.com/team/" + number));
+                    activity.startActivity(i);
+                }
+            });
+            layout.addView(page);
+        }
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, textView.getId());
+        TextView et = new TextView(activity);
+        et.setId(Utils.generateViewId());
+        et.setTextColor(rui.getText());
+        et.setText(data);
+        et.setSingleLine(false);
+        et.setEnabled(false);
+        et.setFocusableInTouchMode(false);
+        et.setLayoutParams(params);
+
+        if(website != null && !website.equals("")) {
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, et.getId());
+            Button b = new Button(activity);
+            b.setTextColor(rui.getText());
+            b.setText(website);
+            b.setLayoutParams(params);
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse(website));
+                    activity.startActivity(i);
+                }
+            });
+            layout.addView(b);
+        }
+
+        layout.addView(textView); layout.addView(et);
+        return getCard(layout);
+    }
+
+    public CardView getEditHistory(LinkedHashMap<String, Long> edits) {
+        RelativeLayout layout = new RelativeLayout(activity);
+        TextView textView = new TextView(activity);
+        textView.setText(R.string.edit_history);
+        textView.setTextColor(rui.getText());
+        textView.setId(Utils.generateViewId());
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, textView.getId());
+        TextView et = new TextView(activity);
+        et.setId(Utils.generateViewId());
+        et.setTextColor(rui.getText());
+        /*
+         * Generate string
+         */
+        StringBuilder editHistory = new StringBuilder();
+        for(Object o : edits.entrySet()) {
+            Map.Entry pair = (Map.Entry) o;
+            editHistory.append(pair.getKey()).append(" on ").append(Utils.convertTime((Long)pair.getValue()));
+        }
+
+        et.setText(editHistory.toString());
+        et.setSingleLine(false);
+        et.setEnabled(false);
+        et.setFocusableInTouchMode(false);
+        et.setLayoutParams(params);
+
+        layout.addView(textView); layout.addView(et);
+        return getCard(layout);
     }
 
     @Override

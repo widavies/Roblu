@@ -241,6 +241,14 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     }
 
     /**
+     * Checks if their is locally stored TBA data, if there is, we don't need to redownload any more data
+     * @return true if we've got locally stored TBA data
+     */
+    public boolean hasTBAInfo() {
+        return name != null || location != null || motto != null || website == null || rookieYear > 0;
+    }
+
+    /**
      * Adds the tab to the team
      * @param tab the new RTab to add
      * @return index of sorted, newly added tab

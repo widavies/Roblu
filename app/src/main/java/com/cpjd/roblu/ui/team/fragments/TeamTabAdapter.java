@@ -2,64 +2,56 @@ package com.cpjd.roblu.ui.team.fragments;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 
-import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.RTab;
+import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.team.TeamViewer;
-import com.cpjd.roblu.utils.Utils;
 
-/*******************************************************
- * Copyright (C) 2016 Will Davies wdavies973@gmail.com
- *
- * This file is part of Roblu
- *
- * Roblu cannot be distributed for a price or to people outside of your local robotics team.
- *******************************************************/
+import java.util.ArrayList;
 
-// Tab adapter for the 3 match tabs
+/**
+ * Handles the tabs for an RTab model
+ *
+ * @version 2
+ * @since 3.0.0
+ * @author Will Davies
+ */
 public class TeamTabAdapter extends FragmentStatePagerAdapter {
-
-    private final Context context;
-
-    // vars
-    private final REvent event;
-    private final RForm form;
-
+    /**
+     * Context reference
+     */
+    private Context context;
+    /**
+     * Reference to the event that contains this team
+     */
+    private REvent event;
+    /**
+     * The form reference
+     */
+    private RForm form;
+    /**
+     * True if scouting data should be editable
+     */
+    private boolean editable;
+    /**
+     * Helper variable
+     */
     private boolean removing;
-    private final boolean readOnly;
 
-    private final boolean isConflict;
-    private final RCheckout checkout;
-
-    public TeamTabAdapter(FragmentManager fm, REvent event, RForm form, Context context, boolean readOnly) {
+    public TeamTabAdapter(FragmentManager fm, REvent event, RForm form, Context context, boolean editable) {
         super(fm);
         this.event = event;
         this.form = form;
         this.context = context;
-        this.readOnly = readOnly;
-        this.isConflict = false;
-        this.checkout = null;
-    }
-
-    public TeamTabAdapter(FragmentManager fm, REvent event, RCheckout checkout, RForm form, Context context) {
-        super(fm);
-        this.form = form;
-        this.context = context;
-        this.readOnly = true;
-        this.event = event;
-        this.isConflict = true;
-        this.checkout = checkout;
-    }
-
-    public boolean isPageRed(int page) {
-        if(readOnly) return TeamViewer.team.getTabs().get(page).isRedAlliance();
-        return page > 2 && TeamViewer.team.getTabs().get(page - 1).isRedAlliance();
+        this.editable = editable;
     }
 
     @Override
@@ -67,12 +59,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("position", 0);
-        if(isConflict) {
-            bundle.putBoolean("isConflict", true);
-            bundle.putLong("checkout", checkout.getID());
-        }
-
-        if (i == 0 && !readOnly) {
+        if (i == 0 && editable) {
             Overview overview = new Overview();
             overview.setArguments(bundle);
             return overview;
@@ -81,25 +68,42 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
     }
 
+    /**
+     * Checks to see what alliance the team was on for this particular match
+     * @param page the page index of the match
+     * @return true if the team was on the red alliance for this match
+     */
+    public boolean isPageRed(int page) {
+        if(!editable) return TeamViewer.team.getTabs().get(page).isRedAlliance();
+        return page > 2 && TeamViewer.team.getTabs().get(page - 1).isRedAlliance();
+    }
+
+    /**
+     * Marks the match as won
+     * @param position the position of the match to mark as won
+     * @return boolean representing match status (won or lost)
+     */
     public boolean markWon(int position) {
         TeamViewer.team.getTabs().get(position).setWon(!TeamViewer.team.getTabs().get(position).isWon());
-        new Loader(context).saveTeam(TeamViewer.team, event.getID());
+        TeamViewer.team.setLastEdit(System.currentTimeMillis());
         notifyDataSetChanged();
         return TeamViewer.team.getTabs().get(position).isWon();
     }
 
-    public RTeam deleteTab(int position) {
+    /**
+     * Deletes the tab at the specified position
+     * @param position the position of the tab to delete
+     */
+    public void deleteTab(int position) {
         TeamViewer.team.removeTab(position);
-        TeamViewer.team.updateEdit();
-        new Loader(context).saveTeam(TeamViewer.team, event.getID());
+        TeamViewer.team.setLastEdit(System.currentTimeMillis());
         removing = true;
         notifyDataSetChanged();
         removing = false;
-        return TeamViewer.team;
     }
 
     @Override
-    public int getItemPosition(Object object) {
+    public int getItemPosition(@NonNull Object object) {
         if(removing) return PagerAdapter.POSITION_NONE;
 
         if(object instanceof Match) {
@@ -116,22 +120,25 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         bundle.putSerializable("event", event);
         bundle.putLong("team", TeamViewer.team.getID());
         bundle.putSerializable("form", form);
-        bundle.putBoolean("readOnly", readOnly);
+        bundle.putBoolean("editable", editable);
         bundle.putInt("position", position);
-        if(isConflict) {
-            bundle.putBoolean("isConflict", true);
-            bundle.putLong("checkout", checkout.getID());
-        }
         Match match = new Match();
         match.setArguments(bundle);
         return match;
     }
 
+    /**
+     * Creates a new match with the specified parameter,
+     * this method is used by the manual match creator, however,
+     * most users will likely just use TBA.com importing.
+     * @param name the name of the match
+     * @param isRed true if this team is on the red alliance
+     * @return the position of the sorted, created match
+     */
     public int createMatch(String name, boolean isRed) {
-        int position = TeamViewer.team.addTab(Utils.createNew(form.getMatch()), name, isRed, false, 0);
-        TeamViewer.team.getTabs().get(position).setModified(event.isCloudEnabled());
-        TeamViewer.team.updateEdit();
-        new SaveThread(context, event.getID(), TeamViewer.team);
+        int position = TeamViewer.team.addTab(new RTab(name, (ArrayList<RMetric>)form.getMatch().clone(), isRed, false, 0));
+        TeamViewer.team.setLastEdit(System.currentTimeMillis());
+        new IO(context).saveTeam(event.getID(), TeamViewer.team);
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
@@ -146,26 +153,36 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
         return position + 1;
     }
 
-     private boolean isWon(int position) {
-        if(readOnly) return TeamViewer.team.getTabs().get(position).isWon();
+    /**
+     * Checks if the match at the specified position is won
+     * @param position the position of the tab to check
+     * @return true if the team won in the specified match
+     */
+    private boolean isWon(int position) {
+        if(!editable) return TeamViewer.team.getTabs().get(position).isWon();
         return TeamViewer.team.getTabs().get(position - 1).isWon();
     }
 
+    /**
+     * Gets the title suffix for each match tab, a won match will add a star
+     * to the match tab
+     * @param position the position of the match to get the win suffix for
+     * @return the suffix to add to the tab title
+     */
     private String getWinSuffix(int position) {
         if(isWon(position)) return " ★";
         else return "";
     }
 
-
     @Override
     public int getCount() {
-        if(readOnly) return TeamViewer.team.getTabs().size();
+        if(!editable) return TeamViewer.team.getTabs().size();
         return TeamViewer.team.getTabs().size() + 1;
     }
 
     @Override
     public CharSequence getPageTitle(int position) {
-        if(readOnly) return getWinSuffix(position)+" "+TeamViewer.team.getTabs().get(position).getTitle();
+        if(!editable) return getWinSuffix(position)+" "+TeamViewer.team.getTabs().get(position).getTitle();
 
         if (position == 0) return "Overview";
         return getWinSuffix(position)+" "+TeamViewer.team.getTabs().get(position - 1).getTitle();
