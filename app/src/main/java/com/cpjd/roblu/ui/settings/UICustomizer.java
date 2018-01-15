@@ -1,7 +1,6 @@
 package com.cpjd.roblu.ui.settings;
 
 import android.app.Dialog;
-import android.content.res.ColorStateList;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.preference.Preference;
@@ -15,6 +14,7 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UIHandler;
@@ -73,7 +73,7 @@ public class UICustomizer extends AppCompatActivity {
                 return;
             }
 
-            settings = new Loader(getActivity()).loadSettings();
+            settings = new IO(getActivity()).loadSettings();
             rui = settings.getRui();
 
             addPreferencesFromResource(R.xml.ui_preferences);
@@ -149,7 +149,7 @@ public class UICustomizer extends AppCompatActivity {
 
             rui.setPreset(2);
             settings.setRui(rui);
-            new Loader(getActivity()).saveSettings(settings);
+            new IO(getActivity()).saveSettings(settings);
             Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
             new UIHandler((AppCompatActivity) getActivity(), toolbar).update();
             return true;
@@ -173,14 +173,6 @@ public class UICustomizer extends AppCompatActivity {
                 AppCompatRadioButton rb = (AppCompatRadioButton) group.getChildAt(i);
                 if(i == previous) rb.setChecked(true);
                     rb.setTextColor(rui.getText());
-                ColorStateList colorStateList = new ColorStateList (
-                        new int[][]{
-                                new int[]{-android.R.attr.state_checked},
-                                new int[]{android.R.attr.state_checked}
-                        },
-                        new int[] { rui.getText(),rui.getAccent(), }
-                );
-                rb.setSupportButtonTintList(colorStateList);
                 rb.setText(items[i]);
             }
 
@@ -193,7 +185,7 @@ public class UICustomizer extends AppCompatActivity {
                     else if(checkedId == R.id.last_edited) pos = 2;
                     rui.setPreset(pos);
                     settings.setRui(rui);
-                    new Loader(getActivity()).saveSettings(settings);
+                    new IO(getActivity()).saveSettings(settings);
                     Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
                     new UIHandler((AppCompatActivity)getActivity(), toolbar).update();
                     d.dismiss();
@@ -219,14 +211,6 @@ public class UICustomizer extends AppCompatActivity {
                 AppCompatRadioButton rb = (AppCompatRadioButton) group.getChildAt(i);
                 if(i == previous) rb.setChecked(true);
                 rb.setTextColor(rui.getText());
-                ColorStateList colorStateList = new ColorStateList (
-                        new int[][]{
-                                new int[]{-android.R.attr.state_checked},
-                                new int[]{android.R.attr.state_checked}
-                        },
-                        new int[] { rui.getText(),rui.getAccent(), }
-                );
-                rb.setSupportButtonTintList(colorStateList);
                 rb.setText(items[i]);
             }
 
@@ -240,7 +224,7 @@ public class UICustomizer extends AppCompatActivity {
                     else if(checkedId == R.id.custom) pos = 3;
                     rui.setDialogDirection(pos);
                     settings.setRui(rui);
-                    new Loader(getActivity()).saveSettings(settings);
+                    new IO(getActivity()).saveSettings(settings);
                     d.dismiss();
                 }
             });

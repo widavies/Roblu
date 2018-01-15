@@ -71,7 +71,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
     /**
      * All the different metric types that the user can select from
      */
-    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Gallery"};
+    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery"};
     /**
      * The user's color preferences, so the metrics can be synced with the user's preferences
      */
@@ -102,6 +102,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         layout = findViewById(R.id.add_element_layout);
         // RMetric to UI
         rMetricToUI = new RMetricToUI(this, rui, true);
+        rMetricToUI.setListener(this);
 
         /*
          * Check if the user actually wants to edit
@@ -169,17 +170,22 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
      * Adds the config text fields below the metric preview
      */
     private void buildConfigLayout() {
+        // clear old config items (don't clear toolbar, preview metric, or metric type selector)
+        for(int i = 3; i < this.layout.getChildCount(); i++) {
+            this.layout.removeViewAt(i);
+        }
+
         RelativeLayout layout = new RelativeLayout(this);
-        layout.addView(getConfigField("title"));
+        layout.addView(getConfigField("Title", layout, 0));
 
         if(metric instanceof RCheckbox || metric instanceof RChooser) {
-            layout.addView(getConfigField("comma"));
+            layout.addView(getConfigField("comma", layout, 1));
         } else if(metric instanceof RCounter) {
-            layout.addView(getConfigField("increment"));
+            layout.addView(getConfigField("Increment", layout, 1));
         } else if(metric instanceof RSlider) {
-            layout.addView(getConfigField("min"));
-            layout.addView(getConfigField("max"));
-            layout.addView(getConfigField("increment"));
+            layout.addView(getConfigField("Minimum", layout, 1));
+            layout.addView(getConfigField("Maximum", layout, 2));
+            layout.addView(getConfigField("Increment", layout, 3));
         }
 
         this.layout.addView(getCardView(layout));
@@ -195,9 +201,9 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
      * -"increment"
      * -"comma"
      */
-    private TextInputLayout getConfigField(final String name) {
+    private TextInputLayout getConfigField(final String name, RelativeLayout layout, int position) {
         TextInputLayout inputLayout = new TextInputLayout(this);
-        inputLayout.setHint("Name");
+        inputLayout.setHint(name);
         inputLayout.setId(Utils.generateViewId());
         AppCompatEditText nameInput = new  AppCompatEditText(this);
         Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), inputLayout, nameInput);
@@ -232,7 +238,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
                     }
                 }
 
-
+                addMetricPreviewToToolbar();
                 /*Toolbar tl = findViewById(R.id.toolbar);
                 ViewGroup view = (ViewGroup) tl.getChildAt(0);
                 RelativeLayout t = (RelativeLayout) view.getChildAt(0);
@@ -245,6 +251,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         });
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        if(position > 0) params.addRule(RelativeLayout.BELOW, layout.getChildAt(position - 1).getId());
         inputLayout.setLayoutParams(params);
         inputLayout.addView(nameInput);
         inputLayout.requestFocus();
@@ -357,11 +364,11 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
     }
 
     /**
-     * Called when a change is made to the active metric, since we don't need to save the metric to the file system,
-     * we can ignore this method
+     * Refresh the toolbar to match the metric
      */
     @Override
-    public void changeMade() {}
+    public void changeMade() {
+    }
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {}

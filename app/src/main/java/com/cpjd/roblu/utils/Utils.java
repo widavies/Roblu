@@ -2,12 +2,8 @@ package com.cpjd.roblu.utils;
 
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
@@ -26,30 +22,16 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.forms.elements.EBoolean;
-import com.cpjd.roblu.forms.elements.ECheckbox;
-import com.cpjd.roblu.forms.elements.EChooser;
-import com.cpjd.roblu.forms.elements.ECounter;
-import com.cpjd.roblu.forms.elements.EGallery;
-import com.cpjd.roblu.forms.elements.ESTextfield;
-import com.cpjd.roblu.forms.elements.ESlider;
-import com.cpjd.roblu.forms.elements.EStopwatch;
-import com.cpjd.roblu.forms.elements.ETextfield;
-import com.cpjd.roblu.forms.elements.Element;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.sync.cloud.api.CloudRequest;
+import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -125,14 +107,6 @@ public class Utils {
      * @param edit the actual edit text element
      */
     public static void setInputTextLayoutColor(final int accent, final int text, TextInputLayout textInputLayout, final AppCompatEditText edit) {
-        edit.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                AppCompatEditText edit2 = (AppCompatEditText)v;
-                if(hasFocus) edit2.setSupportBackgroundTintList(ColorStateList.valueOf(accent));
-                else edit2.setSupportBackgroundTintList(ColorStateList.valueOf(text));
-            }
-        });
         setCursorColor(edit, accent);
 
         try {
@@ -233,24 +207,6 @@ public class Utils {
     }
 
     /**
-     * Creates an empty form for an event (not technically empty).
-     *
-     * Makes sure that nothing is null and that we have the required
-     * team name and team number fields
-     * @return
-     */
-    public static RForm createEmpty() {
-        ArrayList<Element> pit = new ArrayList<>();
-        ArrayList<Element> matches = new ArrayList<>();
-        ESTextfield name = new ESTextfield("Team name", false);
-        ESTextfield number = new ESTextfield("Team number", true);
-        name.setID(0); number.setID(1);
-        pit.add(name);
-        pit.add(number);
-        return new RForm(pit, matches);
-    }
-
-    /**
      * We can almost always determine the match key of a match based off
      * it's name.
      * @param matchName
@@ -302,63 +258,7 @@ public class Utils {
         return score;
     }
 
-    /**
-     * In certain cases, we need to duplicate elements to avoid using the same references.
-     * In Java, we have to do this by manually creating new items and setting equal attributes.
-     * @param elements
-     * @return
-     */
-    public static ArrayList<Element> createNew(ArrayList<Element> elements) {
-        ArrayList<Element> newElements = new ArrayList<>();
-        for(Element e : elements) {
-            newElements.add(createNew(e));
-        }
-        return newElements;
-    }
 
-    /**
-     * In certain cases, we need to duplicate elements to avoid using the same references.
-     * In Java, we have to do this by manually creating new items and setting equal attributes.
-     * @param e
-     * @return
-     */
-    public static Element createNew(Element e) {
-        Element t = null;
-        if(e instanceof EBoolean) {
-            t = new EBoolean(e.getTitle(), ((EBoolean) e).getValue());
-            ((EBoolean)t).setUsingNA(((EBoolean) e).isUsingNA());
-        }
-        else if(e instanceof ECheckbox) {
-            t = new ECheckbox(e.getTitle(), ((ECheckbox) e).getValues(), ((ECheckbox) e).getChecked());
-        }
-        else if(e instanceof ETextfield) {
-            t = new ETextfield(e.getTitle(), ((ETextfield) e).getText());
-        }
-        else if(e instanceof EStopwatch) {
-            t = new EStopwatch(e.getTitle(), ((EStopwatch) e).getTime());
-        }
-        else if(e instanceof ECounter) {
-            t = new ECounter(e.getTitle(), ((ECounter) e).getMin(), ((ECounter) e).getMax(), ((ECounter) e).getIncrement(), ((ECounter) e).getCurrent());
-        }
-        else if(e instanceof EChooser) {
-            t = new EChooser(e.getTitle(), ((EChooser) e).getValues(), ((EChooser) e).getSelected());
-        }
-        else if(e instanceof ESlider) {
-            t = new ESlider(e.getTitle(), ((ESlider) e).getMax(), ((ESlider) e).getCurrent());
-        } else if(e instanceof ESTextfield) {
-            t = new ESTextfield(e.getTitle(), ((ESTextfield) e).isNumberOnly());
-        }
-        else if(e instanceof EGallery) {
-            t = new EGallery(e.getTitle());
-            ((EGallery)t).setImages(((EGallery) e).getImages());
-        }
-        if(t != null) {
-            t.setID(e.getID());
-            t.setModified(e.isModified());
-        }
-
-        return t;
-    }
 
     /**
      * Used for displaying a list of teams in a comma seperated string
@@ -390,7 +290,7 @@ public class Utils {
         d.setContentView(R.layout.event_import_dialog);
         final Spinner spinner = (Spinner) d.findViewById(R.id.type);
         String[] values;
-        final REvent[] events = new Loader(context).getEvents();
+        final REvent[] events = new IO(context).loadEvents();
         if(events == null || events.length == 0) return false;
         values = new String[events.length];
         for(int i = 0; i < values.length; i++) {
@@ -404,11 +304,11 @@ public class Utils {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                listener.eventSelected(events[spinner.getSelectedItemPosition()].getID());
+                listener.eventSelected(events[spinner.getSelectedItemPosition()]);
                 d.dismiss();
             }
         });
-        if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
+        if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(context).loadSettings().getRui().getAnimation();
         d.show();
         return true;
     }
@@ -441,35 +341,6 @@ public class Utils {
         return sdf.format(resultdate);
     }
 
-    /**
-     * Duplicates tabs to prevent the "hated reference error"
-     * @param tabs
-     * @return
-     */
-	public static ArrayList<RTab> createNewTabs(ArrayList<RTab> tabs) {
-        if(tabs == null || tabs.size() == 0) return tabs;
-        ArrayList<RTab> toReturn = new ArrayList<>();
-        for(int i = 0; i < tabs.size(); i++) toReturn.add(tabs.get(i).duplicate());
-        return toReturn;
-    }
-
-    /**
-     * Gets the current day of the week, as a string like "Sunday"
-     * @param dayOfWeek
-     * @return
-     */
-	public static String getDay(int dayOfWeek) {
-		return Constants.daysOfWeek[dayOfWeek];
-	}
-
-    /**
-     * Gets the string of the month, like "January"
-     * @param month
-     * @return
-     */
-	public static String getMonth(int month) {
-		return Constants.monthsOfYear[month];
-	}
 
     /**
      * This is actually not my code as cool as an AtomicInteger sounds, essentially, we really like
@@ -518,47 +389,30 @@ public class Utils {
         query = " " + query + " ";
         return string.contains(query);
     }
-
+    /**
+     * Creates an empty form for an event (not technically empty).
+     *
+     * Makes sure that nothing is null and that we have the required
+     * team name and team number fields
+     * @return
+     */
+    public static RForm createEmpty() {
+        ArrayList<RMetric> pit = new ArrayList<>();
+        ArrayList<RMetric> matches = new ArrayList<>();
+        RTextfield name = new RTextfield(0, "Team name", false, true, "");
+        RTextfield number = new RTextfield(1, "Team number", true, true, "");
+        pit.add(name);
+        pit.add(number);
+        return new RForm(pit, matches);
+    }
     /**
      * Displays the locally stored team code for Roblu Cloud, also allows the user to copy it to their clipboard
      * automatically or regenerate it.
      * @param context
-     * @param teamCode
-     * @param listener
+
      */
-    public static void showTeamCode(final Context context, final String teamCode, final RegenTokenListener listener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+    public static void showTeamCode(final Context context, final String teamCode) {
 
-        builder.setTitle("Your team code is: ");
-        builder.setMessage(teamCode);
-
-        builder.setPositiveButton("COPY", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                ClipData clip = ClipData.newPlainText("Roblu team code", teamCode);
-                clipboard.setPrimaryClip(clip);
-                dialog.dismiss();
-                Toast.makeText(context, "Team code copied to clipboard", Toast.LENGTH_LONG).show();
-            }
-        });
-        builder.setNegativeButton("Regenerate", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                confirmRegenerate(context, listener);
-            }
-        });
-        builder.setNeutralButton("Leave", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-                listener.tokenRegenerated("");
-            }
-        });
-        AlertDialog dialog = builder.create();
-        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getAnimation();
-        dialog.show();
     }
 
     /**
@@ -622,57 +476,5 @@ public class Utils {
         }
 
         return values;
-    }
-
-    /**
-     * Confirms a Roblu Cloud team code regenerate, if yes, then contacts the server
-     * and requests and team code regeneration.
-     * @param context
-     * @param listener
-     */
-    private static void confirmRegenerate(final Context context, final RegenTokenListener listener) {
-        final RSettings settings = new Loader(context).loadSettings();
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-
-        builder.setTitle("Warning");
-        builder.setMessage("If you regenerate your team code, all of your team members must rejoin this team with the new code.");
-        builder.setPositiveButton("Regenerate", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                try {
-                    if(!Utils.hasInternetConnection(context)) {
-                        Toast.makeText(context, "You are not connected to the internet.", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    CloudRequest cr = new CloudRequest(settings.getAuth(), settings.getTeamCode(), getDeviceID(context));
-                    // first, regenerate the token
-                    JSONObject response = (JSONObject) cr.regenerateToken();
-                    if(!response.get("status").toString().equalsIgnoreCase("success")) throw new Exception();
-                    JSONArray updates = (JSONArray) response.get("data");
-                    // get & set the new token
-                    String token = ((JSONObject)updates.get(0)).get("code").toString();
-                    settings.setTeamCode(token);
-                    new Loader(context).saveSettings(settings);
-                    showTeamCode(context, token, listener);
-                    dialog.dismiss();
-                    listener.tokenRegenerated(token);
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    System.out.println("error: "+e.getMessage());
-                    Toast.makeText(context, "Error occurred while contacting Roblu Server. Please try again later.", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        });
-        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
-        AlertDialog dialog = builder.create();
-        if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = new Loader(context).loadSettings().getRui().getDialogDirection();
-        dialog.show();
     }
 }

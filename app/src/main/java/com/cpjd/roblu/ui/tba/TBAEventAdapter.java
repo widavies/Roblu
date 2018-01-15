@@ -70,6 +70,24 @@ class TBAEventAdapter extends RecyclerView.Adapter<TBAEventAdapter.ViewHolder> {
     }
 
     /**
+     * Sets the events to the adapter
+     * @param events events to pass control of to this adapter
+     * @param hideZeroRelevanceEvents if events with 0 relevance should be visible
+     */
+    public void setEvents(ArrayList<Event> events, boolean hideZeroRelevanceEvents) {
+        if(hideZeroRelevanceEvents) {
+            this.events = new ArrayList<>(events); // clones the array
+            for(int i = 0; i < this.events.size(); i++) {
+                if(this.events.get(i).relevance == -1) {
+                    this.events.remove(i);
+                    i--;
+                }
+            }
+        } else this.events = events;
+        notifyDataSetChanged();
+    }
+
+    /**
      * Creates a view holder that will hold the UI of an TBA Event model
      * @param parent the parent view group
      * @param viewType the view type
@@ -131,7 +149,6 @@ class TBAEventAdapter extends RecyclerView.Adapter<TBAEventAdapter.ViewHolder> {
                 this.number.setBackgroundColor(rui.getCardColor());
                 this.number.setTextColor(rui.getText());
             }
-
         }
     }
 }

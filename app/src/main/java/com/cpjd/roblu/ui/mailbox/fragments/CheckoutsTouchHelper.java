@@ -1,6 +1,5 @@
 package com.cpjd.roblu.ui.mailbox.fragments;
 
-import android.content.Intent;
 import android.graphics.Canvas;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -10,12 +9,8 @@ import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.mailbox.Mailbox;
-import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
-
-import java.util.ArrayList;
 
 /**
  * Manages interface of checkout cards. This class can be used in one of two ways:
@@ -41,7 +36,7 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
         this.mode = mode;
         this.elementsAdapter = elementsAdapter;
 
-        RUI rui = new Loader(elementsAdapter.getContext()).loadSettings().getRui();
+        RUI rui = new IO(elementsAdapter.getContext()).loadSettings().getRui();
 
         xMark = ContextCompat.getDrawable(elementsAdapter.getContext(), R.drawable.confirm);
         xMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
@@ -59,7 +54,7 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public void onSwiped(final RecyclerView.ViewHolder viewHolder, int direction) {
-        if(mode == CheckoutAdapter.CONFLICTS) {
+        /*if(mode == CheckoutAdapter.CONFLICTS) {
             Loader l = new Loader(elementsAdapter.getContext());
             RCheckout checkout = l.loadCheckoutConflict(elementsAdapter.getCheckout(viewHolder.getAdapterPosition()).getID());
             if(direction == ItemTouchHelper.LEFT) {
@@ -111,7 +106,7 @@ public class CheckoutsTouchHelper extends ItemTouchHelper.SimpleCallback {
                 broadcast3.setAction("com.cpjd.roblu.broadcast.main");
                 elementsAdapter.getContext().sendBroadcast(broadcast3);
             }
-        }
+        }*/
     }
 
     @Override

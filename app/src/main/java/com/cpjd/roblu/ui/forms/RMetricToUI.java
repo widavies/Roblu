@@ -3,13 +3,9 @@ package com.cpjd.roblu.ui.forms;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
-import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -54,11 +50,12 @@ import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
-import com.cpjd.roblu.ui.team.forms.images.FullScreenImageGalleryActivity;
-import com.cpjd.roblu.ui.team.forms.images.FullScreenImageGalleryAdapter;
-import com.cpjd.roblu.ui.team.forms.images.ImageGalleryActivity;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
+import com.etiennelawlor.imagegallery.library.activities.FullScreenImageGalleryActivity;
+import com.etiennelawlor.imagegallery.library.activities.ImageGalleryActivity;
+import com.etiennelawlor.imagegallery.library.adapters.FullScreenImageGalleryAdapter;
+import com.etiennelawlor.imagegallery.library.adapters.ImageGalleryAdapter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -75,7 +72,7 @@ import lombok.Setter;
  * @since 3.2.0
  * @author Will Davies
  */
-public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGalleryAdapter.ImageThumbnailLoader, FullScreenImageGalleryAdapter.FullScreenImageLoader {
+public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, FullScreenImageGalleryAdapter.FullScreenImageLoader {
     /**
      * Activity reference
      */
@@ -95,6 +92,16 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
      */
     @Setter
     private MetricListener listener;
+
+    @Override
+    public void loadFullScreenImage(ImageView iv, String imageUrl, int width, LinearLayout bglinearLayout) {
+
+    }
+
+    @Override
+    public void loadImageThumbnail(ImageView iv, String imageUrl, int dimension) {
+
+    }
 
     public interface MetricListener {
         /**
@@ -124,8 +131,8 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         AppCompatRadioButton yes = new AppCompatRadioButton(activity);
         AppCompatRadioButton no = new AppCompatRadioButton(activity);
 
-        yes.setEnabled(!editable);
-        no.setEnabled(!editable);
+        yes.setEnabled(editable);
+        no.setEnabled(editable);
 
         ColorStateList colorStateList = new ColorStateList(
                 new int[][] {
@@ -218,7 +225,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         ImageView addButton = new ImageView(activity);
         addButton.setId(Utils.generateViewId());
-        addButton.setEnabled(!editable);
+        addButton.setEnabled(editable);
         addButton.setBackground(add);
         addButton.setPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6));
         addButton.setLayoutParams(params);
@@ -250,7 +257,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         ImageView minusButton = new ImageView(activity);
         minusButton.setBackground(minus);
         minusButton.setId(Utils.generateViewId());
-        minusButton.setEnabled(!editable);
+        minusButton.setEnabled(editable);
         minusButton.setLayoutParams(params);
         minusButton.setPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 6));
         minusButton.setOnClickListener(new View.OnClickListener() {
@@ -290,7 +297,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             sb.setMin(slider.getMin());
         }
-        sb.setEnabled(!editable);
+        sb.setEnabled(editable);
         sb.setProgress(slider.getValue());
         sb.setId(Utils.generateViewId());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -358,7 +365,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
     public CardView getChooser(final RChooser chooser) {
         Spinner spinner = new Spinner(activity);
         spinner.setId(Utils.generateViewId());
-        spinner.setEnabled(!editable);
+        spinner.setEnabled(editable);
         spinner.setPadding(400, spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
         if(chooser.getValues() != null) {
             ArrayAdapter<String> adapter =
@@ -463,7 +470,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
                 box.setId(Utils.generateViewId());
                 box.setTextColor(rui.getText());
                 box.setChecked((Boolean)pair.getValue());
-                box.setEnabled(!editable);
+                box.setEnabled(editable);
                 box.setLayoutParams(params);
                 ColorStateList colorStateList = new ColorStateList(
                         new int[][] {
@@ -530,7 +537,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
 
         final ImageView playButton = new ImageView(activity);
         playButton.setBackground(play);
-        playButton.setEnabled(!editable);
+        playButton.setEnabled(editable);
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         playButton.setId(Utils.generateViewId());
@@ -542,7 +549,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         final ImageView button = new ImageView(activity);
         button.setBackground(reset);
         button.setId(Utils.generateViewId());
-        button.setEnabled(!editable);
+        button.setEnabled(editable);
         button.setLayoutParams(params);
         final TextView timer = new TextView(activity);
         timer.setTextSize(25);
@@ -643,7 +650,7 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         });
         Utils.setCursorColor(et, rui.getAccent());
         et.setText(textfield.getText());
-        et.setEnabled(!editable);
+        et.setEnabled(editable);
         et.setTextColor(rui.getText());
         if(textfield.isNumericalOnly()) et.setInputType(InputType.TYPE_CLASS_NUMBER);
         if(textfield.isOneLine()) et.setMaxLines(1);
@@ -836,58 +843,4 @@ public class RMetricToUI implements com.cpjd.roblu.ui.team.forms.images.ImageGal
         return getCard(layout);
     }
 
-    @Override
-    public void loadImageThumbnail(ImageView iv, byte[] image, int dimension) {
-        Bitmap bitmap = scaleCenterCrop(BitmapFactory.decodeByteArray(image, 0, image.length), dimension, dimension);
-
-        if(bitmap != null) {
-            iv.setImageBitmap(bitmap);
-        } else {
-            iv.setImageDrawable(null);
-        }
-    }
-
-    @Override
-    public void loadFullScreenImage(ImageView iv, byte[] image, int width, LinearLayout bglinearLayout) {
-        Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
-
-        if(bitmap != null) {
-            iv.setImageBitmap(bitmap);
-        } else {
-            iv.setImageDrawable(null);
-        }
-    }
-
-    private Bitmap scaleCenterCrop(Bitmap source, int newHeight, int newWidth) {
-        int sourceWidth = source.getWidth();
-        int sourceHeight = source.getHeight();
-
-        // Compute the scaling factors to fit the new height and width, respectively.
-        // To cover the final image, the final scaling will be the bigger
-        // of these two.
-        float xScale = (float) newWidth / sourceWidth;
-        float yScale = (float) newHeight / sourceHeight;
-        float scale = Math.max(xScale, yScale);
-
-        // Now get the size of the source bitmap when scaled
-        float scaledWidth = scale * sourceWidth;
-        float scaledHeight = scale * sourceHeight;
-
-        // Let's find out the upper left coordinates if the scaled bitmap
-        // should be centered in the new size give by the parameters
-        float left = (newWidth - scaledWidth) / 2;
-        float top = (newHeight - scaledHeight) / 2;
-
-        // The target rectangle for the new, scaled version of the source bitmap will now
-        // be
-        RectF targetRect = new RectF(left, top, left + scaledWidth, top + scaledHeight);
-
-        // Finally, we create a new bitmap of the specified size and draw our new,
-        // scaled bitmap onto it.
-        Bitmap dest = Bitmap.createBitmap(newWidth, newHeight, source.getConfig());
-        Canvas canvas = new Canvas(dest);
-        canvas.drawBitmap(source, null, targetRect, null);
-
-        return dest;
-    }
 }

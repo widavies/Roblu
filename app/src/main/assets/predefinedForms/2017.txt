@@ -8,7 +8,7 @@ counter,Shots,1,0
 counter,High shots,1,0
 counter,Gears lifted,1,0
 counter,Autonomous?,Yes:No:Sometimes:Unknown,3
-boolean,Teleopoerated?,false
+boolean,Teleoperated?,false
 checkbox,Position,Left:Center:Right
 checkbox,Items,Floor:Hopper:Load station:Climb:Gears:Gear time okay
 stopwatch,Climb time,0

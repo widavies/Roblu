@@ -7,8 +7,6 @@ import android.view.MotionEvent;
 
 public class DisableSwipeViewPager extends ViewPager {
 
-    private final boolean swipeEnabled = false;
-
     public DisableSwipeViewPager(Context context) {
         super(context);
     }

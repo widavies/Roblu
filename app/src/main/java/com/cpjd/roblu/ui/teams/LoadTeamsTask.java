@@ -24,6 +24,8 @@ import lombok.EqualsAndHashCode;
  * -Filtering (Alphabetical, numerical, last-edit, custom)
  * -Searching
  *
+ * -use LoadTeamsTask.setTeams() to avoid reloading them if possible
+ *
  * @version 2
  * @since 3.0.0
  * @author Will Davies
@@ -38,17 +40,10 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
     private int eventID;
 
     /**
-     * This is array is only here for one purpose, to allow us the capability of not re-loading
-     * the teams from IO during a search, this array should remain unchanging, the TeamsView.teams is the array
-     * that can adjusted, modified, stripped of teams, etc.
+     * Use this array if you don't want the LoadTeamsTask to reload the teams from the file system
      */
     private ArrayList<RTeam> teams;
 
-    /**
-     * true if LoadTeamsTask should re-load all the teams from the file system,
-     * false if this calling method just wants a sorting refresh
-     */
-    private boolean reload;
     /**
      * Filter is really important, it defines how LoadTeamsTask should sort the loaded data.
      * If filter is equal to SORT_TYPE.SEARCH, query must be provided, and if it's equal to
@@ -72,6 +67,11 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      */
     private WeakReference<IO> ioWeakReference;
 
+    /**
+     * The teams array will be sent to this adapter when this task is finished
+     */
+    private WeakReference<TeamsRecyclerAdapter> teamsRecyclerAdapterWeakReference;
+
     interface LoadTeamsTaskListener {
         void teamsTaskComplete();
     }
@@ -90,9 +90,10 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      * @param io IO object so that this class can interact with the file system
      * @param listener will receive an event when the UI should update
      */
-    LoadTeamsTask(IO io, LoadTeamsTaskListener listener) {
+    LoadTeamsTask(IO io, LoadTeamsTaskListener listener, TeamsRecyclerAdapter adapter) {
         this.listener = listener;
         this.ioWeakReference = new WeakReference<>(io);
+        this.teamsRecyclerAdapterWeakReference = new WeakReference<>(adapter);
     }
 
     /**
@@ -104,14 +105,12 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      * -If filter == SORT_TYPE.CUSTOM_SORT, customSortToken will be examined, so it shouldn't be = null, but may be "", and query can be null, if not, it will perform a search also
      *
      * @param eventID the int ID of the event whose teams should be loaded
-     * @param reload true if the teams should be reloaded from the file system
      * @param filter int according to TeamsView.SORT_TYPE
      * @param query search query string
      * @param customSortToken custom sort token string in format [TeamMetricProcessor.PROCESS_METHOD:ID], example: 2:2
      */
-    void setTaskParameters(int eventID, boolean reload, int filter, String query, String customSortToken) {
+    void setTaskParameters(int eventID, int filter, String query, String customSortToken) {
         this.eventID = eventID;
-        this.reload = reload;
         this.filter = filter;
         this.query = query;
         this.customSortToken = customSortToken;
@@ -132,7 +131,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         /*
          * Next, take care of "reload", if reload is true, teams must be reloaded from the file system
          */
-        if(reload) {
+        if(teams == null || teams.size() == 0) {
             RTeam[] local = ioWeakReference.get().loadTeams(eventID);
             // no teams were found locally, so return null
             if(local == null || local.length == 0) {
@@ -150,7 +149,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         if(teams == null || teams.size() == 0) return null;
 
         // Just a quick function to make sure the TeamsView.teams parent team array is instantiated
-        if(TeamsView.teams == null) TeamsView.teams = new ArrayList<>();
+        if(teams == null) teams = new ArrayList<>();
 
         /*
          * Next, each RTeam contains a variable named filter, it's a sort of "helper" variable.
@@ -166,8 +165,6 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         if(filter == TeamsView.SORT_TYPE.LAST_EDIT || filter == TeamsView.SORT_TYPE.NUMERICAL || filter == TeamsView.SORT_TYPE.ALPHABETICAL) {
             try {
                 Collections.sort(teams);
-                TeamsView.teams.clear();
-                TeamsView.teams.addAll(teams); // add it to the teams array, all that's left after that is a notifyDataSet to the adapter
                 return null;
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
@@ -187,12 +184,10 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
                 try {
                     Collections.sort(teams);
-                    TeamsView.teams.clear();
-                    TeamsView.teams.addAll(teams); // add it to the teams array, all that's left after that is a notifyDataSet to the adapter
                     // Don't forget, this time, all items with 0 relevance need to be removed
-                    for(int i = 0; i < TeamsView.teams.size(); i++) {
-                        if(TeamsView.teams.get(i).getCustomRelevance() == 0) {
-                            TeamsView.teams.remove(i);
+                    for(int i = 0; i < teams.size(); i++) {
+                        if(teams.get(i).getCustomRelevance() == 0) {
+                            teams.remove(i);
                             i--;
                         }
                     }
@@ -249,12 +244,10 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
             try {
                 Collections.sort(teams);
-                TeamsView.teams.clear();
-                TeamsView.teams.addAll(teams); // add it to the teams array, all that's left after that is a notifyDataSet to the adapter
                 // Don't forget, this time, all items with 0 relevance need to be removed
-                for(int i = 0; i < TeamsView.teams.size(); i++) {
-                    if(TeamsView.teams.get(i).getCustomRelevance() == 0) {
-                        TeamsView.teams.remove(i);
+                for(int i = 0; i < teams.size(); i++) {
+                    if(teams.get(i).getCustomRelevance() == 0) {
+                        teams.remove(i);
                         i--;
                     }
                 }
@@ -316,6 +309,8 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void params) {
+        teamsRecyclerAdapterWeakReference.get().setTeams(teams);
+        teamsRecyclerAdapterWeakReference.get().notifyDataSetChanged();
         listener.teamsTaskComplete();
     }
 

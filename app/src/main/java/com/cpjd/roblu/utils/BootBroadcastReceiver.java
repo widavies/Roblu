@@ -5,11 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.cpjd.roblu.sync.cloud.sync.Service;
-
 /**
- * Created by Will Davies on 7/22/2017.
+ * Starts this app's service when the Android device boots up
+ *
+ * @since 3.0.0
+ * @author Will Davies
  */
-
 public class BootBroadcastReceiver extends BroadcastReceiver {
     static final String ACTION = "android.intent.action.BOOT_COMPLETED";
     @Override

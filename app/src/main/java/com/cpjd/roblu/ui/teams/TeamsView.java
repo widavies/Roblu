@@ -79,7 +79,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * items should NOT be removed from it. Searches should occur by clearing the adapter and placing
      * teams in individually
      */
-    public static ArrayList<RTeam> teams;
+    private ArrayList<RTeam> teams;
     /**
      * The adapter is essentially the backend to the teams array, it helps manage UI binding, actions,
      * and more
@@ -98,10 +98,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     /*
      * Filters and searching
      */
-    /**
-     * This object will be used to handle all load, filter, and search events
-     */
-    private LoadTeamsTask loadTeamsTask;
     /**
      * The filter to use next time the team list is sorted, must be one of SORT_TYPE
      */
@@ -267,9 +263,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
         });
 
-        // Setup the load teams task
-        loadTeamsTask = new LoadTeamsTask(io, this);
-
         // Make general changes to UI, keep it synced with RUI
         new UIHandler(this, toolbar, searchButton, true).update();
 
@@ -286,6 +279,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             Intent serviceIntent = new Intent(this, Service.class);
             startService(serviceIntent);
         }
+
+        executeLoadTeamsTask(true);
 
         /*
          * Display update messages
@@ -422,7 +417,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
     @Override
     public void teamsTaskComplete() {
-        adapter.notifyDataSetChanged();
         rv.setVisibility(View.VISIBLE);
         bar.setVisibility(View.GONE);
         // Update the action bar subtitle
@@ -437,15 +431,19 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     /**
      * This method starts a LoadTeamsTasks to search, filter, or load teams from an event.
      * teamstaskComplete() will be called when LoadTeamsTasks finishes its job
-     * @param reload true if teams should be reloaded from the disk
      */
     private void executeLoadTeamsTask(boolean reload) {
-        loadTeamsTask.setTaskParameters(eventDrawerManager.getEvent().getID(), reload, lastFilter, lastQuery, lastCustomSortToken);
+        if(eventDrawerManager.getEvent() == null) return;
+
+        LoadTeamsTask loadTeamsTask = new LoadTeamsTask(new IO(getApplicationContext()), this, adapter);
+        loadTeamsTask.setTaskParameters(eventDrawerManager.getEvent().getID(), lastFilter, lastQuery, lastCustomSortToken);
+        if(reload) loadTeamsTask.setTeams(teams);
         // Flag UI to look like it's loading something
         rv.setVisibility(View.GONE);
         bar.setVisibility(View.VISIBLE);
         bar.getIndeterminateDrawable().setColorFilter(settings.getRui().getAccent(), PorterDuff.Mode.MULTIPLY);
         // Start the actual loading
+        loadTeamsTask.cancel(true);
         loadTeamsTask.execute();
     }
 
@@ -462,7 +460,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             lastFilter = SORT_TYPE.CUSTOM_SORT;
             executeLoadTeamsTask(false);
         }
-        else if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIMRED) { // the user edited the master form, retrieve it and save it
+        else if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIRMED) { // the user edited the master form, retrieve it and save it
             Bundle b = data.getExtras();
             if(b != null) {
                 settings.setMaster(new RForm((ArrayList<RMetric>) b.getSerializable("pit"), ((ArrayList<RMetric>) b.getSerializable("pit"))));
@@ -471,6 +469,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         }
         else if(resultCode == Constants.NEW_EVENT_CREATED){ // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
+            eventDrawerManager.loadEventsToDrawer();
             eventDrawerManager.selectEvent(d.getInt("eventID"));
         }
         else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
@@ -557,7 +556,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
     @Override
     public void teamSelected(View v) {
-        RTeam team = TeamsView.teams.get(rv.getChildLayoutPosition(v));
+        RTeam team = teams.get(rv.getChildLayoutPosition(v));
         Intent startView = new Intent(this, TeamViewer.class);
         startView.putExtra("teamID", team.getID());
         startView.putExtra("event", eventDrawerManager.getEvent());
@@ -573,7 +572,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
 
     @Override
-    public void eventSelected() {
+    public void eventSelected(REvent event) {
         executeLoadTeamsTask(true);
     }
 

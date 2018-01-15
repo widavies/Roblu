@@ -5,6 +5,7 @@ import android.content.res.AssetManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -27,6 +28,7 @@ import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -118,7 +120,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
         ArrayList<RMetric> metrics = new ArrayList<>();
 	    try {
             AssetManager am = getAssets();
-            InputStream is = am.open(year +".txt");
+            InputStream is = am.open("predefinedForms"+ File.separator+year +".txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String line;
             int ID = 0;
@@ -157,7 +159,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                     ID++;
                 }
                 else if(tokens[0].equals("textfield")) {
-                    metrics.add(new RTextfield(ID, tokens[1], tokens[2]));
+                    metrics.add(new RTextfield(ID, tokens[1], ""));
                     ID++;
                 }
                 else if(tokens[0].equals("stopwatch")) {
@@ -177,6 +179,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
             return form;
 
         } catch(IOException e) {
+	        Log.d("RBS", "Failed to process form: "+e.getMessage());
             return null;
         }
     }
@@ -207,7 +210,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                 form = forms.get(2016);
                 break;
             case 1:
-                form = forms.get(2016);
+                form = forms.get(2017);
                 break;
         }
         if(form == null) return;

@@ -124,8 +124,10 @@ public class FastDialogBuilder {
         AlertDialog dialog = builder.create();
         if(dialog.getWindow() != null) {
             dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
-            dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
-            dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
+            if(dialog.getButton(Dialog.BUTTON_NEGATIVE) != null) dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
+            if(dialog.getButton(Dialog.BUTTON_POSITIVE) != null) dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
+            if(dialog.getButton(Dialog.BUTTON_NEUTRAL) != null) dialog.getButton(Dialog.BUTTON_NEUTRAL).setTextColor(rui.getAccent());
+
             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
         }
         dialog.setCancelable(false);

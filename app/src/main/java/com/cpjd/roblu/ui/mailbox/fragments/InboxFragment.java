@@ -13,6 +13,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
 
 import java.util.ArrayList;
@@ -50,10 +51,10 @@ public class InboxFragment extends Fragment {
 
     private class LoadCheckouts extends AsyncTask<Void, Void, ArrayList<RCheckout>> {
 
-        private Loader l;
+        private IO l;
 
         public LoadCheckouts() {
-            l = new Loader(view.getContext());
+            l = new IO(view.getContext());
         }
 
         @Override

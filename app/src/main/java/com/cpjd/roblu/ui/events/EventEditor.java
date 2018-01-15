@@ -1,7 +1,5 @@
 package com.cpjd.roblu.ui.events;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -26,6 +24,7 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.forms.PredefinedFormSelector;
 import com.cpjd.roblu.utils.Constants;
@@ -84,12 +83,15 @@ public class EventEditor extends AppCompatActivity {
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 		/*
 		 * Load dependencies
 		 */
         editing = getIntent().getBooleanExtra("editing", false);
         RUI rui = new IO(getApplicationContext()).loadSettings().getRui();
+
+        // decide whether to use create event or edit event UI scheme
+        if(editing) setContentView(R.layout.activity_edit_event);
+        else setContentView(R.layout.activity_create_event);
 
         /*
          * Setup UI
@@ -97,13 +99,13 @@ public class EventEditor extends AppCompatActivity {
         // Toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        if(editing) setTitle("Edit event");
-        else setTitle("Create event");
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.clear);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            if(editing) getSupportActionBar().setTitle("Edit event");
+            else getSupportActionBar().setTitle("Create event");
+        }
 
-        // decide whether to use create event or edit event UI scheme
-        if(editing) setContentView(R.layout.activity_edit_event);
-        else setContentView(R.layout.activity_create_event);
 
         // event name
         eventName = findViewById(R.id.event_create_name_edit);
@@ -112,8 +114,6 @@ public class EventEditor extends AppCompatActivity {
          * Bind user color preferences to the UI elements
          */
         Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.name_wrapper), (AppCompatEditText)findViewById(R.id.event_create_name_edit));
-        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.start_wrapper), (AppCompatEditText)findViewById(R.id.editText1));
-        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.end_wrapper), (AppCompatEditText)findViewById(R.id.editText2));
 
         /*
          * Setup editing/non-editing UI specifics
@@ -121,6 +121,10 @@ public class EventEditor extends AppCompatActivity {
         if(!editing) {
             TextView t = findViewById(R.id.event_create_form_label);
             t.setTextColor(rui.getAccent());
+            if(getIntent().getSerializableExtra("tbaEvent") != null) {
+                event = (Event) getIntent().getSerializableExtra("tbaEvent");
+                eventName.setText(event.name);
+            }
         } else {
             RelativeLayout layout = findViewById(R.id.create_layout);
             for(int i = 0; i < layout.getChildCount(); i++) {
@@ -132,6 +136,7 @@ public class EventEditor extends AppCompatActivity {
             tbaKeyText = findViewById(R.id.key_edit);
             tbaKeyText.setText(getIntent().getStringExtra("key"));
             eventName.setText(getIntent().getStringExtra("name"));
+
         }
 
         // General UI syncing
@@ -240,12 +245,13 @@ public class EventEditor extends AppCompatActivity {
          */
         else if(resultCode == Constants.FORM_CONFIRMED) {
             Bundle bundle = data.getExtras();
-            tempFormHolder = new RForm((ArrayList<RMetric>)bundle.getSerializable("pit"), (ArrayList<RMetric>)bundle.getSerializable("match"));
+            tempFormHolder = (RForm) bundle.getSerializable("form");
 
             /*
              * Create the event!
              */
-            createEvent(tempFormHolder);
+            Intent intent = new Intent();
+            intent.putExtra("eventID", createEvent(tempFormHolder));
             setResult(Constants.NEW_EVENT_CREATED);
             finish();
         }
@@ -268,7 +274,7 @@ public class EventEditor extends AppCompatActivity {
      * an event will get created from EventEditor whenever this method is called, no exceptions.
      * @param form the form to save with the event
      */
-    private void createEvent(RForm form) {
+    private int createEvent(RForm form) {
         IO io = new IO(getApplicationContext());
         REvent event = new REvent(io.getNewEventID(), eventName.getText().toString());
         io.saveEvent(event);
@@ -280,7 +286,7 @@ public class EventEditor extends AppCompatActivity {
         if(editing && getIntent().getSerializableExtra("tbaEvent") != null) {
             new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), new IO(getApplicationContext())).execute();
         }
-
+        return event.getID();
     }
 
     /**
@@ -288,34 +294,28 @@ public class EventEditor extends AppCompatActivity {
      */
     private void launchParent() {
         // if this statement is true, the user didn't enter enough information for a "discard changes?" dialog to be required, so exit automatically
-        if(eventName.getText().toString().equals("") && tempFormHolder != null
-                && (tempFormHolder.getPit() == null || tempFormHolder.getPit().size() <= 2)
-                && (tempFormHolder.getMatch() == null || tempFormHolder.getMatch().size() == 0)) {
+        if((getIntent().getSerializableExtra("tbaEvent") != null) || eventName.getText().toString().equals("")
+                && (tempFormHolder == null || ((tempFormHolder.getPit() == null) || tempFormHolder.getPit().size() <= 2) && (tempFormHolder.getMatch() == null || tempFormHolder.getMatch().size() == 0))) {
             setResult(Constants.EVENT_DISCARDED);
             finish();
         } else {
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            new FastDialogBuilder()
+                    .setTitle("Discard changes?")
+                    .setMessage("Really discard changes you've made to the event?")
+                    .setPositiveButtonText("Discard")
+                    .setNegativeButtonText("Cancel")
+                    .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                        @Override
+                        public void accepted() {
+                            setResult(Constants.EVENT_DISCARDED);
+                            finish();
+                        }
 
-            builder.setTitle("Discard changes?");
-            builder.setMessage("Really discard changes you've made to the event?");
-
-            builder.setPositiveButton("Discard", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                    setResult(Constants.EVENT_DISCARDED);
-                    finish();
-                }
-            });
-            builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-            AlertDialog dialog = builder.create();
-            if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = R.style.dialog_animation;
-            dialog.show();
+                        @Override
+                        public void denied() {}
+                        @Override
+                        public void neutral() {}
+                    }).build(getApplicationContext());
         }
     }
 

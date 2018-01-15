@@ -75,6 +75,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
             getSupportActionBar().setHomeAsUpIndicator(R.drawable.clear);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Create event");
+            getSupportActionBar().setSubtitle("Choose an option");
         }
 
         /*

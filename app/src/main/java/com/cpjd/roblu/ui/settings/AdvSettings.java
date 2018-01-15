@@ -21,7 +21,6 @@ import android.os.Bundle;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
-import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -36,21 +35,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.sync.cloud.api.CloudRequest;
-import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.sync.cloud.api.CloudRequest;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
-import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.auth.api.signin.GoogleSignInResult;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.mikepenz.aboutlibraries.Libs;
 import com.mikepenz.aboutlibraries.LibsBuilder;
 
@@ -61,25 +52,15 @@ import org.json.simple.JSONObject;
  * AdvSettings is short for "Advanced Settings", because the last version of settings was absolute garbage.
  * This one is a bit better. This manages application level settings, not specific to any events
  *
+ * @version 2
  * @since 2.0.0
  * @author Will Davies
  */
-public class AdvSettings extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener {
-    /*
+public class AdvSettings extends AppCompatActivity {
+    /**
      * This is a reference to settings object, it's used for loading and updating settings
      */
     private static RSettings settings;
-    /*
-     * The GoogleApiClient manages Google Sign-In, Google sign-in works by pulling a list of Google accounts locally
-     * on the phone and displaying a chooser dialog, once the user selects an account, we gain access to their email
-     * and display name, among other things, but no password.
-     *
-     */
-    private static GoogleApiClient apiClient;
-    /*
-     * This is a reference to the UI object, it manages all the fancy UI colors
-     */
-    private RUI rui;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,13 +68,12 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
         // Set layout, ui attributes
         setContentView(R.layout.activity_settings);
         setTitle("Settings");
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // Load settings
-        settings = new Loader(getApplicationContext()).loadSettings();
-        rui = new Loader(getApplicationContext()).loadSettings().getRui();
+        settings = new IO(getApplicationContext()).loadSettings();
 
         // Replace the view with the preference fragment, the preference fragment manages all the setting changes and whatnot
         getFragmentManager().beginTransaction()
@@ -103,27 +83,24 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
 
         // UIHandler updates our activity to match what's set in RUI
         new UIHandler(this, (Toolbar)findViewById(R.id.toolbar)).update();
-
-        // Here we set up the apiClient, we are just requesting sign in access, we don't need any other API access, we'll also request the email
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN).requestEmail().build();
-        apiClient = new GoogleApiClient.Builder(this).enableAutoManage(this, this).addApi(Auth.GOOGLE_SIGN_IN_API, gso).build();
     }
 
-    // Callback occurs when Google services can't be connected to, usually the account is stored locally and the chance of this method getting called is relatively low
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Utils.showSnackbar(findViewById(R.id.advsettings), getApplicationContext(), "Failed to connect to Google services", true, 0);
-    }
-
-    // This is called when the user exits the UI customizer, we basically just want to reload the UI to match any changes the user may have made to the UI
+    /**
+     * This is called when the user exits the UI customizer, we basically just want to reload the UI to match any changes the user may have made to the UI
+     * @param requestCode the request code of the child activity
+     * @param resultCode the result code of the child activity
+     * @param data any data returned by the child activity
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         new UIHandler(this, (Toolbar)findViewById(R.id.toolbar)).update();
     }
 
-    // The settings fragment manages the loading & updating of settings
+    /**
+     *  The settings fragment manages the loading & updating of settings
+     */
     @SuppressWarnings("WeakerAccess")
-    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, RegenTokenListener {
+    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
         // text constants that will be accessible in the about libraries view
         private final String PRIVACY = "Roblu Privacy & Terms of Use\n" +
                 "\nData that Roblu stores and transfers:\n-Google email\n-Google display name\n-FRC Name and Number\n-Any and all form data, including scouters' data, local data, and more." +
@@ -139,7 +116,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 "\n\n3.5.0 - 3.5.1\n-Bug fixes\n\n3.0.0 - 3.4.9\n-Completed redesigned system\n-Redesigned file system\n-New form editor\n-New form elements\n-TBA-API improvements\n-Less restrictions on naming, editing, etc\n-New interface\n\n" +
                 "2.0.0-2.9.9\nRoblu Version 2, we don't talk about that anymore\n\n1.0.0-1.9.9\nRoblu Version 1 is where humans go to die";
 
-        private RUI rui;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -150,8 +126,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 getActivity().finish();
                 return;
             }
-
-            rui = new Loader(getActivity()).loadSettings().getRui();
 
             // Load the preferences specified in xml into the system, we only have to modify a couple of things manually
             addPreferencesFromResource(R.xml.preferences);
@@ -170,7 +144,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             findPreference("cloud_support").setOnPreferenceClickListener(this);
             findPreference("reddit").setOnPreferenceClickListener(this);
 
-            toggleJoinTeam(!(settings.getTeamCode() != null && !settings.getTeamCode().equals("")));
+            toggleJoinTeam(!(settings.getCode() != null && !settings.getCode().equals("")));
 
             // We want to update the UI to match if we're signed in or not (eg "sign-in" or "sign-out")
             toggleCloudControls(settings.isSignedIn());
@@ -194,38 +168,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             }
         }
 
-        /*
-         * If the user decides to sign out of their account, we should do several things:
-         * 1) Remove account credentials from settings
-         * 2) De-sync all events and clear any checkouts leftover from previously synced events
-         */
-        private void handleSignOut() {
-            Auth.GoogleSignInApi.signOut(apiClient).setResultCallback(new ResultCallback<Status>() {
-                @Override
-                public void onResult(@NonNull Status status) {
-                    toggleCloudControls(!status.isSuccess());
-                    if (status.isSuccess()) {
-                        settings.setName("");
-                        settings.setEmail("");
-                        settings.setAuth("");
-                        settings.setTeamCode("");
-                        settings.setClearActiveRequested(true);
-                        Loader l = new Loader(getActivity());
-                        REvent[] events = l.getEvents();
-                        for(int i = 0; events != null && i < events.length; i++) {
-                            events[i].setCloudEnabled(false);
-                            l.saveEvent(events[i]);
-                        }
-                        l.saveSettings(settings);
-                        l.clearCheckouts();
-                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Signed out successfully", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
-                    } else
-                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Sign out failed", true, 0);
-                }
-            });
-            updateUI(false);
-        }
-
         // Called when the user taps a preference
         @Override
         public boolean onPreferenceClick(Preference preference) {
@@ -236,30 +178,13 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             }
             else if(preference.getKey().equals("display_code")) { // user tapped display team code
                 // if already signed in, display the team code
-                if(settings.getTeamCode() != null && !settings.getTeamCode().equals("")) Utils.showTeamCode(getActivity(), settings.getTeamCode(), this);
-                else joinTeam(); // if not, prompt the user for a team code
+                //if(settings.getCode() != null && !settings.getCode().equals("")) Utils.showTeamCode(getActivity(), settings.getCode(), this);
+                // joinTeam(); // if not, prompt the user for a team code
                 return true;
             }
             else if(preference.getKey().equals("cloud_support")) { // open roblu.net in a browser on the user's device
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://roblu.net"));
                 startActivity(browserIntent);
-                return true;
-            }
-            else if(preference.getKey().equals("sync_service")) { // user tapped sign-in button, we have to decide whether to request sign-in, or sign out of Google
-                if(new Loader(getActivity()).loadSettings().isSignedIn()) { // If we're already signed in, let's make a request to sign out
-                    try {
-                        if(settings.getTeamCode() == null || settings.getTeamCode().equalsIgnoreCase("")) {
-                            handleSignOut();
-                        } else {
-                            handleSignOut();
-                        }
-                    } catch(Exception e) {
-                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
-                    }
-                } else { // we're signing into Google, let's display the account picker dialog
-                    Intent signIn = Auth.GoogleSignInApi.getSignInIntent(apiClient);
-                    startActivityForResult(signIn, Constants.CLOUD_SIGN_IN);
-                }
                 return true;
             }
             else if(preference.getKey().equals("about")) { // launch the about libraries view, this is managed via an external library
@@ -277,33 +202,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             return false;
         }
 
-        // This is called when the user taps an account on the account picker dialog, we are managing a sign-in event here
-        @Override
-        public void onActivityResult(int requestCode, int resultCode, Intent data) {
-            if (requestCode == Constants.CLOUD_SIGN_IN) {
-                GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
-                handleSignInResult(result);
-            }
-        }
-
-        // Manages the result of a user tapping an account to sign in
-        private void handleSignInResult(GoogleSignInResult result) {
-            if (result.isSuccess()) { // 99% of the time it will be a success
-                toggleCloudControls(true);
-                // Signed in successfully, show authenticated UI.
-                GoogleSignInAccount acct = result.getSignInAccount();
-                if(acct != null) { // update our local settings with the email and display name, don't touch anything else! we don't want to store unnecessary personal information
-                    settings.setName(acct.getDisplayName());
-                    settings.setEmail(acct.getEmail());
-                    new Loader(getActivity()).saveSettings(settings);
-                    updateUI(true);
-                } else return;
-            } else {
-                // Signed out, show unauthenticated UI.
-                updateUI(false);
-            }
-        }
-
         // Updates the ui to match the sign in state (true or false)
         private void updateUI(boolean b) {
             if(b) {
@@ -314,7 +212,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 findPreference("sync_service").setSummary("Sign-in to Roblu Cloud using your Google account.");
             }
             settings.setSignedIn(b);
-            new Loader(getActivity()).saveSettings(settings);
+            new IO(getActivity()).saveSettings(settings);
         }
 
         // Manages preferences that have a value and can be changed
@@ -334,7 +232,7 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                 }
                 settings.setTeamNumber(num);
             }
-            new Loader(getActivity()).saveSettings(settings); // save the settings to the file system
+            new IO(getActivity()).saveSettings(settings); // save the settings to the file system
             return true;
         }
 
@@ -386,8 +284,8 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                     } catch(Exception e) {
                         Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
                     }
-                    settings.setTeamCode(input.getText().toString());
-                    new Loader(getActivity()).saveSettings(settings);
+                    settings.setCode(input.getText().toString());
+                    new IO(getActivity()).saveSettings(settings);
                     dialog.dismiss();
 
                     // next, join team
@@ -395,10 +293,10 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
                         JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Utils.getDeviceID(getActivity())).joinTeam();
                         if(response.get("status").toString().equalsIgnoreCase("success") && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
                             // it works
-                            settings.setTeamCode(input.getText().toString());
-                            new Loader(getActivity()).saveSettings(settings);
+                            settings.setCode(input.getText().toString());
+                            new IO(getActivity()).saveSettings(settings);
                             toggleJoinTeam(false);
-                            Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team.", false, new Loader(getActivity()).loadSettings().getRui().getPrimaryColor());
+                            Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team.", false, new IO(getActivity()).loadSettings().getRui().getPrimaryColor());
                         } else { // didn't exist or already signed in
                             Snackbar s = Snackbar.make(getActivity().findViewById(R.id.advsettings), "Team doesn't exist.", Snackbar.LENGTH_LONG);
                             s.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.red));
@@ -431,13 +329,6 @@ public class AdvSettings extends AppCompatActivity implements GoogleApiClient.On
             dialog.show();
             dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
             dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
-        }
-
-        @Override // called when the user taps "regenerate" within the display team code dialog
-        public void tokenRegenerated(String token) {
-            if(token != null && token.equals("")) toggleJoinTeam(true);
-            settings.setTeamCode(token);
-            new Loader(getActivity()).saveSettings(settings);
         }
 
         // Listens to the custom snack bar, displays a link to Roblu Cloud purchase

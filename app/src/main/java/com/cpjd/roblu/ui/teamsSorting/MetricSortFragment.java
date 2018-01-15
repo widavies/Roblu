@@ -90,7 +90,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
         FormRecyclerAdapter adapter = new FormRecyclerAdapter(view.getContext(), this);
         rv.setAdapter(adapter);
         // setup gesture listener
-        ItemTouchHelper.Callback callback = new FormRecyclerTouchHelper(adapter, true);
+        ItemTouchHelper.Callback callback = new FormRecyclerTouchHelper(adapter);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
         adapter.setMetrics(metrics);
@@ -145,6 +145,11 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
             getActivity().setResult(Constants.CUSTOM_SORT_CONFIRMED, result);
             getActivity().finish();
         }
+    }
+
+    @Override
+    public void metricEditRequested(RMetric metric) {
+
     }
 
 }

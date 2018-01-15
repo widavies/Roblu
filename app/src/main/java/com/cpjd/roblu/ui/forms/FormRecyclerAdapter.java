@@ -94,8 +94,7 @@ public class FormRecyclerAdapter extends RecyclerView.Adapter<FormRecyclerAdapte
      */
     public void setMetrics(ArrayList<RMetric> metrics) {
         initID = 0;
-        this.metrics.clear();
-        this.metrics.addAll(metrics);
+        this.metrics = metrics;
         for(RMetric metric : this.metrics) {
             if(metric.getID() > initID) initID = metric.getID();
         }

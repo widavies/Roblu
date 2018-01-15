@@ -1,33 +1,8 @@
 package com.cpjd.roblu.sync.cloud.sync;
 
-import android.app.ActivityManager;
-import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Process;
-import android.util.Log;
-
-import com.cpjd.roblu.sync.cloud.api.CloudRequest;
-import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.REvent;
-import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RSettings;
-import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.notifications.Notify;
-import com.cpjd.roblu.utils.Utils;
-
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
-import java.util.ArrayList;
-import java.util.List;
+import android.support.annotation.Nullable;
 
 /**
  * This is the background service for the Roblu Cloud API.
@@ -58,7 +33,14 @@ import java.util.List;
  */
 
 public class Service extends android.app.Service {
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+}
 
+/*
     private ServiceHandler handler;
 
     @Override
@@ -111,7 +93,7 @@ public class Service extends android.app.Service {
                        Log.d("RBS", "Sleeping for 15 seconds...");
                         Thread.sleep(15000);
                     }
-                } catch(Exception e) { /* Ignore */}
+                } catch(Exception e) { /* Ignore }
 
                 // first, check if we have an internet connection, if we don't, the background service is useless
                 if(!Utils.hasInternetConnection(getApplicationContext())) {
@@ -129,19 +111,15 @@ public class Service extends android.app.Service {
                  * all the scouters because the master either deleted a synced event,
                  * or tapped stop syncing
                  *
-                 */
+                 *
                 if(settings.isClearActiveRequested()) {
                     try {
-                        Log.d("RBS", cr.clearActiveEvent().toString());
-                    } catch(Exception e) { /* Ignore */ }
-                    settings.setClearActiveRequested(false);
-                    l.saveSettings(settings);
-                }
+
 
                 /*
                  *-UI-
                  * Check if the UI was modified and needs to be uploaded to all the scouters
-                 */
+                 *
                 RUI rui = settings.getRui();
                 if(rui != null && rui.isModified()) {
                     try {
@@ -157,7 +135,7 @@ public class Service extends android.app.Service {
 
                 /*
                  * Find the active event from local events and obtain a reference to it
-                 */
+                 *
                 REvent[] events = l.getEvents();
                 REvent activeEvent = null;
                 for(int i = 0; events != null && events.length > 0 && i < events.length; i++) {
@@ -170,7 +148,7 @@ public class Service extends android.app.Service {
                 /*
                  * -FORM-
                  * Check if the form was modified and needs to be uploaded to the scouters
-                 */
+                 *
                 RForm form = l.loadForm(activeEvent.getID());
                 if(form != null  && form.isModified()) {
                     try {
@@ -189,7 +167,7 @@ public class Service extends android.app.Service {
                  * Check to see if any scouters completed scouting data and
                  * uploaded it to the server, if so, download it and either merge
                  * automatically or save to merge conflicts
-                 */
+                 *
                 try {
                     int auto = 0;
                     int conflicts = 0;
@@ -204,7 +182,7 @@ public class Service extends android.app.Service {
 
                         /*
                          * We need to check for conflicts (does a team already exist that's been edited, or does the team not exist)
-                         */
+                         *
                         RTeam temp = l.loadTeam(activeEvent.getID(), checkout.getTeam().getID());
                         if(temp == null) { // if we don't have a local team matching the downloaded team, set conflict type not-found locally
                             checkout.setConflictType("not-found");
@@ -326,4 +304,5 @@ public class Service extends android.app.Service {
         }
 
     }
-}
+    */
+

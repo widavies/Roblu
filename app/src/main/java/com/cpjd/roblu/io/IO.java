@@ -68,7 +68,7 @@ public class IO {
     public static boolean init(Context context) {
         // Create prefix directory
         if(!new File(context.getFilesDir(), PREFIX).exists()) {
-            if(new File(context.getFilesDir(), PREFIX).mkdir()) Log.d("RBS", "Prefix dir successfully created.");
+            if(new File(context.getFilesDir(), PREFIX).mkdir()) Log.d("RBS", "Prefix dir could not be created.");
         }
 
         /*
@@ -116,7 +116,7 @@ public class IO {
      * @param settings RSettings object instance
      */
     public void saveSettings(RSettings settings) {
-        serializeObject(settings, new File(PREFIX+File.separator+"settings.ser"));
+        serializeObject(settings, new File(context.getFilesDir(), PREFIX+File.separator+"settings.ser"));
     }
 
     /**
@@ -124,7 +124,7 @@ public class IO {
      * @return RSettings object instance
      */
     public RSettings loadSettings() {
-        return (RSettings) deserializeObject(new File(PREFIX+File.separator+"settings.ser"));
+        return (RSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"settings.ser"));
     }
     // End settings methods
 
@@ -137,7 +137,7 @@ public class IO {
      * @return REvent object instance
      */
     public REvent loadEvent(int ID) {
-        return (REvent) deserializeObject(new File(PREFIX+File.separator+"events"+File.separator+ID+File.separator+"event.ser"));
+        return (REvent) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+ID+File.separator+"event.ser"));
     }
 
     /**
@@ -147,7 +147,7 @@ public class IO {
      * @return unused ID to save this event's info to
      */
     public int getNewEventID() {
-        File[] files = getChildFiles(new File(PREFIX+ File.separator+"events"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+ File.separator+"events"+File.separator));
         if(files == null || files.length == 0) return 0;
         int topID = 0;
         for(File f : files) {
@@ -194,7 +194,7 @@ public class IO {
      * @return array of REvents found on the system
      */
     public REvent[] loadEvents() {
-        File[] files = getChildFiles(new File(PREFIX+File.separator+"events"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator));
         if(files == null || files.length == 0) return null;
         REvent[] events = new REvent[files.length];
         for(int i = 0; i < events.length; i++) {
@@ -241,7 +241,7 @@ public class IO {
      * @return RTeam object instance
      */
     public RTeam loadTeam(int eventID, int teamID) {
-        return (RTeam) deserializeObject(new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+teamID+".ser"));
+        return (RTeam) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+teamID+".ser"));
     }
 
     /**
@@ -251,7 +251,7 @@ public class IO {
      * @return unused ID to save this team's info to
      */
     public int getNewTeamID(int eventID) {
-        File[] files = getChildFiles(new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator));
         if(files == null || files.length == 0) return 0;
         int topID = 0;
         for(File f : files) {
@@ -283,7 +283,7 @@ public class IO {
         if(!file.getParentFile().exists()) {
             if(file.getParentFile().mkdir()) Log.d("RBS", "Team directory successfully created for event with ID: "+team.getID());
         }
-        serializeObject(team, new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+team.getID()+".ser"));
+        serializeObject(team, new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+team.getID()+".ser"));
     }
 
     /**
@@ -292,7 +292,7 @@ public class IO {
      * @return number of teams within the specified event
      */
     public int getNumberTeams(int eventID) {
-        File[] files = getChildFiles(new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator));
         if(files == null || files.length == 0) return 0;
         return files.length;
     }
@@ -323,7 +323,7 @@ public class IO {
      * @return an RTeam object instance array
      */
     public RTeam[] loadTeams(int eventID) {
-        File[] files = getChildFiles(new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator));
         if(files == null || files.length == 0) return null;
         RTeam[] teams = new RTeam[files.length];
         for(int i = 0; i < teams.length; i++) {
@@ -342,9 +342,9 @@ public class IO {
      * @return RForm object instance
      */
     public RForm loadForm(int eventID) {
-        if(eventID == -1) return (RForm) deserializeObject(new File(PREFIX+File.separator+"master_form.ser"));
+        if(eventID == -1) return (RForm) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"master_form.ser"));
 
-        return (RForm) deserializeObject(new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser"));
+        return (RForm) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser"));
     }
 
     /**
@@ -353,9 +353,9 @@ public class IO {
      * @param form the form to save
      */
     public void saveForm(int eventID, RForm form) {
-        if(eventID == -1) serializeObject(form, new File(PREFIX+File.separator+"master_form.ser"));
+        if(eventID == -1) serializeObject(form, new File(context.getFilesDir(), PREFIX+File.separator+"master_form.ser"));
 
-        serializeObject(form, new File(PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser"));
+        serializeObject(form, new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser"));
     }
     // End form methods
 
@@ -438,7 +438,7 @@ public class IO {
      * @param checkout the RCheckout object instance to save
      */
     public void saveCheckout(RCheckout checkout) {
-        serializeObject(checkout, new File(PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser"));
+        serializeObject(checkout, new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser"));
     }
 
     /**
@@ -447,7 +447,7 @@ public class IO {
      * @return RCheckout object instance
      */
     public RCheckout loadCheckout(int checkoutID) {
-        RCheckout checkout = (RCheckout) deserializeObject(new File(PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser"));
+        RCheckout checkout = (RCheckout) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser"));
         checkout.setID(checkoutID);
         return checkout;
     }
@@ -457,7 +457,7 @@ public class IO {
      * @return Array of RCheckout object instances
      */
     public RCheckout[] loadCheckouts() {
-        File[] files = getChildFiles(new File(PREFIX+File.separator+"checkouts"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator));
         if(files == null || files.length == 0) return null;
         RCheckout[] checkouts = new RCheckout[files.length];
         for(int i = 0; i < checkouts.length; i++) {
@@ -473,7 +473,7 @@ public class IO {
      * @return unused ID to save this team's info to
      */
     public int getNewCheckoutID() {
-        File[] files = getChildFiles(new File(PREFIX+ File.separator+"checkouts"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+ File.separator+"checkouts"+File.separator));
         if(files == null || files.length == 0) return 0;
         int topID = 0;
         for(File f : files) {
@@ -493,7 +493,7 @@ public class IO {
      * @param checkout the RCheckout instance to save
      */
     public void savePendingObject(RCheckout checkout) {
-        serializeObject(checkout, new File(PREFIX+File.separator+"pending"+File.separator+checkout.getID()+".ser"));
+        serializeObject(checkout, new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator+checkout.getID()+".ser"));
     }
 
     /**
@@ -502,7 +502,7 @@ public class IO {
      * @return RCheckout object instance
      */
     public RCheckout loadPendingCheckout(int checkoutID) {
-        RCheckout checkout = (RCheckout) deserializeObject(new File(PREFIX+File.separator+"pending"+File.separator+checkoutID+".ser"));
+        RCheckout checkout = (RCheckout) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator+checkoutID+".ser"));
         checkout.setID(checkoutID);
         return checkout;
     }
@@ -512,7 +512,7 @@ public class IO {
      * @return Array of RCheckout object instances
      */
     public RCheckout[] loadPendingCheckouts() {
-        File[] files = getChildFiles(new File(PREFIX+File.separator+"pending"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator));
         if(files == null || files.length == 0) return null;
         RCheckout[] checkouts = new RCheckout[files.length];
         for(int i = 0; i < checkouts.length; i++) {
@@ -528,7 +528,7 @@ public class IO {
      * @return unused ID to save this team's info to
      */
     public int getNewPendingCheckoutID() {
-        File[] files = getChildFiles(new File(PREFIX+ File.separator+"pending"+File.separator));
+        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+ File.separator+"pending"+File.separator));
         if(files == null || files.length == 0) return 0;
         int topID = 0;
         for(File f : files) {

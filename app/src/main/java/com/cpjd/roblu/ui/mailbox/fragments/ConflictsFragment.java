@@ -14,12 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.mailbox.CheckoutListener;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.ui.team.TeamViewer;
-import com.cpjd.roblu.utils.Constants;
+import com.cpjd.roblu.ui.mailbox.CheckoutListener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +25,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
 
     private RecyclerView rv;
     private CheckoutAdapter adapter;
-    private long eventID;
+    private int eventID;
     private View view;
 
     @Override
@@ -36,7 +33,7 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
         view = inflater.inflate(R.layout.assignments_tab, container, false);
 
         Bundle bundle = this.getArguments();
-        eventID = bundle.getLong("eventID");
+        eventID = bundle.getInt("eventID");
 
         rv = (RecyclerView) view.findViewById(R.id.assign_recycler);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(view.getContext());
@@ -61,8 +58,8 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
 
     @Override
     public void checkoutClicked(View v) {
-        RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
-        RForm form = new Loader(getActivity()).loadForm(eventID);
+        /*RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
+        RForm form = new IO(getActivity()).loadForm(eventID);
         if(checkout.getConflictType().equals("edited")) {
             RTeam conflict = checkout.getTeam();
             conflict.verify(form);
@@ -99,25 +96,25 @@ public class ConflictsFragment extends Fragment implements CheckoutListener {
             intent.putExtra("checkout", checkout.getID());
             intent.putExtra("readOnly", true);
             startActivity(intent);
-        }
+        }*/
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        new Loader(view.getContext()).deleteTeam(-1, eventID);
+        new IO(view.getContext()).deleteTeam(-1, eventID);
     }
 
     private class LoadCheckouts extends AsyncTask<Void, Void, ArrayList<RCheckout>> {
 
-        private Loader l;
+        private IO l;
 
         public LoadCheckouts() {
-            l = new Loader(view.getContext());
+            l = new IO(view.getContext());
         }
 
         @Override
         public ArrayList<RCheckout> doInBackground(Void... params) {
-            RCheckout[] conflicts = l.loadCheckoutConflicts();
+            RCheckout[] conflicts = l.loadCheckouts();
             if(conflicts == null || conflicts.length == 0) return null;
 
             return new ArrayList<>(Arrays.asList(conflicts));

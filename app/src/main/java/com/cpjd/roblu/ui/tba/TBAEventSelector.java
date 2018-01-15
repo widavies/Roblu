@@ -15,6 +15,7 @@ import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,7 +34,8 @@ import com.cpjd.models.Event;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.ui.UIHandler;
-import com.cpjd.roblu.ui.tutorials.TutorialTouchHelper;
+import com.cpjd.roblu.ui.events.EventEditor;
+import com.cpjd.roblu.ui.tutorials.TutorialsRecyclerTouchHelper;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
@@ -51,25 +53,19 @@ import java.util.Calendar;
  * @author Will Davies
  */
 public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapter.TBAEventSelectListener, TBALoadEventsTask.LoadTBAEventsListener {
-
     /**
-     * This AsyncTask is used for:
-     * -Pulling events from the Blue Alliance
-     * -Searching events from the Blue Alliance
-     * -Filtering events by a specific team
-     * -Searching events with a custom search term
+     * Stores a list of events so that they don't have to be re-downloaded when the user wants to search them, or a similar action
      */
-    private TBALoadEventsTask loadEventsTask;
-
+    private ArrayList<Event> events;
     /**
      * The UI controller for the events list
      */
     private RecyclerView rv;
     /**
-     * The adapter that manages the actively displaying events.
+     * The tbaEventAdapter that manages the actively displaying events.
      * (Backend to the RecyclerView)
      */
-    private TBAEventAdapter adapter;
+    private TBAEventAdapter tbaEventAdapter;
     /**
      * A search view that makes events searchable
      */
@@ -88,16 +84,14 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
      */
     private boolean onlyShowMyEvents;
 
+    private int teamNumber;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_apievent_select);
 
-        /*
-         * Setup the TBALoadEventsTask
-         */
-        loadEventsTask = new TBALoadEventsTask();
-        loadEventsTask.setListener(this);
+        teamNumber = new IO(getApplicationContext()).loadSettings().getTeamNumber();
 
         /*
          * Setup UI
@@ -121,12 +115,12 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
 
-        // Setup the adapter
-        adapter = new TBAEventAdapter(this, this);
-        rv.setAdapter(adapter);
+        // Setup the tbaEventAdapter
+        tbaEventAdapter = new TBAEventAdapter(this, this);
+        rv.setAdapter(tbaEventAdapter);
 
         // Setup the gesture listener
-        ItemTouchHelper.Callback callback = new TutorialTouchHelper();
+        ItemTouchHelper.Callback callback = new TutorialsRecyclerTouchHelper();
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
         /*
@@ -140,10 +134,11 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
         showTeam.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                onlyShowMyEvents = parent.getItemAtPosition(position).toString() == "All events";
-                loadEventsTask.setReload(true);
-                loadEventsTask.setOnlyShowMyEvents(onlyShowMyEvents);
-                loadEventsTask.execute();
+                onlyShowMyEvents = parent.getItemAtPosition(position).toString().equals("All events");
+                rv.setVisibility(View.INVISIBLE);
+                bar.setVisibility(View.VISIBLE);
+                TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);
+                task.execute();
             }
 
             @Override
@@ -160,17 +155,18 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
         selectedYear = Calendar.getInstance().get(Calendar.YEAR);
         String[] years = new String[selectedYear - 1991];
         for(int i = years.length - 1; i >= 0; i--) years[Math.abs(i - years.length + 1)] = String.valueOf(1992 + i);
-        ArrayAdapter<String> adapter =
+        final ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, years);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         yearsSpinner.setAdapter(adapter);
         yearsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                 selectedYear = Integer.parseInt(parent.getItemAtPosition(position).toString());
-                 loadEventsTask.setYear(selectedYear);
-                 loadEventsTask.setReload(true);
-                 loadEventsTask.execute();
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                selectedYear = Integer.parseInt(adapterView.getItemAtPosition(i).toString());
+                rv.setVisibility(View.INVISIBLE);
+                bar.setVisibility(View.VISIBLE);
+                TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);
+                task.execute();
             }
 
             @Override
@@ -190,9 +186,9 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
 
             @Override
             public void onSearchViewClosed() {
-                loadEventsTask.setReload(false);
-                loadEventsTask.setQuery("");
-                loadEventsTask.execute();
+                TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);
+                task.setEvents(events);
+                task.execute();
             }
         });
         searchView.setOnQueryTextListener(new MaterialSearchView.OnQueryTextListener() {
@@ -204,9 +200,10 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                loadEventsTask.setReload(false);
-                loadEventsTask.setQuery(newText);
-                loadEventsTask.execute();
+                TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);
+                task.setEvents(events);
+                task.setQuery(newText);
+                task.execute();
                 return true;
             }
         });
@@ -231,23 +228,15 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
         // Get the event reference from the UI
-        Event event = adapter.getEvents().get(rv.getChildLayoutPosition(v));
+        Event event = tbaEventAdapter.getEvents().get(rv.getChildLayoutPosition(v));
+
+        Utils.showSnackbar(findViewById(R.id.activity_apievent_select), getApplicationContext(), "Downloading event...", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
 
         /*
          * Import the event specifically, eventDownloaded(Event event) will receive the result of this
          * task execution
          */
         new ImportEvent(this).execute(event.key);
-    }
-
-    /**
-     * Called when a new events list is successfully downloaded or searched,
-     * these events should immediately be sent to the UI
-     */
-    @Override
-    public void eventListUpdated(ArrayList<Event> events) {
-        adapter.setEvents(events);
-        adapter.notifyDataSetChanged();
     }
 
     /**
@@ -266,12 +255,21 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
      */
     @Override
     public void eventDownloaded(Event event) {
-        Intent intent = new Intent();
-        intent.putExtra("editing", true);
+        Log.d("RBS", "Event: "+event.name+" was downloaded.");
+        Intent intent = new Intent(this, EventEditor.class);
+        intent.putExtra("editing", false);
         intent.putExtra("key", event.key);
         intent.putExtra("name", event.name);
-        intent.putExtra("event", event);
+        intent.putExtra("tbaEvent", event);
         startActivityForResult(intent, Constants.GENERAL);
+    }
+    /**
+     * Called when a new events list is successfully downloaded or searched,
+     * these events should immediately stored
+     */
+    @Override
+    public void eventListDownloaded(ArrayList<Event> events) {
+        this.events = events;
     }
 
     /**
@@ -405,6 +403,8 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 try {
+                    Utils.showSnackbar(findViewById(R.id.activity_apievent_select), getApplicationContext(), "Downloading event...", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
+
                     new ImportEvent(TBAEventSelector.this).execute(input.getText().toString().replaceFirst(",", ""));
                 } catch(Exception e) {
                     e.printStackTrace();

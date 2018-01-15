@@ -8,9 +8,10 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.mailbox.CheckoutListener;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.ui.mailbox.CheckoutListener;
 import com.cpjd.roblu.utils.Utils;
 
 import java.util.ArrayList;
@@ -48,7 +49,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         this.context = context;
         this.mode = mode;
         this.listener = listener;
-        this.rui = new Loader(getContext()).loadSettings().getRui();
+        this.rui = new IO(getContext()).loadSettings().getRui();
     }
 
     @Override // Called for each CardView, displays checkout information on it
@@ -132,7 +133,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                         +"\nOpponents: "+ Utils.concantenteTeams(checkout.getTeam().getTabs().get(0).getOpponents()));
                 return;
             }
-            if(mode == INBOX) {
+            /*if(mode == INBOX) {
                 if(checkout.getConflictType() == null || checkout.getConflictType().equals("")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nCompleted by "+checkout.getStatus().replace("Completed by", "")+"\nAutomatically merged on "+ Utils.convertTime(checkout.getMergedTime()));
                 else if(checkout.getConflictType().equals("local-edit")) subtitle.setText("Locally edited on "+ Utils.convertTime(checkout.getTeam().getLastEdit())+" and uploaded to server.");
                 else {
@@ -143,7 +144,7 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             if(mode == CONFLICTS) {
                 if(checkout.getConflictType().startsWith("not-found")) subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nDoesn't exist in local repository");
                 else subtitle.setText(checkout.getTeam().getTabs().get(0).getTitle()+"\nLocal copy is already edited");
-            }
+            }*/
             title.setText(checkout.getTeam().getName());
             String numberText = "#"+checkout.getTeam().getNumber();
             number.setText(numberText);

@@ -55,7 +55,7 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
          * User wants to delete a team, let's confirm it with them
          */
         if(direction == ItemTouchHelper.LEFT) {
-            final RTeam team = TeamsView.teams.get(viewHolder.getAdapterPosition());
+            final RTeam team = teamsAdapter.getTeams().get(viewHolder.getAdapterPosition());
 
             new FastDialogBuilder()
                     .setTitle("Are you sure?")

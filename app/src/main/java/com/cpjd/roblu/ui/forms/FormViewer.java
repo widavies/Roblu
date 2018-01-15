@@ -134,7 +134,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
             form = new RForm(pit, new ArrayList<RMetric>());
         }
 
-        loadViews(0);
+        loadViews(true, 0);
 
         new UIHandler(this, toolbar, fab).update();
 	}
@@ -161,15 +161,14 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
      * We're assuming that we're loading coming from the other tab
      *
      */
-	private void loadViews(int tab) {
+	private void loadViews(boolean init, int tab) {
         currentTab = tab;
+
         if(tab == 0) {
-            form.setMatch(metricsAdapter.getMetrics());
-            metricsAdapter.getMetrics().clear();
+            if(!init) form.setMatch(metricsAdapter.getMetrics());
             metricsAdapter.setMetrics(form.getPit());
         } else {
             form.setPit(metricsAdapter.getMetrics());
-            metricsAdapter.getMetrics().clear();
             metricsAdapter.setMetrics(form.getMatch());
         }
     }
@@ -182,9 +181,9 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
     public void onTabSelected(@IdRes int tabId) {
         if(metricsAdapter == null) return;
         if(tabId == R.id.tab_pit) {
-            loadViews(0);
+            loadViews(false, 0);
         } else {
-            loadViews(1);
+            loadViews(false, 1);
         }
     }
 
@@ -308,8 +307,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
      */
     @Override
     public void metricSelected(View v) {
-	    RMetric metric = metricsAdapter.getMetrics().get(rv.getChildLayoutPosition(v));
-	    metricEditRequested(metric);
+        // do nothing, turns out this was a pain in the butt
     }
 
     /**

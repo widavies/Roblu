@@ -12,9 +12,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.mailbox.fragments.MailAdapter;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.mailbox.fragments.MailAdapter;
 import com.cpjd.roblu.utils.Constants;
 
 /**
@@ -33,7 +34,7 @@ public class Mailbox extends AppCompatActivity {
 
         addedConflict = false;
 
-        RUI rui = new Loader(getApplicationContext()).loadSettings().getRui();
+        RUI rui = new IO(getApplicationContext()).loadSettings().getRui();
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);

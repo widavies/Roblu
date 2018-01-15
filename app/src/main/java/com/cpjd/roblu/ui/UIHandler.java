@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
 
 /**
@@ -53,7 +54,7 @@ public class UIHandler {
     }
 
     public void update() {
-        rui = new Loader(activity).loadSettings().getRui();
+        rui = new IO(activity).loadSettings().getRui();
 
         if(rui == null) rui = new RUI();
 
@@ -96,7 +97,7 @@ public class UIHandler {
     }
 
     public void updateMenu() {
-        rui = new Loader(activity).loadSettings().getRui();
+        rui = new IO(activity).loadSettings().getRui();
 
         // Update icon colors
         for(int i = 0; i < menu.size(); i++) {

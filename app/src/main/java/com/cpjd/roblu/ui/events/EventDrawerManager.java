@@ -172,7 +172,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         }
         else if(identifier == Constants.EVENT_SETTINGS) {
             for(int i = 0; i < events.size(); i++) {
-                if(events.get(i).getID() == (Long)drawerItem.getTag()) {
+                if(events.get(i).getID() == (Integer) drawerItem.getTag()) {
                     Intent intent = new Intent(activity, EventSettings.class);
                     intent.putExtra("event", events.get(i));
                     activity.startActivityForResult(intent, Constants.GENERAL);
@@ -183,7 +183,8 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         }
         else if(identifier == Constants.EDIT_MASTER_FORM) {
             Intent start = new Intent(activity, FormViewer.class);
-            start.putExtra("master", new IO(activity).loadSettings().getMaster());
+            start.putExtra("form", new IO(activity).loadSettings().getMaster());
+            start.putExtra("master", true);
             activity.startActivityForResult(start, Constants.MASTER_FORM);
             eventDrawer.setSelectionAtPosition(-1);
         }
@@ -197,7 +198,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                     break;
                 }
             }
-        }
+        } else if(identifier == Constants.HEADER) return true; // we don't want to close the event drawer for this one
         eventDrawer.closeDrawer();
         return true;
     }

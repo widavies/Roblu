@@ -4,9 +4,17 @@ import android.graphics.Canvas;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.helper.ItemTouchHelper;
 
-public class TutorialTouchHelper extends ItemTouchHelper.SimpleCallback {
+/**
+ * Specifies how Tutorial UI cards should behave, in this case, it's pretty easy -
+ * disable all movement.
+ *
+ * @version 2
+ * @since 3.0.0
+ * @author Will Davies
+ */
+public class TutorialsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
 
-    public TutorialTouchHelper() {
+    public TutorialsRecyclerTouchHelper() {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
     }
 

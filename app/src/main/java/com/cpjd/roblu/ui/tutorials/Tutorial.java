@@ -17,50 +17,67 @@ import android.view.View;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.ui.UIHandler;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 
-public class Tutorial extends AppCompatActivity implements SelectListener{
+/**
+ * Tutorial is a simply utility to display a list of tutorials for Roblu.
+ *
+ * @version 2
+ * @since 3.0.0
+ * @author Will Davies
+ */
+public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdapter.TutorialListener {
 
     private RecyclerView rv;
-
+    private ArrayList<RTutorial> tutorials;
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tutorial);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        /*
+         * Setup UI
+         */
+        // Toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        setTitle("Tutorials");
-        if(getSupportActionBar() != null) getSupportActionBar().setSubtitle("Tutorials for Roblu Master");
-
-        if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if(getSupportActionBar() != null) {
+            getSupportActionBar().setSubtitle("Tutorials for Roblu Master");
+            getSupportActionBar().setTitle("Tutorials");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
 
         // List of tutorials
-        LinkedList<RTutorial> tuts = new LinkedList<>();
-        tuts.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc."));
-        tuts.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events"));
-        tuts.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form"));
-        tuts.add(new RTutorial("Scouting", "Learn how to scout with the RTeam model, sort, organize, search"));
-        tuts.add(new RTutorial("Roblu Cloud Setup", "Learn how to register an account and setup Roblu Cloud for your team"));
-        tuts.add(new RTutorial("Roblu Cloud", "Learn how to use Roblu cloud to sync events between teammates, admin controls"));
-        tuts.add(new RTutorial("Bluetooth [Coming soon]", "Learn how to use setup Roblu's Bluetooth server for syncing events"));
-        tuts.add(new RTutorial("Analytics [Coming soon]", "Edit, organize, view, machine learning"));
-        tuts.add(new RTutorial("MEGA-TUTORIAL [Coming soon]", "Feeling ambitious? Learn about everything in one video."));
-        tuts.add(new RTutorial("Roblu Devlogs", "For those interested in watching the development process"));
+        tutorials = new ArrayList<>();
+        tutorials.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc.", "9j6ysvJJyQg"));
+        tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "KoylfzTBvKM"));
+        tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "LpWvnavebNw"));
+        tutorials.add(new RTutorial("Scouting", "Learn how to scout with the RTeam model, sort, organize, search", "5ktHjyQq4XY"));
+        tutorials.add(new RTutorial("Roblu Cloud Setup", "Learn how to register an account and setup Roblu Cloud for your team", "zEFSt9HhxOw"));
+        tutorials.add(new RTutorial("Roblu Cloud", "Learn how to use Roblu cloud to sync events between teammates, admin controls", "2QcXZoyctyw"));
+        tutorials.add(new RTutorial("Bluetooth [Coming soon]", "Learn how to use setup Roblu's Bluetooth server for syncing events", ""));
+        tutorials.add(new RTutorial("Analytics [Coming soon]", "Edit, organize, view, machine learning", ""));
+        tutorials.add(new RTutorial("MEGA-TUTORIAL [Coming soon]", "Feeling ambitious? Learn about everything in one video.", ""));
+        tutorials.add(new RTutorial("Roblu Devlogs", "For those interested in watching the development process", ""));
 
-        rv = (RecyclerView) findViewById(R.id.teams_recycler);
+        /*
+         * Add the tutorials to the recycler view
+         */
+        rv = findViewById(R.id.teams_recycler);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false);
-        TutorialAdapter adapter = new TutorialAdapter(this, this, tuts);
+        TutorialsRecyclerAdapter adapter = new TutorialsRecyclerAdapter(this, this, tutorials);
         rv.setAdapter(adapter);
 
-        ItemTouchHelper.Callback callback = new TutorialTouchHelper();
+        // Gesture listener
+        ItemTouchHelper.Callback callback = new TutorialsRecyclerTouchHelper();
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
 
+        // Sync UI with settings
         new UIHandler(this, toolbar).update();
     }
 
@@ -78,24 +95,10 @@ public class Tutorial extends AppCompatActivity implements SelectListener{
         finish();
     }
 
-    @Override
-    public void onItemClick(View v) {
-        int position = rv.getChildLayoutPosition(v);
-        if(position == 0) watchYoutubeVideo("9j6ysvJJyQg");
-        if(position == 1) watchYoutubeVideo("KoylfzTBvKM");
-        if(position == 2) watchYoutubeVideo("LpWvnavebNw");
-        if(position == 3) watchYoutubeVideo("5ktHjyQq4XY");
-        if(position == 4) watchYoutubeVideo("zEFSt9HhxOw");
-        if(position == 5) watchYoutubeVideo("2QcXZoyctyw");
-        if(position == 9) {
-            String url = "https://www.youtube.com/playlist?list=PLjv2hkWcHVGZAlplguiS4rR_45-KLS28a";
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(url));
-            startActivity(i);
-        }
-
-    }
-
+    /**
+     * Opens a YouTube video in the app, if no app is found, then the web browser
+     * @param id the ID of the YouTube video
+     */
     void watchYoutubeVideo(String id){
         Intent appIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("vnd.youtube:" + id));
         Intent webIntent = new Intent(Intent.ACTION_VIEW,
@@ -104,6 +107,26 @@ public class Tutorial extends AppCompatActivity implements SelectListener{
             startActivity(appIntent);
         } catch (ActivityNotFoundException ex) {
             startActivity(webIntent);
+        }
+    }
+
+    /**
+     * This method is called when the user selects a tutorial,
+     * tutorial at position==tutorials.size() - 1 is the devlog selector and will
+     * go to a YouTube playlist instead of a video
+     * @param v the view that was selected
+     */
+    @Override
+    public void tutorialSelected(View v) {
+        int position = rv.getChildLayoutPosition(v);
+        if(position == tutorials.size() - 1) {
+            String url = "https://www.youtube.com/playlist?list=PLjv2hkWcHVGZAlplguiS4rR_45-KLS28a";
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(url));
+            startActivity(i);
+        }
+        else {
+            watchYoutubeVideo(tutorials.get(position).getYoutubeID());
         }
     }
 }

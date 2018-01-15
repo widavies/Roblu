@@ -20,11 +20,9 @@ import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.csv.ExportCSV;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
@@ -313,12 +311,12 @@ public class EventSettings extends AppCompatActivity {
                         .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
                             @Override
                             public void accepted() {
-                                new ExportCSV((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), true).execute();
+                                //new ExportCSV((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), true).execute();
                             }
 
                             @Override
                             public void denied() {
-                                new ExportCSV((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), false).execute();
+                               // new ExportCSV((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), false).execute();
                             }
 
                             @Override
@@ -387,7 +385,7 @@ public class EventSettings extends AppCompatActivity {
             /*
              * Called when the user made changes to the form
              */
-            else if(resultCode == Constants.FORM_CONFIMRED) {
+            else if(resultCode == Constants.FORM_CONFIRMED) {
                 Bundle bundle = data.getExtras();
                 RForm form = new RForm((ArrayList<RMetric>) bundle.getSerializable("pit"), (ArrayList<RMetric>) bundle.getSerializable("match"));
                 form.setUploadRequired(true);

@@ -18,14 +18,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.mailbox.CheckoutListener;
-import com.cpjd.roblu.ui.mailbox.fragments.CheckoutsTouchHelper;
-import com.cpjd.roblu.ui.mailbox.fragments.CheckoutAdapter;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.mailbox.CheckoutListener;
+import com.cpjd.roblu.ui.mailbox.fragments.CheckoutAdapter;
+import com.cpjd.roblu.ui.mailbox.fragments.CheckoutsTouchHelper;
+import com.cpjd.roblu.ui.team.TeamViewer;
 
 import java.util.ArrayList;
 
@@ -55,22 +56,22 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
     private CheckoutAdapter adapter;
 
     // the active eventID, used for loading the local team model
-    private long eventID;
+    private int eventID;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // setup ui stuff
         setContentView(R.layout.mymatches);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // access the eventID, if no eventID is passed in to this class, the app will crash
-        eventID = getIntent().getLongExtra("eventID", 0);
+        eventID = getIntent().getIntExtra("eventID", 0);
 
         // load the number from settings
-        int number = new Loader(getApplicationContext()).loadSettings().getTeamNumber();
+        int number = new IO(getApplicationContext()).loadSettings().getTeamNumber();
         if(number == 0) { // the user hasn't changed their number yet, and since no team is #0, we have to stop the activity
             Toast.makeText(getApplicationContext(), "No team number found. Set it in settings.", Toast.LENGTH_LONG).show();
             finish();
@@ -85,7 +86,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
          * that looks of data contained within each team (num of matches, size, last edit, etc.). for now, the first
          * team we come across should be fine and work 99% of the time
          */
-        RTeam[] local = new Loader(getApplicationContext()).getTeams(eventID);
+        RTeam[] local = new IO(getApplicationContext()).loadTeams(eventID);
         RTeam myTeam = null;
         for(RTeam team : local) { // search through locally stored teams until we find one that matches our number
             if(team.getNumber() == number) {
@@ -107,7 +108,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
          }
 
          // for more on verification, visit the RTeam class, basically, to be safe, we want to sync the form and the team before we play around with any of them
-        myTeam.verify(new Loader(getApplicationContext()).loadForm(eventID));
+        myTeam.verify(new IO(getApplicationContext()).loadForm(eventID));
 
         // next, we need to split apart the RTab array within our team, we want one RCheckout model per match
         ArrayList<RCheckout> toSave = new ArrayList<>(); // we'll use this array for storing info, one RChecklist per match
@@ -198,19 +199,19 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
                     @Override
                     public void onClick(View v) {
                         int pos = spinner.getSelectedItemPosition(); // 0,1,2,3,4,5
-                        long ID;
+                        int ID;
                         // select the right team to load, since first 3 teams are our teammates, and last 3 are our opponents, we have to choose the correct array to pull from
                         if(pos < 3) ID = checkout.getTeam().getTabs().get(0).getTeammates().get(pos).getID();
                         else ID = checkout.getTeam().getTabs().get(0).getOpponents().get(pos - 3).getID();
                         Intent intent = new Intent(MyMatches.this, TeamViewer.class);
-                        intent.putExtra("team", new Loader(getApplicationContext()).loadTeam(eventID, ID).getID());
-                        intent.putExtra("event", new Loader(getApplicationContext()).getEvent(eventID));
+                        intent.putExtra("team", new IO(getApplicationContext()).loadTeam(eventID, ID).getID());
+                        intent.putExtra("event", new IO(getApplicationContext()).loadEvent(eventID));
                         startActivity(intent);
                         d.dismiss();
                     }
                 });
                 // sync animation with ui settings
-                if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new Loader(getApplicationContext()).loadSettings().getRui().getAnimation();
+                if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(getApplicationContext()).loadSettings().getRui().getAnimation();
                 d.show(); // show the dialog
             }
         });

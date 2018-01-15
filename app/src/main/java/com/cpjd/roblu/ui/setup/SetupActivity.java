@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.ui.teams.TeamsView;
 import com.cpjd.roblu.ui.tutorials.Tutorial;
@@ -83,18 +85,18 @@ public class SetupActivity extends Activity implements View.OnClickListener {
                 ActivityCompat.requestPermissions(this, perms, 0);
                 break;
             case R.id.number_next:
-                EditText et = (EditText) findViewById(R.id.number_input);
+                EditText et = findViewById(R.id.number_input);
                 try {
-                    RSettings settings = new Loader(getApplicationContext()).loadSettings();
+                    RSettings settings = new IO(getApplicationContext()).loadSettings();
                     settings.setTeamNumber(Integer.parseInt(et.getText().toString()));
-                    new Loader(getApplicationContext()).saveSettings(settings);
+                    new IO(getApplicationContext()).saveSettings(settings);
                 } catch(Exception e) {
                     try {
-                        RSettings settings = new Loader(getApplicationContext()).loadSettings();
+                        RSettings settings = new IO(getApplicationContext()).loadSettings();
                         settings.setTeamNumber(0);
-                        new Loader(getApplicationContext()).saveSettings(settings);
+                        new IO(getApplicationContext()).saveSettings(settings);
                     } catch(Exception e2) {}
-                    System.out.println("failed to save team number "+e.getMessage());
+                    Log.d("RBS", "Failed to save team number.");
                 }
                 pager.goToNextPage();
                 break;

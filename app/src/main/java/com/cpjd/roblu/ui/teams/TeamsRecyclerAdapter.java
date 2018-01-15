@@ -13,7 +13,10 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Utils;
 
+import java.util.ArrayList;
+
 import lombok.Getter;
+import lombok.Setter;
 
 /**
  * TeamsRecyclerAdapter is the backend to the RecyclerView in TeamsView
@@ -27,6 +30,14 @@ import lombok.Getter;
  * @author Will Davies
  */
 public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    /**
+     * The array of teams this adapter should manage
+     */
+    @Getter
+    @Setter
+    private ArrayList<RTeam> teams;
+
     /**
      * A context reference required for binding UI elements
      */
@@ -57,6 +68,8 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
         this.context = context;
         this.listener = listener;
 
+        teams = new ArrayList<>();
+
         try {
             rui = new IO(context).loadSettings().getRui();
         } catch(Exception e) {
@@ -71,9 +84,9 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param team the team to re-add to the array
      */
     void reAdd(RTeam team) {
-        for(int i = 0; i < TeamsView.teams.size(); i++) {
-            if(TeamsView.teams.get(i).getID() == team.getID()) {
-                TeamsView.teams.set(i, team);
+        for(int i = 0; i < teams.size(); i++) {
+            if(teams.get(i).getID() == team.getID()) {
+                teams.set(i, team);
                 break;
             }
         }
@@ -103,13 +116,13 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         MyViewHolder myHolder = (MyViewHolder)holder;
-        myHolder.bindTeam(TeamsView.teams.get(position));
+        myHolder.bindTeam(teams.get(position));
     }
 
     @Override
     public int getItemCount() {
-        if(TeamsView.teams == null) return 0;
-        return TeamsView.teams.size();
+        if(teams == null) return 0;
+        return teams.size();
     }
 
     /**
@@ -117,7 +130,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param position the position of the item to be removed
      */
     public void remove(int position) {
-        TeamsView.teams.remove(position);
+        teams.remove(position);
         notifyItemRemoved(position);
     }
 
