@@ -49,6 +49,11 @@ public class RSettings implements Serializable {
     private long lastCheckoutSync;
 
     /**
+     * The user's username that will appear on other people's devices next to scouting data this user has edited
+     */
+    private String username;
+
+    /**
      * Sets the default values for the RSettings class
      */
     public RSettings() {

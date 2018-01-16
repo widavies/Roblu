@@ -29,7 +29,6 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.cpjd.models.Team;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
@@ -62,7 +61,7 @@ import com.cpjd.roblu.utils.Utils;
  * @since 1.0.0
  * @author Will Davies
  */
-public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageChangeListener, TBATeamInfoTask.TBAInfoListener {
+public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageChangeListener {
 
     private REvent event;
 
@@ -134,14 +133,6 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         tabLayout.setTabTextColors(RUI.darker(rui.getText(), 0.95f), rui.getText());
         new UIHandler(this, toolbar).update();
         if(team.getPage() > 1) onPageSelected(team.getPage());
-
-        /*
-         * Attempt to download TBA info for this team
-         */
-        if(!team.hasTBAInfo()) {
-            new TBATeamInfoTask(team.getNumber(), this);
-        }
-
     }
 
     /**
@@ -431,18 +422,5 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         }
         return true;
     }
-    /**
-     * This method is called when TBA information for the team is successfully downloaded
-     * @param team the TBA team model that contains downloaded information
-     */
-    @Override
-    public void teamRetrieved(Team team) {
-        TeamViewer.team.setFullName(team.name);
-        TeamViewer.team.setLocation(team.location);
-        TeamViewer.team.setMotto(team.motto);
-        TeamViewer.team.setWebsite(team.website);
-        TeamViewer.team.setRookieYear((int)team.rookie_year);
-        new IO(getApplicationContext()).saveTeam(event.getID(), TeamViewer.team);
 
-    }
 }

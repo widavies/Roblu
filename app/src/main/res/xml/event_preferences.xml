@@ -16,7 +16,7 @@
         <Preference
             android:title="Edit event info"
             android:key="edit_event"
-            android:summary="Edit this event's name, start date, and end date"/>
+            android:summary="Edit this event's name and TBA key"/>
         <Preference
             android:title="Edit form"
             android:key="edit_form"

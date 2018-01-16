@@ -134,8 +134,9 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         this.eventID = eventID;
         this.filter = filter;
         this.query = query;
-        if(this.query == null) this.query = "";
         this.customSortToken = customSortToken;
+        if(this.query == null) this.query = "";
+        if(this.customSortToken == null) this.customSortToken = "";
     }
 
     /**
@@ -164,6 +165,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             // teams were found locally, so attach them to the teams array
             teams = new ArrayList<>(Arrays.asList(local));
             listener.teamsListLoaded(teams);
+            Log.d("RBS", "LoadTeamsTask loaded "+teams.size()+" teams");
         }
 
         /*
@@ -184,6 +186,8 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
          * And actually, that also means that we're done with this method, return the teams!
          */
         if(filter == TeamsView.SORT_TYPE.LAST_EDIT || filter == TeamsView.SORT_TYPE.NUMERICAL || filter == TeamsView.SORT_TYPE.ALPHABETICAL) {
+            for(RTeam team : this.teams) team.setFilterTag(""); // reset the filter tag
+
             try {
                 Collections.sort(teams);
                 if(filter == TeamsView.SORT_TYPE.LAST_EDIT) Collections.reverse(teams);
@@ -249,13 +253,14 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
              */
             if(methodID == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH && customSortToken.split(":").length == 3) {
                 teamMetricProcessor.setInMatchTitle(customSortToken.split(":")[2]);
-                Log.d("RBS", "IN match title: "+teamMetricProcessor.getInMatchTitle());
+                Log.d("RBS", "In match title: "+teamMetricProcessor.getInMatchTitle());
             }
 
             /*
              * Next, perform the operation
              */
             for(RTeam team : teams) {
+                team.setFilter(filter);
                 team.setFilterTag(""); // reset old filter tags
                 team.setCustomRelevance(0); // reset any old relevance
                 teamMetricProcessor.process(team, methodID, metricID);
@@ -317,7 +322,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             // Alright, now filterTag contains all matches that relate to the query, let's generate a score
             if(!filterTag.toString().equals("Contains matches: ")) {
                 // set the filter tag, also, remove the last comma off for nice formatting
-                team.setFilterTag(filterTag.toString().substring(0, filterTag.toString().length() - 2));
+                team.setFilterTag("\n"+team.getFilterTag() + "\n"+filterTag.toString().substring(0, filterTag.toString().length() - 2));
                 relevance += 2;
             }
         }
@@ -330,12 +335,14 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         progressBarWeakReference.get().setVisibility(View.INVISIBLE);
         recyclerViewWeakReference.get().setVisibility(View.VISIBLE);
         teamsRecyclerAdapterWeakReference.get().setTeams(teams, !query.equals(""));
-        if(teams != null) {
-            StringBuilder subtitle = new StringBuilder(String.valueOf(teams.size()));
-            subtitle.append(" Team");
-            if(teams.size() != 1) subtitle.append("s");
-            if(actionBarWeakReference.get() != null) actionBarWeakReference.get().setSubtitle(subtitle.toString());
-        }
+
+        int numTeams = 0;
+        if(teams != null) numTeams = teams.size();
+
+        StringBuilder subtitle = new StringBuilder(String.valueOf(numTeams));
+        subtitle.append(" Team");
+        if(numTeams != 1) subtitle.append("s");
+        if(actionBarWeakReference.get() != null) actionBarWeakReference.get().setSubtitle(subtitle.toString());
     }
 
 }

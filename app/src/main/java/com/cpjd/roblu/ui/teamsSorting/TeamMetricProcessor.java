@@ -45,13 +45,13 @@ public class TeamMetricProcessor {
         /**
          * Metric (matching inputted ID) should be analyzed from the PREDICTIONS tab within each team
          */
-        public static final int PREDICTIONS = 1;
+        static final int PREDICTIONS = 1;
         /**
          * Metric (matching inputted ID) should be analyzed from the MATCHES within each team
          */
-        public static final int MATCHES = 2;
+        static final int MATCHES = 2;
 
-        public static final int OTHER = 3;
+        static final int OTHER = 3;
 
         public static class OTHER_METHOD {
         /*
@@ -60,7 +60,7 @@ public class TeamMetricProcessor {
             /**
              * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted by how many match wins they have
              */
-            public static final int MATCH_WINS = 4;
+            static final int MATCH_WINS = 4;
             /**
              * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted by if they are in the selected match.
              * Note: This sort method actually requires the teams to be removed from the list if its not in the requested match, this
@@ -70,7 +70,7 @@ public class TeamMetricProcessor {
             /**
              * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted as they normally are
              */
-            public static final int RESET = 6;
+            static final int RESET = 6;
 
         }
 
@@ -140,7 +140,7 @@ public class TeamMetricProcessor {
                 }
 
                 rawData.append(" in ").append(friendlyMode(method));
-                team.setFilterTag(rawData.toString());
+                team.setFilterTag("\n"+rawData.toString());
                 team.setCustomRelevance(relevance);
                 break;
             }
@@ -151,7 +151,7 @@ public class TeamMetricProcessor {
          */
         else if(method == PROCESS_METHOD.MATCHES) {
             if(team.getTabs() == null || team.getTabs().size() == 0) {
-                team.setFilterTag("This team does not contain any matches that can be sorted.");
+                team.setFilterTag("\nThis team does not contain any matches that can be sorted.");
                 return;
             }
 
@@ -284,8 +284,8 @@ public class TeamMetricProcessor {
                     /*
                      * Now append the raw data as processed above
                      */
-                    team.setFilterTag(overview.append(rawData).toString());
-                    team.setCustomRelevance(0);
+                    team.setFilterTag("\n"+overview.append(rawData).toString());
+                    team.setCustomRelevance(relevance);
 
                     // exit the loop, the metric has been fully processed
                     break;
@@ -309,7 +309,7 @@ public class TeamMetricProcessor {
              */
 
             team.setCustomRelevance(relevance);
-            team.setFilterTag(String.valueOf(occurrences) + " match wins\n" + rawData.toString());
+            team.setFilterTag("\n"+String.valueOf(occurrences) + " match wins\n" + rawData.toString());
         }
         /*
          * The user requested IN_MATCH
@@ -317,7 +317,7 @@ public class TeamMetricProcessor {
         else if(method == PROCESS_METHOD.OTHER && ID == PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
             for(int i = 2; i < team.getTabs().size(); i++) {
                 if(team.getTabs().get(i).getTitle().equalsIgnoreCase(inMatchTitle)) {
-                    team.setFilterTag(rawData.append("In ").append(inMatchTitle).toString());
+                    team.setFilterTag("\n"+rawData.append("In ").append(inMatchTitle).toString());
                 }
             }
         }
@@ -330,7 +330,6 @@ public class TeamMetricProcessor {
         }
 
     }
-
 
     /*
      * All the methods that begin with 'friendly' just take

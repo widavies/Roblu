@@ -94,7 +94,7 @@ public class EventSettings extends AppCompatActivity {
         if (id == android.R.id.home) {
             Intent intent = new Intent();
             intent.putExtra("event", event);
-            setResult(Constants.DATA_SETTINGS_CHANGED, intent);
+            setResult(Constants.EVENT_SETTINGS_CHANGED, intent);
             finish();
             return true;
         }
@@ -105,7 +105,7 @@ public class EventSettings extends AppCompatActivity {
     public void onBackPressed() {
         Intent intent = new Intent();
         intent.putExtra("event", event);
-        setResult(Constants.DATA_SETTINGS_CHANGED, intent);
+        setResult(Constants.EVENT_SETTINGS_CHANGED, intent);
         finish();
     }
 
@@ -199,21 +199,28 @@ public class EventSettings extends AppCompatActivity {
                         .setMessage("Would you like to copy scouting data to the duplicate event?")
                         .setPositiveButtonText("Yes")
                         .setNegativeButtonText("No")
+                        .setNeutralButtonText("Cancel")
                         .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
                             @Override
                             public void accepted() {
-                                new IO(getActivity()).duplicateEvent(event, true);
-                                Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Duplicate event created", false, rui.getPrimaryColor());
+                                Intent intent = new Intent();
+                                intent.putExtra("eventID", new IO(getActivity()).duplicateEvent(event, true).getID());
+                                getActivity().setResult(Constants.NEW_EVENT_CREATED);
+                                Toast.makeText(getActivity(), "Duplicate event created", Toast.LENGTH_LONG).show();
                             }
 
                             @Override
                             public void denied() {
-                                new IO(getActivity()).duplicateEvent(event, false);
-                                Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Duplicate event created", false, rui.getPrimaryColor());
+                                Intent intent = new Intent();
+                                intent.putExtra("eventID", new IO(getActivity()).duplicateEvent(event, false).getID());
+                                getActivity().setResult(Constants.NEW_EVENT_CREATED);
+                                Toast.makeText(getActivity(), "Duplicate event created", Toast.LENGTH_LONG).show();
                             }
 
                             @Override
-                            public void neutral() {}
+                            public void neutral() {
+
+                            }
                         }).build(getActivity());
             }
             /*
@@ -378,7 +385,9 @@ public class EventSettings extends AppCompatActivity {
                 event.setName(data.getStringExtra("name"));
                 event.setKey(data.getStringExtra("key"));
                 new IO(getActivity()).saveEvent(event);
-                getActivity().getActionBar().setTitle(event.getName());
+                if(((AppCompatActivity)getActivity()).getSupportActionBar() != null) {
+                    ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(event.getName());
+                }
             }
             /*
              * Called when the user made changes to the form
@@ -394,7 +403,7 @@ public class EventSettings extends AppCompatActivity {
         /**
          * BackupEvent backups up an REvent object into a internal file
          */
-        public static class BackupEventTask extends AsyncTask<Void, Void, RBackup> {
+        public static class BackupEventTask extends AsyncTask<Void, Void, File> {
 
             private WeakReference<IO> ioWeakReference;
 
@@ -412,14 +421,14 @@ public class EventSettings extends AppCompatActivity {
                 this.ioWeakReference = new WeakReference<>(io);
             }
 
-            protected RBackup doInBackground(Void... params) {
+            protected File doInBackground(Void... params) {
                 RTeam[] teams = ioWeakReference.get().loadTeams(event.getID());
                 RForm form = ioWeakReference.get().loadForm(event.getID());
-                return new RBackup(event, teams, form);
+                return ioWeakReference.get().saveBackup(new RBackup(event, teams, form));
             }
 
-            protected void onPostExecute(RBackup result) {
-                listener.eventBackupComplete(ioWeakReference.get().saveBackup(result));
+            protected void onPostExecute(File file) {
+                listener.eventBackupComplete(file);
             }
         }
     }

@@ -253,7 +253,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * @return true if we've got locally stored TBA data
      */
     public boolean hasTBAInfo() {
-        return name != null || location != null || motto != null || website == null || rookieYear > 0;
+        return fullName != null || location != null || motto != null || website != null || rookieYear > 0;
     }
 
     /**

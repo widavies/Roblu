@@ -28,10 +28,10 @@
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
 
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Roblu Cloud">
-        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
-            android:title="Sign-in to Roblu Cloud"
-            android:key="sync_service"
-            android:summary="Sign-in to to Roblu Cloud to enable Roblu Cloud's team syncing services"/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference
+            android:title="Set Roblu Cloud username"
+            android:key="edit_username"
+            android:summary="Set your name, this will appear on everyone's devices next to scouting data you've edited."/>
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Join team"
             android:key="display_code"

@@ -44,8 +44,8 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
     /*
      * Items on the list and their descriptions
      */
-    private final String items[] = { "Create event", "Import from TheBlueAlliance.com", "Import from backup file"};
-    private final String sub_items[] = {"Create the event manually.", "Import the event from an online database.", "Import the event and all information from a previously exported backup file."};
+    private final String items[] = { "Import from TheBlueAlliance.com", "Import from backup file", "Create event"};
+    private final String sub_items[] = {"Import the event from an online database.", "Import the event and all information from a previously exported backup file.","Create the event manually."};
 
     //private long tempEventID;
     //private Event tempEvent;
@@ -121,20 +121,20 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
         /*
          * User selected manual event creation
          */
-        if(position == 0) {
+        if(position == 2) {
             startActivityForResult(new Intent(this, EventEditor.class), Constants.GENERAL);
         }
         /*
          * User selected TBA event import
          */
-        else if(position == 1) {
+        else if(position == 0) {
             Intent intent = new Intent(this, TBAEventSelector.class);
             startActivityForResult(intent, Constants.GENERAL);
         }
         /*
          * User selected import from backup file
          */
-        else if(position == 2) {
+        else if(position == 1) {
             /*
              * Open a file chooser where the user can select a backup file to use.
              * We'll listen to a result in onActivityResult() and import the backup file there
@@ -188,7 +188,9 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
                     for(RTeam team : backup.getTeams()) io.saveTeam(event.getID(), team);
                 }
                 Utils.showSnackbar(findViewById(R.id.activity_create_event_picker), getApplicationContext(), "Successfully imported event from backup", false, rui.getPrimaryColor());
-                setResult(Constants.NEW_EVENT_CREATED);
+                Intent intent = new Intent();
+                intent.putExtra("eventID", event.getID());
+                setResult(Constants.NEW_EVENT_CREATED, intent);
                 finish();
 
             } catch(Exception e) {

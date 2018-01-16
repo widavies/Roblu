@@ -208,8 +208,9 @@ public class IO {
      * reference.
      * @param event the REvent to duplicate
      * @param keepScoutingData true if scouting data should be preserved
+     * @return reference to the duplicated event
      */
-    public void duplicateEvent(REvent event, boolean keepScoutingData) {
+    public REvent duplicateEvent(REvent event, boolean keepScoutingData) {
         int newID = getNewEventID();
         // New name
         event.setName("Copy of "+event.getName());
@@ -228,6 +229,7 @@ public class IO {
             temp.setPage(1);
             saveTeam(newID, temp);
         }
+        return event;
     }
     // End event methods
 
@@ -367,18 +369,14 @@ public class IO {
      * Saves a backup file to the cache directory. It should be saved to an external location by the user
      * IMMEDIATELY, because the cache dir does not guarantee the existence of any files
      * @param backup the backup file to save to a temporary file
-     * @return File reference to a temporary file location that can be saved to an external location
+     * @return File reference to a temporary file location that can later be saved to an external location
      */
     public File saveBackup(RBackup backup) {
-        File dir = new File(context.getCacheDir(), PREFIX+File.separator+"tempBackupExport.roblubackup");
-        if(dir.mkdirs()) Log.d("RBS", "Successfully created backup parent dirs");
-        if(dir.exists()) {
-            if(!dir.delete()) Log.d("RBS", "Failed to delete old cached backup export file.");
-        }
-        File bFile = new File(context.getFilesDir(), PREFIX + File.separator+"backups"+ File.separator+backup.getEvent().getName()+" ("+ Utils.convertTime(System.currentTimeMillis())+") Backup.roblubackup");
-        if(bFile.exists()) delete(bFile);
-        serializeObject(backup, bFile);
-        return bFile;
+        File file = new File(context.getCacheDir(), PREFIX+File.separator+"backups"+ File.separator+"tempBackupExport.roblubackup");
+        if(file.mkdirs()) Log.d("RBS", "Successfully created backup parent dirs");
+        if(file.exists()) delete(file);
+        serializeObject(backup, file);
+        return file;
     }
 
     /**

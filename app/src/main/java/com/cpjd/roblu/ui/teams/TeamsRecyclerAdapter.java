@@ -189,7 +189,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
 
             StringBuilder subtitle = new StringBuilder("In ");
             subtitle.append(team.getNumMatches()).append(" matches\nLast edited: ").append(Utils.convertTime(team.getLastEdit()));
-            if(team.getFilterTag() != null && !team.getFilterTag().equals("")) subtitle.append("\n").append(team.getFilterTag());
+            if(team.getFilterTag() != null && !team.getFilterTag().equals("")) subtitle.append(team.getFilterTag());
             this.subtitle.setText(subtitle.toString());
             this.subtitle.setTextColor(rui.getText());
         }

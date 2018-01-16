@@ -257,7 +257,7 @@ public class EventEditor extends AppCompatActivity {
             /*
              * Create the event!
              */
-            tempFormHolder = (RForm) data.getSerializableExtra("form");
+            tempFormHolder = (RForm) data.getExtras().getSerializable("form");
             createEvent(tempFormHolder);
         }
     }
@@ -270,7 +270,7 @@ public class EventEditor extends AppCompatActivity {
     private int createEvent(RForm form) {
         IO io = new IO(getApplicationContext());
         REvent event = new REvent(io.getNewEventID(), eventName.getText().toString());
-        io.saveEvent(event);
+        io.saveEvent(event); // we call this twice because the /event/ dir is required for the form to save
         io.saveForm(event.getID(), form);
 
         /*
@@ -279,13 +279,17 @@ public class EventEditor extends AppCompatActivity {
         if(!editing && getIntent().getSerializableExtra("tbaEvent") != null) {
             d = ProgressDialog.show(this, "Hold on tight!","Generating team profiles from event...", true);
             d.setCancelable(false);
+            event.setKey(((Event)getIntent().getSerializableExtra("tbaEvent")).key);
+            io.saveEvent(event);
             new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), this, d).execute();
+
         }
 
         /*
          * If we started the UnpackTask, then we have to wait to return, if not, return now
          */
         else {
+            io.saveEvent(event);
             Intent result = new Intent();
             result.putExtra("eventID", event.getID());
             setResult(Constants.NEW_EVENT_CREATED, result);

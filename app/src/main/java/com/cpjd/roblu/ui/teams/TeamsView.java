@@ -254,7 +254,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             @Override
             public boolean onQueryTextChange(String newText) {
                 lastQuery = newText;
-                executeLoadTeamsTask(SORT_TYPE.SEARCH, false);
+                if(lastFilter == SORT_TYPE.CUSTOM_SORT) executeLoadTeamsTask(SORT_TYPE.CUSTOM_SORT, false);
+                else executeLoadTeamsTask(SORT_TYPE.SEARCH, false);
                 return true;
             }
         });
@@ -440,7 +441,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         if(resultCode == Constants.CUSTOM_SORT_CONFIRMED) { // the user selected a custom sort token, retrieve it and sort
             lastCustomSortToken = data.getStringExtra("sortToken");
             lastFilter = SORT_TYPE.CUSTOM_SORT;
-            executeLoadTeamsTask(lastFilter, true);
+            executeLoadTeamsTask(lastFilter, false);
         }
         else if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIRMED) { // the user edited the master form, retrieve it and save it
             Bundle b = data.getExtras();
@@ -452,7 +453,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         else if(resultCode == Constants.NEW_EVENT_CREATED){ // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
             eventDrawerManager.loadEventsToDrawer();
-            eventDrawerManager.selectEvent(d.getInt("eventID"));
+            eventDrawerManager.selectEvent(d != null ? d.getInt("eventID") : 0);
         }
         else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
             executeLoadTeamsTask(lastFilter, true);
@@ -471,12 +472,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             adapter.reAdd(temp);
             executeLoadTeamsTask(lastFilter, false);
         }
-        else if(resultCode == Constants.DATA_SETTINGS_CHANGED) { // user edited the event
+        else if(resultCode == Constants.EVENT_SETTINGS_CHANGED) { // user edited the event
             REvent temp = (REvent) data.getSerializableExtra("event");
             if(eventDrawerManager.getEvent() != null && temp.getID() == eventDrawerManager.getEvent().getID()) {
                 if(getSupportActionBar() != null) getSupportActionBar().setTitle(temp.getName());
                 eventDrawerManager.setEvent(temp);
             }
+            eventDrawerManager.loadEventsToDrawer();
             executeLoadTeamsTask(lastFilter,true);
         }
         else if(resultCode == Constants.SETTINGS_CHANGED) { // user changed application settings

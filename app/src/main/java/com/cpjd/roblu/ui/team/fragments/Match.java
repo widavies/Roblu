@@ -125,23 +125,30 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
      */
     @Override
     public void changeMade(RMetric metric) {
+        Log.d("RBS", "Metric started: "+metric.getTitle());
+
         // set the metric as modified - this is a critical line, otherwise scouting data will get deleted
         metric.setModified(true);
-        TeamViewer.team.setLastEdit(System.currentTimeMillis());
+
 
         /*
          * Check the team name and team number metrics to see if the action bar needs to be updated
          */
+        boolean init = false; // since team name and  team number are updated from the team model
+        // without the user's control, make sure not to update team's timestamp if it's only the team name or number metric
         if(metric instanceof RTextfield) {
             if(((RTextfield) metric).isOneLine() && ((RTextfield) metric).isNumericalOnly() && !((RTextfield) metric).getText().equals("")) {
                 TeamViewer.team.setNumber(Integer.parseInt(((RTextfield) metric).getText()));
                 ((TeamViewer)getActivity()).setActionBarSubtitle("#"+TeamViewer.team.getNumber());
+                init = true;
             }
             if(((RTextfield) metric).isOneLine() && !((RTextfield) metric).isNumericalOnly() && !((RTextfield) metric).getText().equals("")) {
                 TeamViewer.team.setName(((RTextfield) metric).getText());
                 ((TeamViewer)getActivity()).setActionBarTitle(TeamViewer.team.getName());
+                init = true;
             }
         }
+        if(!init) TeamViewer.team.setLastEdit(System.currentTimeMillis());
         // save the team
         new IO(getActivity()).saveTeam(event.getID(), TeamViewer.team);
     }

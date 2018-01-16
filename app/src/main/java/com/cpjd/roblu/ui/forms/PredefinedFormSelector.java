@@ -73,7 +73,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
 
 	private final String sub_items[] = { "Ramparts, walls, moat, cheval de frise, etc." , "Gears, hopper, load station, shots, etc."};
 
-	private HashMap<Integer, RForm> forms;
+	private ArrayList<RForm> forms;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -105,11 +105,18 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
 		sharingView.setOnItemClickListener(this);
 
 		/*
-		 * Load predefined forms
+		 * Load and process predefined forms
 		 */
-		forms = new HashMap<>();
-        forms.put(2016, processForm(2016));
-        forms.put(2017, processForm(2017));
+		try {
+            int firstYear = 2016; // stores the first specified year
+            int numFiles = getAssets().list("predefinedForms").length;
+            forms = new ArrayList<>();
+            for(int i = firstYear; i < firstYear + numFiles; i++) {
+                forms.add(processForm(i));
+            }
+        } catch(IOException e) {
+		    Log.d("RBS", "Unable to process predefined forms.");
+        }
 
         // Sync UI with user settings
         new UIHandler(this, toolbar).update();
@@ -125,18 +132,18 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
             String line;
             int ID = 0;
             while((line = br.readLine()) != null) {
-                if(line.equals("PIT")) {
-                    continue;
-                }
-                else if(line.equals("MATCH")) {
-                   form.setPit((ArrayList<RMetric>)metrics.clone());
-                   metrics.clear();
-                   continue;
-                }
-                else if(line.equals("DEFAULTS")) {
-                    metrics.add(new RTextfield(0, "Team name", false, true, ""));
-                    metrics.add(new RTextfield(1, "Team number", true, true, ""));
-                    ID = 2;
+                switch(line) {
+                    case "PIT":
+                        continue;
+                    case "MATCH":
+                        form.setPit((ArrayList<RMetric>) metrics.clone());
+                        metrics.clear();
+                        continue;
+                    case "DEFAULTS":
+                        metrics.add(new RTextfield(0, "Team name", false, true, ""));
+                        metrics.add(new RTextfield(1, "Team number", true, true, ""));
+                        ID = 2;
+                        break;
                 }
 
                 /*
@@ -144,7 +151,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                  */
                 String[] tokens = line.split(",");
                 if(tokens[0].equals("counter")) {
-                    metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[3]), Integer.parseInt(tokens[2])));
+                    metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])));
                     ID++;
                 }
                 else if(tokens[0].equals("chooser")) {
@@ -166,19 +173,20 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                     ID++;
                 }
                 else if(tokens[0].equals("stopwatch")) {
-                    metrics.add(new RStopwatch(0, tokens[1], Double.parseDouble(tokens[2])));
+                    metrics.add(new RStopwatch(ID, tokens[1], Double.parseDouble(tokens[2])));
                     ID++;
                 }
                 else if(tokens[0].equals("boolean")) {
-                    metrics.add(new RBoolean(0, tokens[1], Boolean.parseBoolean(tokens[2])));
+                    metrics.add(new RBoolean(ID, tokens[1], Boolean.parseBoolean(tokens[2])));
                     ID++;
                 }
                 else if(tokens[0].equals("gallery")) {
-                    metrics.add(new RGallery(0, tokens[1]));
+                    metrics.add(new RGallery(ID, tokens[1]));
                     ID++;
                 }
             }
             form.setMatch(metrics);
+            Log.d("RBS", "Form created successfully with "+form.getPit().size()+" pit metrics and "+form.getMatch().size()+" match metrics");
             return form;
 
         } catch(IOException e) {
@@ -206,22 +214,10 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        RForm form = null;
-
-        switch (position) {
-            case 0:
-                form = forms.get(2016);
-                break;
-            case 1:
-                form = forms.get(2017);
-                break;
-        }
+        RForm form = forms.get(position);
         if(form == null) return;
-
-        Bundle bundle = new Bundle();
         Intent intent = new Intent();
-        bundle.putSerializable("form", form);
-        intent.putExtras(bundle);
+        intent.putExtra("form", form);
         setResult(Constants.PREDEFINED_FORM_SELECTED, intent);
         finish();
 	}

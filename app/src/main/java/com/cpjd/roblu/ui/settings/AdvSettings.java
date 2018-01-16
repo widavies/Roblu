@@ -135,25 +135,20 @@ public class AdvSettings extends AppCompatActivity {
             teamNumber.setDefaultValue(settings.getTeamNumber());
             teamNumber.setText(String.valueOf(settings.getTeamNumber()));
             teamNumber.setOnPreferenceChangeListener(this);
+            EditTextPreference username = (EditTextPreference) findPreference("edit_username");
+            username.setDefaultValue(settings.getUsername());
+            username.setText(settings.getUsername());
+            username.setOnPreferenceChangeListener(this);
 
             // We have to set all the preference click listener so we can process a preference click event and update its value
             findPreference("about").setOnPreferenceClickListener(this);
             findPreference("customizer").setOnPreferenceClickListener(this);
-            findPreference("sync_service").setOnPreferenceClickListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
             findPreference("cloud_support").setOnPreferenceClickListener(this);
             findPreference("reddit").setOnPreferenceClickListener(this);
 
             toggleJoinTeam(!(settings.getCode() != null && !settings.getCode().equals("")));
 
-            // We want to update the UI to match if we're signed in or not (eg "sign-in" or "sign-out")
-            toggleCloudControls(settings.isSignedIn());
-            updateUI(settings.isSignedIn());
-        }
-
-        // Toggles cloud controls, we don't want to let the user access cloud controls without being signed in
-        private void toggleCloudControls(boolean b) {
-            findPreference("display_code").setEnabled(b);
         }
 
         // This updates the UI depending on whether the user has entered a team code or not
@@ -202,19 +197,6 @@ public class AdvSettings extends AppCompatActivity {
             return false;
         }
 
-        // Updates the ui to match the sign in state (true or false)
-        private void updateUI(boolean b) {
-            if(b) {
-                findPreference("sync_service").setTitle("Sign-out of Roblu Cloud");
-                findPreference("sync_service").setSummary("Signing out of Roblu Cloud will disable cloud functionality");
-            } else {
-                findPreference("sync_service").setTitle("Sign-in to Roblu Cloud");
-                findPreference("sync_service").setSummary("Sign-in to Roblu Cloud using your Google account.");
-            }
-            settings.setSignedIn(b);
-            new IO(getActivity()).saveSettings(settings);
-        }
-
         // Manages preferences that have a value and can be changed
         @Override
         public boolean onPreferenceChange(Preference preference, Object o) {
@@ -231,6 +213,8 @@ public class AdvSettings extends AppCompatActivity {
                     preference.setDefaultValue(num);
                 }
                 settings.setTeamNumber(num);
+            } else if(preference.getKey().equals("edit_username")) {
+                settings.setUsername(o.toString());
             }
             new IO(getActivity()).saveSettings(settings); // save the settings to the file system
             return true;
