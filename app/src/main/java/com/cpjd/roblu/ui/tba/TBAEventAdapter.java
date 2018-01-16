@@ -74,7 +74,7 @@ class TBAEventAdapter extends RecyclerView.Adapter<TBAEventAdapter.ViewHolder> {
      * @param events events to pass control of to this adapter
      * @param hideZeroRelevanceEvents if events with 0 relevance should be visible
      */
-    public void setEvents(ArrayList<Event> events, boolean hideZeroRelevanceEvents) {
+    void setEvents(ArrayList<Event> events, boolean hideZeroRelevanceEvents) {
         if(hideZeroRelevanceEvents) {
             this.events = new ArrayList<>(events); // clones the array
             for(int i = 0; i < this.events.size(); i++) {

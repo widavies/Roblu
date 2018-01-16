@@ -16,6 +16,7 @@ import com.cpjd.roblu.utils.Utils;
 import java.util.ArrayList;
 import java.util.Map;
 
+import lombok.Getter;
 import lombok.Setter;
 
 /**
@@ -49,20 +50,30 @@ public class TeamMetricProcessor {
          * Metric (matching inputted ID) should be analyzed from the MATCHES within each team
          */
         public static final int MATCHES = 2;
-        /**
-         * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted by how many match wins they have
+
+        public static final int OTHER = 3;
+
+        public static class OTHER_METHOD {
+        /*
+         * Sub categories for PROCESS_METHOD = -1
          */
-        public static final int MATCH_WINS = 3;
-        /**
-         * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted by if they are in the selected match.
-         * Note: This sort method actually requires the teams to be removed from the list if its not in the requested match, this
-         * must be handled somewhere not in this class!
-         */
-        public static final int IN_MATCH = 4;
-        /**
-         * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted as they normally are
-         */
-        public static final int RESET = 6;
+            /**
+             * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted by how many match wins they have
+             */
+            public static final int MATCH_WINS = 4;
+            /**
+             * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted by if they are in the selected match.
+             * Note: This sort method actually requires the teams to be removed from the list if its not in the requested match, this
+             * must be handled somewhere not in this class!
+             */
+            public static final int IN_MATCH = 5;
+            /**
+             * No metric is being analyzed (and thus ID will be ignored), teams should just be sorted as they normally are
+             */
+            public static final int RESET = 6;
+
+        }
+
     }
 
     /**
@@ -70,6 +81,7 @@ public class TeamMetricProcessor {
      * It is a match name like "Quals 1"
      */
     @Setter
+    @Getter
     private String inMatchTitle;
 
     /**
@@ -260,7 +272,7 @@ public class TeamMetricProcessor {
                      * available
                     */
                     StringBuilder overview = new StringBuilder();
-                    if(metric instanceof RBoolean) overview.append("Boolean: ").append(metric.getTitle()).append(" is true in ").append(occurrences).append(" / ").append(team.getTabs().size() - 2).append("matches");
+                    if(metric instanceof RBoolean) overview.append("Boolean: ").append(metric.getTitle()).append(" is true in ").append(occurrences).append(" / ").append(team.getTabs().size() - 2).append(" matches");
                     else if(metric instanceof RCounter) overview.append("Counter: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RSlider) overview.append("Slider: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RStopwatch) overview.append("Stopwatch: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
@@ -283,7 +295,7 @@ public class TeamMetricProcessor {
         /*
          * The user requested MATCH_WINS
          */
-        else if(method == PROCESS_METHOD.MATCH_WINS) {
+        else if(method == PROCESS_METHOD.OTHER && ID == PROCESS_METHOD.OTHER_METHOD.MATCH_WINS) {
             for(int i = 2; i < team.getTabs().size(); i++) {
                 if(team.getTabs().get(i).isWon()) {
                     occurrences++;
@@ -297,12 +309,12 @@ public class TeamMetricProcessor {
              */
 
             team.setCustomRelevance(relevance);
-            team.setFilterTag(String.valueOf(occurrences) + " match wins" + rawData);
+            team.setFilterTag(String.valueOf(occurrences) + " match wins\n" + rawData.toString());
         }
         /*
          * The user requested IN_MATCH
          */
-        else if(method == PROCESS_METHOD.IN_MATCH) {
+        else if(method == PROCESS_METHOD.OTHER && ID == PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
             for(int i = 2; i < team.getTabs().size(); i++) {
                 if(team.getTabs().get(i).getTitle().equalsIgnoreCase(inMatchTitle)) {
                     team.setFilterTag(rawData.append("In ").append(inMatchTitle).toString());
@@ -312,7 +324,7 @@ public class TeamMetricProcessor {
         /*
          * The user request a reset
          */
-        else if(method == PROCESS_METHOD.RESET) {
+        else if(method == PROCESS_METHOD.OTHER && ID == PROCESS_METHOD.OTHER_METHOD.RESET) {
             team.setFilterTag("");
             team.setCustomRelevance(0);
         }

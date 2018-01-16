@@ -382,6 +382,8 @@ public class Utils {
      * @return
      */
     public static boolean contains(String string, String query) {
+        string = string.toLowerCase();
+        query = query.toLowerCase();
         if(string.equals(query)) return false;
         if(!string.contains(query)) return false;
         else if(string.indexOf(query) == 0 && string.length() > query.length()) return string.charAt(query.length()) == ' ';
@@ -389,6 +391,17 @@ public class Utils {
         query = " " + query + " ";
         return string.contains(query);
     }
+
+    public static ArrayList<RMetric> duplicateRMetricArray(ArrayList<RMetric> metrics) {
+        if(metrics == null || metrics.size() == 0) return new ArrayList<>();
+        ArrayList<RMetric> newMetrics = new ArrayList<>();
+        for(RMetric m : metrics) {
+            newMetrics.add(m.clone());
+        }
+        return newMetrics;
+    }
+
+
     /**
      * Creates an empty form for an event (not technically empty).
      *

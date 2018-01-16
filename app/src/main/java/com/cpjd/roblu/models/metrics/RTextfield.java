@@ -59,7 +59,15 @@ public class RTextfield extends RMetric {
 
     @Override
     public String getFormDescriptor() {
-        return "Type: Utils field\nDefault value: "+text;
+        /*
+         * Determine if this is a special field
+         * (numericalOnly and oneLine variables cannot be
+         * created by the user, so we'll use those to determine
+         * if this is a team name or team number metric)
+         */
+        if(oneLine && numericalOnly) return "Type: Text field\nMandatory field used for editing team number.";
+        else if(oneLine) return "Type: Text field\nMandatory field used for editing team name.";
+        return "Type: Text field\nDefault value: "+text;
     }
 
     @Override

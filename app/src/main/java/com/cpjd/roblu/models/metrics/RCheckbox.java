@@ -31,19 +31,18 @@ public class RCheckbox extends RMetric {
     public RCheckbox(int ID, String title, LinkedHashMap<String, Boolean> values) {
         super(ID, title);
         this.values = values;
-        if(this.values == null || values.size() == 0) {
-            throw new RuntimeException("RCheckbox must be instantiated with at least 1 item in the LinkedHashMap");
-        }
     }
 
     @Override
     public String getFormDescriptor() {
-        StringBuilder descriptor = new StringBuilder("Type: Checkbox\nItems: (key,defaultValue) ");
-        for(Object o : values.entrySet()) {
-            Map.Entry pair = (Map.Entry) o;
-            descriptor.append("(").append(pair.getKey()).append(", ").append(pair.getValue()).append(")");
+        StringBuilder descriptor = new StringBuilder("Type: Checkbox\nItems (key,defaultValue): ");
+        if(values != null) {
+            for(Object o : values.entrySet()) {
+                Map.Entry pair = (Map.Entry) o;
+                descriptor.append("(").append(pair.getKey()).append(", ").append(pair.getValue()).append(")").append(", ");
+            }
         }
-        return descriptor.toString();
+        return descriptor.toString().substring(0, descriptor.toString().length() - 2); // make sure to remove trailing comma
     }
 
     @Override

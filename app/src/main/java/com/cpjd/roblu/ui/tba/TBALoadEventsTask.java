@@ -138,7 +138,8 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
                 listener.eventListDownloaded(this.events);
             } catch(Exception e) {
                 e.printStackTrace();
-                listener.errorOccurred("An error occurred while accessing TheBlueAlliance.com "+e.getMessage());
+                if(onlyShowMyEvents && teamNumber == 0) listener.errorOccurred("Error occurred downloading events list. Is your team number properly defined in Roblu settings?");
+                else listener.errorOccurred("An error occurred while accessing TheBlueAlliance.com");
             }
         }
 

@@ -66,7 +66,7 @@ public class RCounter extends RMetric {
 
     @Override
     public String getFormDescriptor() {
-        return "Type: Counter\nDefault value: "+value+"\nIncrement: "+increment;
+        return "Type: Counter\nDefault value: "+getTextValue()+"\nIncrement: "+increment;
     }
 
     @Override

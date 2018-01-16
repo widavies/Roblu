@@ -81,6 +81,9 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
      * a reAdd() method is required because some asynchronous actions are bound
      * to the UI swiping off teams cards. For example, if the user swipes off a teams card,
      * they will be prompted if they'd really like to delete it, if not, it must be re-added to the array
+     *
+     * This method can also be used to update a team object (for example: when a team is edited)
+     *
      * @param team the team to re-add to the array
      */
     void reAdd(RTeam team) {
@@ -90,6 +93,23 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
                 break;
             }
         }
+        notifyDataSetChanged();
+    }
+    /**
+     * Sets the teams to the adapter
+     * @param teams teams to pass control of to this adapter
+     * @param hideZeroRelevanceTeams if teams with 0 relevance should be visible
+     */
+    void setTeams(ArrayList<RTeam> teams, boolean hideZeroRelevanceTeams) {
+        if(hideZeroRelevanceTeams) {
+            this.teams = new ArrayList<>(teams); // clones the array
+            for(int i = 0; i < this.teams.size(); i++) {
+                if(this.teams.get(i).getCustomRelevance() == 0) {
+                    this.teams.remove(i);
+                    i--;
+                }
+            }
+        } else this.teams = teams;
         notifyDataSetChanged();
     }
 
@@ -167,8 +187,10 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
             this.number.setText("#"+team.getNumber());
             this.number.setTextColor(rui.getText());
 
-            String subtitle = "In "+team.getNumMatches()+" matches\nLast edited: "+ Utils.convertTime(team.getLastEdit())+team.getFilterTag();
-            this.subtitle.setText(subtitle);
+            StringBuilder subtitle = new StringBuilder("In ");
+            subtitle.append(team.getNumMatches()).append(" matches\nLast edited: ").append(Utils.convertTime(team.getLastEdit()));
+            if(team.getFilterTag() != null && !team.getFilterTag().equals("")) subtitle.append("\n").append(team.getFilterTag());
+            this.subtitle.setText(subtitle.toString());
             this.subtitle.setTextColor(rui.getText());
         }
     }

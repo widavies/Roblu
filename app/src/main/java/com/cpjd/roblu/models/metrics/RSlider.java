@@ -47,6 +47,26 @@ public class RSlider extends RMetric {
         return "Type: Slider\nMin: "+min+" Max: "+max+" Default value: "+value;
     }
 
+    /**
+     * Sets the minimum value for this slider, and resets the current value if needed
+     * @param min the value to set as the minimum
+     */
+    public void setMin(int min) {
+        this.min = min;
+        if(value < min) value = min;
+        if(value > max) value = max;
+    }
+
+    /**
+     * Sets the maximum value for this slider, and resets the current value if needed
+     * @param max the value to set as the minimum
+     */
+    public void setMax(int max) {
+        this.max = max;
+        if(value > max) value = max;
+        if(value < min) value = min;
+    }
+
     @Override
     public RMetric clone() {
         RSlider slider = new RSlider(ID, title, min, max, value);

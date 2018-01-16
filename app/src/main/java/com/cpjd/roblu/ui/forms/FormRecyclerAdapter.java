@@ -93,6 +93,8 @@ public class FormRecyclerAdapter extends RecyclerView.Adapter<FormRecyclerAdapte
      * @param metrics the metrics to set to the adapter
      */
     public void setMetrics(ArrayList<RMetric> metrics) {
+        if(metrics == null) return;
+
         initID = 0;
         this.metrics = metrics;
         for(RMetric metric : this.metrics) {

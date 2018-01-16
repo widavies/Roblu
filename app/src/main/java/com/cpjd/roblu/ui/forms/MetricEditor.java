@@ -109,12 +109,23 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
          */
         if(getIntent().getSerializableExtra("metric") != null) {
             metric = (RMetric) getIntent().getSerializableExtra("metric");
+            if(getSupportActionBar() != null) getSupportActionBar().setTitle("Edit metric");
+            /*
+             * The modified variable DOES NOT matter in the form, so always, always make sure it's true
+             * so N.O. tags don't show up
+             */
+            metric.setModified(true);
             addMetricPreviewToToolbar();
             buildConfigLayout();
 
         } else {
             // add a RBoolean type, it's the default loaded type until the user selects a different one
             metric = new RBoolean(0, "Boolean", false);
+            /*
+             * The modified variable DOES NOT matter in the form, so always, always make sure it's true
+             * so N.O. tags don't show up
+             */
+            metric.setModified(true);
             layout.addView(initMetricSelector());
         }
 
@@ -179,13 +190,12 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         layout.addView(getConfigField("Title", layout, 0));
 
         if(metric instanceof RCheckbox || metric instanceof RChooser) {
-            layout.addView(getConfigField("comma", layout, 1));
+            layout.addView(getConfigField("Comma separated list", layout, 1));
         } else if(metric instanceof RCounter) {
             layout.addView(getConfigField("Increment", layout, 1));
         } else if(metric instanceof RSlider) {
             layout.addView(getConfigField("Minimum", layout, 1));
             layout.addView(getConfigField("Maximum", layout, 2));
-            layout.addView(getConfigField("Increment", layout, 3));
         }
 
         this.layout.addView(getCardView(layout));
@@ -210,9 +220,38 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         nameInput.setTextColor(rui.getText());
         nameInput.setHighlightColor(rui.getAccent());
         nameInput.setId(Utils.generateViewId());
-        nameInput.setText(metric.getTitle());
-        if(name.equalsIgnoreCase("minimum") || name.equalsIgnoreCase("maximum")) nameInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-        else if(name.equalsIgnoreCase("increment")) nameInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        if(name.equalsIgnoreCase("minimum")) {
+            nameInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+            if(metric instanceof RSlider) nameInput.setText(String.valueOf(((RSlider)metric).getMin()));
+        }
+        else if(name.equalsIgnoreCase("maximum")) {
+            nameInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+            if(metric instanceof RSlider) nameInput.setText(String.valueOf(((RSlider)metric).getMax()));
+        }
+        else if(name.equalsIgnoreCase("increment")) {
+            nameInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
+            if(metric instanceof RCounter) nameInput.setText(String.valueOf(((RCounter)metric).getIncrement()));
+        }
+        else if(name.startsWith("Comma separated list")) {
+            if(metric instanceof RCheckbox) {
+                StringBuilder text = new StringBuilder();
+                RCheckbox checkbox = ((RCheckbox)metric);
+                if(checkbox.getValues() != null) {
+                    for(Object o : checkbox.getValues().keySet()) {
+                        text.append(o).append(",");
+                    }
+                }
+                if(text.toString().length() > 0) nameInput.setText(text.toString().substring(0, text.toString().length() - 1));
+            } else if(metric instanceof RChooser) {
+                StringBuilder text = new StringBuilder();
+                RChooser chooser = ((RChooser)metric);
+                if(chooser.getValues() != null) {
+                    for(String s : chooser.getValues()) text.append(s).append(",");
+                }
+                if(text.toString().length() > 0) nameInput.setText(text.toString().substring(0, text.toString().length() - 1));
+            }
+        }
+        else nameInput.setText(metric.getTitle());
         nameInput.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -220,16 +259,19 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
                 if(name.equalsIgnoreCase("title")) {
                     metric.setTitle(charSequence.toString());
-                } else if(name.equalsIgnoreCase("min") && metric instanceof RSlider) {
-                    ((RSlider)metric).setMin(Integer.parseInt(charSequence.toString()));
-                } else if(name.equalsIgnoreCase("max") && metric instanceof RSlider) {
-                    ((RSlider)metric).setMax(Integer.parseInt(charSequence.toString()));
+                } else if(name.equalsIgnoreCase("minimum") && metric instanceof RSlider) {
+                    if(charSequence.toString().equals("")) ((RSlider) metric).setMin(0);
+                    else ((RSlider)metric).setMin(Integer.parseInt(charSequence.toString()));
+                } else if(name.equalsIgnoreCase("maximum") && metric instanceof RSlider) {
+                    if(charSequence.toString().equals("")) ((RSlider) metric).setMax(100);
+                    else ((RSlider)metric).setMax(Integer.parseInt(charSequence.toString()));
                 } else if(name.equalsIgnoreCase("increment") && metric instanceof RCounter) {
-                    ((RCounter)metric).setIncrement(Double.parseDouble(charSequence.toString()));
-                } else if(name.contains("comma")) {
+                    if(charSequence.toString().equals("") || charSequence.toString().equals(".")) ((RCounter) metric).setIncrement(1);
+                    else ((RCounter)metric).setIncrement(Double.parseDouble(charSequence.toString()));
+                } else if(name.startsWith("Comma")) {
                     if(metric instanceof RCheckbox) {
                         String[] tokens = charSequence.toString().split(",");
-                        LinkedHashMap<String, Boolean> hash = new LinkedHashMap();
+                        LinkedHashMap<String, Boolean> hash = new LinkedHashMap<>();
                         for(String s : tokens) hash.put(s, false);
                         ((RCheckbox)metric).setValues(hash);
                     } else if(metric instanceof RChooser) {
@@ -296,6 +338,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
          */
         else if(item.getItemId() == R.id.add_element) {
             Intent result = new Intent();
+            metric.setModified(false);
             result.putExtra("metric", metric);
             setResult(Constants.METRIC_CONFIRMED, result);
             finish();
@@ -336,6 +379,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         } else if(stringOfSelected.equals(METRIC_TYPES[7])) {
             metric = new RGallery(0, "Gallery");
         }
+        metric.setModified(true);
         addMetricPreviewToToolbar();
         buildConfigLayout();
     }
@@ -367,7 +411,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
      * Refresh the toolbar to match the metric
      */
     @Override
-    public void changeMade() {
+    public void changeMade(RMetric metric) {
     }
 
     @Override

@@ -39,6 +39,7 @@ import java.util.ArrayList;
  * Parameters:
  * -"form" - pass a form if an edit is requested
  * -"master" - signifies that the passed in form is also a master form
+ * -"ignoreDiscard" - discard dialog won't be displayed (default: false)
  *
  * @version 2
  * @since 3.0.0
@@ -68,6 +69,13 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
      * Stores the user's UI preferences
      */
     private RUI rui;
+
+    /**
+     * If the user requests a metric edit and decides to discard it,
+     * the old metric needs to be added without any modified attributes,
+     * so keep an extra reference to it here.
+     */
+    private RMetric metricEditHolder;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -127,7 +135,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
             form = (RForm) getIntent().getSerializableExtra("form");
         } else {
             RTextfield name = new RTextfield(0, "Team name", false, true, "");
-            RTextfield number = new RTextfield(0, "Team number", true, true, "");
+            RTextfield number = new RTextfield(1, "Team number", true, true, "");
             ArrayList<RMetric> pit = new ArrayList<>();
             pit.add(name);
             pit.add(number);
@@ -240,7 +248,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
     }
 
     private void launchParent() {
-        if(changesMade) {
+        if(changesMade && !getIntent().getBooleanExtra("ignoreDiscard", false)) {
             new FastDialogBuilder()
                     .setTitle("Discard changes?")
                     .setMessage("Really discard changes you've made to this form?")
@@ -257,9 +265,21 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
                         public void denied() {}
                         @Override
                         public void neutral() {}
-                    }).build(getApplicationContext());
+                    }).build(FormViewer.this);
         } else {
-            setResult(Constants.CANCELLED);
+            // Make sure to include the form in the return transfer for EventEditor primarily, even on a form discard
+            if(getIntent().getBooleanExtra("ignoreDiscard", false)) {
+                /*
+                 * Make sure to retrieve all metrics
+                 */
+                if(currentTab == 0) form.setPit(metricsAdapter.getMetrics());
+                else if(currentTab == 1) form.setMatch(metricsAdapter.getMetrics());
+                Intent intent = new Intent();
+                intent.putExtra("form", form);
+                setResult(Constants.CANCELLED, intent);
+            } else {
+                setResult(Constants.CANCELLED);
+            }
             finish();
         }
     }
@@ -293,11 +313,8 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
         /*
          * User discarded a metric edit
          */
-        else if(requestCode == Constants.EDIT_CONFIRMED && resultCode == Constants.CANCELLED) {
-            changesMade = true;
-            Bundle b = data.getExtras();
-            RMetric metric = (RMetric) b.getSerializable("metric");
-            metricsAdapter.reAdd(metric);
+        else if(requestCode == Constants.EDIT_METRIC_REQUEST && resultCode == Constants.CANCELLED) {
+            metricsAdapter.reAdd(metricEditHolder);
         }
     }
 
@@ -316,6 +333,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
      */
     @Override
     public void metricEditRequested(RMetric metric) {
+        metricEditHolder = metric;
         Intent intent = new Intent(this, MetricEditor.class);
         intent.putExtra("metric", metric);
         startActivityForResult(intent, Constants.EDIT_METRIC_REQUEST);

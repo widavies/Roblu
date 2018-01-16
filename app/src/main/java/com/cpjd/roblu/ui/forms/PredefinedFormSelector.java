@@ -125,15 +125,18 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
             String line;
             int ID = 0;
             while((line = br.readLine()) != null) {
-                if(line.equals("MATCH")) {
-                   form.setPit(metrics);
+                if(line.equals("PIT")) {
+                    continue;
+                }
+                else if(line.equals("MATCH")) {
+                   form.setPit((ArrayList<RMetric>)metrics.clone());
                    metrics.clear();
                    continue;
                 }
                 else if(line.equals("DEFAULTS")) {
                     metrics.add(new RTextfield(0, "Team name", false, true, ""));
-                    metrics.add(new RTextfield(0, "Team number", true, true, ""));
-                    ID++;
+                    metrics.add(new RTextfield(1, "Team number", true, true, ""));
+                    ID = 2;
                 }
 
                 /*
@@ -141,7 +144,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                  */
                 String[] tokens = line.split(",");
                 if(tokens[0].equals("counter")) {
-                    metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[4]), Integer.parseInt(tokens[3])));
+                    metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[3]), Integer.parseInt(tokens[2])));
                     ID++;
                 }
                 else if(tokens[0].equals("chooser")) {

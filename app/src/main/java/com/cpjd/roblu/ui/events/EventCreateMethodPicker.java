@@ -199,8 +199,11 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
          * The user created an event manually with EventEditor, we actually don't need to do anything but auto-finish our class
          * with a result code letting the TeamsView class now to refresh the event list
          */
-        else if(resultCode == Constants.NEW_EVENT_CREATED){
-            setResult(Constants.NEW_EVENT_CREATED);
+        else if(resultCode == Constants.NEW_EVENT_CREATED) {
+            Bundle b = data.getExtras();
+            Intent intent = new Intent();
+            intent.putExtras(b);
+            setResult(Constants.NEW_EVENT_CREATED, intent);
             finish();
         }
     }
@@ -208,7 +211,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId() == android.R.id.home) {
-            setResult(Constants.PICKER_CANCELLED);
+            setResult(Constants.CANCELLED);
             finish();
         }
         return true;
@@ -216,7 +219,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
 
     @Override
     public void onBackPressed() {
-        setResult(Constants.PICKER_CANCELLED);
+        setResult(Constants.CANCELLED);
         finish();
     }
 }

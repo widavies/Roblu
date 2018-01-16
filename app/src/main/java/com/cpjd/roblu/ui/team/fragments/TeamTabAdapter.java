@@ -12,10 +12,8 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
-import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.team.TeamViewer;
-
-import java.util.ArrayList;
+import com.cpjd.roblu.utils.Utils;
 
 /**
  * Handles the tabs for an RTab model
@@ -136,7 +134,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
      * @return the position of the sorted, created match
      */
     public int createMatch(String name, boolean isRed) {
-        int position = TeamViewer.team.addTab(new RTab(name, (ArrayList<RMetric>)form.getMatch().clone(), isRed, false, 0));
+        int position = TeamViewer.team.addTab(new RTab(name, Utils.duplicateRMetricArray(form.getMatch()), isRed, false, 0));
         TeamViewer.team.setLastEdit(System.currentTimeMillis());
         new IO(context).saveTeam(event.getID(), TeamViewer.team);
 

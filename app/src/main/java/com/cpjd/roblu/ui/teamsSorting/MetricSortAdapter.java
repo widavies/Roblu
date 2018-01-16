@@ -40,9 +40,9 @@ public class MetricSortAdapter extends FragmentPagerAdapter {
         this.eventID = eventID;
 
         otherSortMethods = new ArrayList<>();
-        otherSortMethods.add(new RSort("By wins", TeamMetricProcessor.PROCESS_METHOD.MATCH_WINS, "Sort teams by how many matches they've won"));
-        otherSortMethods.add(new RSort("By match", TeamMetricProcessor.PROCESS_METHOD.IN_MATCH, "Sort teams by a specific match"));
-        otherSortMethods.add(new RSort("By # of matches", TeamMetricProcessor.PROCESS_METHOD.RESET, "Sort teams by how many matches they contain"));
+        otherSortMethods.add(new RSort("By wins", TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.MATCH_WINS, "Sort teams by how many matches they've won"));
+        otherSortMethods.add(new RSort("By match", TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH, "Sort teams by a specific match"));
+        otherSortMethods.add(new RSort("By # of matches", TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.RESET, "Sort teams by how many matches they contain"));
     }
 
     @Override
@@ -72,7 +72,7 @@ public class MetricSortAdapter extends FragmentPagerAdapter {
         }
         else if(i == 3) {
             MetricSortFragment frag = new MetricSortFragment();
-            bundle.putInt("processMethod", -1); // this actually includes all OTHER methods (PROCESS_METHOD.IN_MATCH, PROCESS_METHOD.MATCH_WINS, etc.)
+            bundle.putInt("processMethod", TeamMetricProcessor.PROCESS_METHOD.OTHER); // this actually includes all OTHER methods (PROCESS_METHOD.IN_MATCH, PROCESS_METHOD.MATCH_WINS, etc.)
             bundle.putInt("eventID", eventID);
             bundle.putSerializable("metrics", otherSortMethods);
             frag.setArguments(bundle);
@@ -88,9 +88,9 @@ public class MetricSortAdapter extends FragmentPagerAdapter {
 
     @Override
     public CharSequence getPageTitle(int position) {
-        if(position == 0) return "By match metric";
+        if(position == 0) return "By PIT metric";
         if(position == 1) return "By predictions";
-        if(position == 2) return "By PIT metric";
+        if(position == 2) return "By match metric";
         else return "Other";
     }
 }

@@ -35,7 +35,6 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.sync.cloud.sync.Service;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
@@ -132,12 +131,12 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         /**
          * Sorts teams by search relevance, each team has a 'customRelevance' int, this is what is being sorted
          */
-        public static final int SEARCH = 3;
+        public static final int SEARCH = 4;
         /**
          * Sorts teams by a sort token defined in CustomSort
          * @see CustomSort
          */
-        public static final int CUSTOM_SORT = 4;
+        public static final int CUSTOM_SORT = 3;
 
     }
     // End filters and searching
@@ -222,14 +221,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (dy > 0 && searchButton.isShown()) searchButton.hide();
-                if (dy < 0 && !searchButton.isShown()) searchButton.show();
-
+                if(dy > 0 && searchButton.isShown()) searchButton.hide();
+                if(dy < 0 && !searchButton.isShown()) searchButton.show();
             }
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) searchButton.show();
+                //if (newState == RecyclerView.SCROLL_STATE_IDLE) searchButton.show();
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
@@ -240,8 +238,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             public void onSearchViewShown() {}
             @Override
             public void onSearchViewClosed() {
-                lastFilter = SORT_TYPE.NUMERICAL;
-                executeLoadTeamsTask(false);
+                executeLoadTeamsTask(lastFilter, false);
                 searchButton.setVisibility(FloatingActionButton.VISIBLE);
             }
         });
@@ -257,8 +254,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             @Override
             public boolean onQueryTextChange(String newText) {
                 lastQuery = newText;
-                lastFilter = SORT_TYPE.SEARCH;
-                executeLoadTeamsTask(false);
+                executeLoadTeamsTask(SORT_TYPE.SEARCH, false);
                 return true;
             }
         });
@@ -280,7 +276,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             startService(serviceIntent);
         }
 
-        executeLoadTeamsTask(true);
 
         /*
          * Display update messages
@@ -339,7 +334,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     eventDrawerManager.getEvent().setLastFilter(i2);
                     io.saveEvent(eventDrawerManager.getEvent());
                     lastFilter = i2;
-                    executeLoadTeamsTask(false);
+                    executeLoadTeamsTask(lastFilter, false);
                     d.dismiss();
                 }
             });
@@ -393,7 +388,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(input2.getText().toString().equals("")) input2.setText("0");
                 RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), io.getNewTeamID(eventDrawerManager.getEvent().getID()));
                 io.saveTeam(eventDrawerManager.getEvent().getID(), team);
-                executeLoadTeamsTask(true);
+                executeLoadTeamsTask(lastFilter, true);
             }
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -415,35 +410,22 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(settings.getRui().getAccent());
         dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(settings.getRui().getAccent());
     }
-    @Override
-    public void teamsTaskComplete() {
-        rv.setVisibility(View.VISIBLE);
-        bar.setVisibility(View.GONE);
-        // Update the action bar subtitle
-        if(teams != null) {
-            StringBuilder subtitle = new StringBuilder(teams.size());
-            subtitle.append(" Team");
-            if(teams.size() != 1) subtitle.append("s");
-            if(getSupportActionBar() != null) getSupportActionBar().setSubtitle(subtitle.toString());
-        }
-    }
 
     /**
      * This method starts a LoadTeamsTasks to search, filter, or load teams from an event.
      * teamstaskComplete() will be called when LoadTeamsTasks finishes its job
      */
-    private void executeLoadTeamsTask(boolean reload) {
+    private void executeLoadTeamsTask(int filter, boolean reload) {
         if(eventDrawerManager.getEvent() == null) return;
 
-        LoadTeamsTask loadTeamsTask = new LoadTeamsTask(new IO(getApplicationContext()), this, adapter);
-        loadTeamsTask.setTaskParameters(eventDrawerManager.getEvent().getID(), lastFilter, lastQuery, lastCustomSortToken);
-        if(reload) loadTeamsTask.setTeams(teams);
+        LoadTeamsTask loadTeamsTask = new LoadTeamsTask(new IO(getApplicationContext()), adapter, this, bar, rv, getSupportActionBar());
+        loadTeamsTask.setTaskParameters(eventDrawerManager.getEvent().getID(), filter, lastQuery, lastCustomSortToken);
+        if(!reload) loadTeamsTask.setTeams(teams);
         // Flag UI to look like it's loading something
         rv.setVisibility(View.GONE);
         bar.setVisibility(View.VISIBLE);
         bar.getIndeterminateDrawable().setColorFilter(settings.getRui().getAccent(), PorterDuff.Mode.MULTIPLY);
         // Start the actual loading
-        loadTeamsTask.cancel(true);
         loadTeamsTask.execute();
     }
 
@@ -458,12 +440,12 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         if(resultCode == Constants.CUSTOM_SORT_CONFIRMED) { // the user selected a custom sort token, retrieve it and sort
             lastCustomSortToken = data.getStringExtra("sortToken");
             lastFilter = SORT_TYPE.CUSTOM_SORT;
-            executeLoadTeamsTask(false);
+            executeLoadTeamsTask(lastFilter, true);
         }
         else if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIRMED) { // the user edited the master form, retrieve it and save it
             Bundle b = data.getExtras();
             if(b != null) {
-                settings.setMaster(new RForm((ArrayList<RMetric>) b.getSerializable("pit"), ((ArrayList<RMetric>) b.getSerializable("pit"))));
+                settings.setMaster((RForm) b.getSerializable("form"));
             }
             io.saveSettings(settings);
         }
@@ -473,18 +455,21 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             eventDrawerManager.selectEvent(d.getInt("eventID"));
         }
         else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
-            executeLoadTeamsTask(true);
+            executeLoadTeamsTask(lastFilter, true);
         }
         else if(resultCode == Constants.TEAM_EDITED) { // the user edited a team, let's toss it in the teams array and reload it also
-            if(teams == null || teams.size() == 0 || eventDrawerManager.getEvent() == null) return;
-            RTeam temp = io.loadTeam(eventDrawerManager.getEvent().getID(), data.getIntExtra("team", 0));
+            if(eventDrawerManager.getEvent() == null) return;
+            RTeam temp = io.loadTeam(eventDrawerManager.getEvent().getID(), data.getIntExtra("teamID", 0));
+            // Reload the teams array
             for(int i = 0; i < teams.size(); i++) {
                 if(teams.get(i).getID() == temp.getID()) {
                     teams.set(i, temp);
                     break;
                 }
             }
-            executeLoadTeamsTask(false);
+            // Reload the edited team into the adapter
+            adapter.reAdd(temp);
+            executeLoadTeamsTask(lastFilter, false);
         }
         else if(resultCode == Constants.DATA_SETTINGS_CHANGED) { // user edited the event
             REvent temp = (REvent) data.getSerializableExtra("event");
@@ -492,19 +477,19 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 if(getSupportActionBar() != null) getSupportActionBar().setTitle(temp.getName());
                 eventDrawerManager.setEvent(temp);
             }
-            executeLoadTeamsTask(true);
+            executeLoadTeamsTask(lastFilter,true);
         }
         else if(resultCode == Constants.SETTINGS_CHANGED) { // user changed application settings
 
         }
-        /*
-         * The user created a new event, let's make sure the eventDrawerManager
-         * knows about it
-         */
-        else if(resultCode == Constants.MANUAL_CREATED) {
-            eventDrawerManager.loadEventsToDrawer();
-            eventDrawerManager.selectEvent(settings.getLastEventID());
-        }
+    }
+    /**
+     * Called when a new teams list is successfully loaded,
+     * these teams should immediately stored
+     */
+    @Override
+    public void teamsListLoaded(ArrayList<RTeam> teams) {
+        this.teams = teams;
     }
 
     @Override
@@ -551,29 +536,29 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         if(searchView.isSearchOpen()) {
             searchView.closeSearch();
             lastFilter = SORT_TYPE.NUMERICAL;
-            executeLoadTeamsTask(false);
+            executeLoadTeamsTask(lastFilter, false);
         }
     }
     @Override
     public void teamSelected(View v) {
-        RTeam team = teams.get(rv.getChildLayoutPosition(v));
+        RTeam team = adapter.getTeams().get(rv.getChildLayoutPosition(v));
         Intent startView = new Intent(this, TeamViewer.class);
         startView.putExtra("teamID", team.getID());
         startView.putExtra("event", eventDrawerManager.getEvent());
-        startView.putExtra("editable", false);
+        startView.putExtra("editable", true);
         startActivityForResult(startView, Constants.GENERAL);
     }
 
     @Override
     public void teamDeleted(RTeam team) {
         io.deleteTeam(eventDrawerManager.getEvent().getID(), team.getID());
-        executeLoadTeamsTask(true);
+        executeLoadTeamsTask(lastFilter, true);
         Utils.showSnackbar(findViewById(R.id.main_layout), getApplicationContext(), team.getName()+" was successfully deleted", false, settings.getRui().getPrimaryColor());
     }
 
     @Override
     public void eventSelected(REvent event) {
-        executeLoadTeamsTask(true);
+        executeLoadTeamsTask(lastFilter, true);
     }
 
 }

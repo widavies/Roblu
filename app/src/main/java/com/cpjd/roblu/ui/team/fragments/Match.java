@@ -72,7 +72,7 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
         event = (REvent) bundle.getSerializable("event");
         form = (RForm) bundle.getSerializable("form");
         position = bundle.getInt("position") - 1;
-        editable = bundle.getBoolean("readOnly");
+        editable = bundle.getBoolean("editable");
 
         if(!editable) position++;
 
@@ -117,17 +117,32 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
         else if (e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e));
         else if (e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
         else Log.d("RBS", "Couldn't resolve metric with name: "+e.getTitle());
-
     }
 
+    /**
+     * This method is called when a change is made to a metric
+     * @param metric the modified metric
+     */
     @Override
-    public void changeMade() {
+    public void changeMade(RMetric metric) {
+        // set the metric as modified - this is a critical line, otherwise scouting data will get deleted
+        metric.setModified(true);
         TeamViewer.team.setLastEdit(System.currentTimeMillis());
-        TeamViewer.team.setName(((RTextfield)TeamViewer.team.getTabs().get(0).getMetrics().get(0)).getText());
-        TeamViewer.team.setNumber(Integer.parseInt(((RTextfield)TeamViewer.team.getTabs().get(0).getMetrics().get(1)).getText()));
-        // Check if the action bar needs to changed
-        getActivity().getActionBar().setTitle(TeamViewer.team.getName());
-        getActivity().getActionBar().setSubtitle("#"+TeamViewer.team.getNumber());
+
+        /*
+         * Check the team name and team number metrics to see if the action bar needs to be updated
+         */
+        if(metric instanceof RTextfield) {
+            if(((RTextfield) metric).isOneLine() && ((RTextfield) metric).isNumericalOnly() && !((RTextfield) metric).getText().equals("")) {
+                TeamViewer.team.setNumber(Integer.parseInt(((RTextfield) metric).getText()));
+                ((TeamViewer)getActivity()).setActionBarSubtitle("#"+TeamViewer.team.getNumber());
+            }
+            if(((RTextfield) metric).isOneLine() && !((RTextfield) metric).isNumericalOnly() && !((RTextfield) metric).getText().equals("")) {
+                TeamViewer.team.setName(((RTextfield) metric).getText());
+                ((TeamViewer)getActivity()).setActionBarTitle(TeamViewer.team.getName());
+            }
+        }
+        // save the team
         new IO(getActivity()).saveTeam(event.getID(), TeamViewer.team);
     }
     public int getPosition() {

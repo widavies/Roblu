@@ -1,5 +1,7 @@
 package com.cpjd.roblu.ui.events;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -22,7 +24,6 @@ import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.forms.FormViewer;
@@ -79,6 +80,8 @@ public class EventEditor extends AppCompatActivity {
      * all the data within this Event model should be included when creating the REvent
      */
     private Event event;
+
+    private ProgressDialog d;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -152,6 +155,7 @@ public class EventEditor extends AppCompatActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		if(item.getItemId() == android.R.id.home) {
 		    launchParent();
+		    return true;
         }
         // user clicked the confirm button
         else if(item.getItemId() == R.id.action_event_create_confirm) {
@@ -179,6 +183,7 @@ public class EventEditor extends AppCompatActivity {
                     Intent startView = new Intent(this, FormViewer.class);
                     // Package a form with any old data that the user was working on (might be null)
                     startView.putExtra("form", tempFormHolder);
+                    startView.putExtra("ignoreDiscard", true);
                     startActivityForResult(startView, Constants.GENERAL);
                 }
                 /*
@@ -197,11 +202,6 @@ public class EventEditor extends AppCompatActivity {
                     IO io = new IO(getApplicationContext());
                     RForm masterForm = io.loadSettings().getMaster();
                     createEvent(masterForm);
-                    /*
-                     * Send the event back to TeamsView to be processed
-                     */
-                    setResult(Constants.MANUAL_CREATED);
-                    finish();
                 }
                 /*
                  * User selected "No form (create form later)" option
@@ -211,8 +211,6 @@ public class EventEditor extends AppCompatActivity {
                      * Create the event
                      */
                     createEvent(Utils.createEmpty());
-                    setResult(Constants.MANUAL_CREATED);
-                    finish();
                 }
 
             }
@@ -236,9 +234,8 @@ public class EventEditor extends AppCompatActivity {
          * User tapped back on the custom form editor (essentially a discard, expect if they re-enter
          * the custom form editor, their data will be saved because this activity keeps track of it)
          */
-        if(resultCode == Constants.FORM_DISCARDED) {
-            Bundle bundle = data.getExtras();
-            tempFormHolder = new RForm((ArrayList<RMetric>)bundle.getSerializable("pit"), (ArrayList<RMetric>)bundle.getSerializable("match"));
+        if(resultCode == Constants.CANCELLED) {
+            if(data.getExtras().getSerializable("form") != null) tempFormHolder = (RForm) data.getExtras().getSerializable("form");
         }
         /*
          * User tapped confirm on the custom form editor, so let's create an event with form they created
@@ -250,10 +247,8 @@ public class EventEditor extends AppCompatActivity {
             /*
              * Create the event!
              */
-            Intent intent = new Intent();
-            intent.putExtra("eventID", createEvent(tempFormHolder));
-            setResult(Constants.NEW_EVENT_CREATED);
-            finish();
+            createEvent(tempFormHolder);
+
         }
         /*
          * User tapped a predefined form, so let's create an event with the specified predefined form
@@ -264,8 +259,6 @@ public class EventEditor extends AppCompatActivity {
              */
             tempFormHolder = (RForm) data.getSerializableExtra("form");
             createEvent(tempFormHolder);
-            setResult(Constants.NEW_EVENT_CREATED);
-            finish();
         }
     }
 
@@ -283,9 +276,22 @@ public class EventEditor extends AppCompatActivity {
         /*
          * We need to check if the user included any TBA information that we should include in this event creation
          */
-        if(editing && getIntent().getSerializableExtra("tbaEvent") != null) {
-            new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), new IO(getApplicationContext())).execute();
+        if(!editing && getIntent().getSerializableExtra("tbaEvent") != null) {
+            d = ProgressDialog.show(this, "Hold on tight!","Generating team profiles from event...", true);
+            d.setCancelable(false);
+            new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), this, d).execute();
         }
+
+        /*
+         * If we started the UnpackTask, then we have to wait to return, if not, return now
+         */
+        else {
+            Intent result = new Intent();
+            result.putExtra("eventID", event.getID());
+            setResult(Constants.NEW_EVENT_CREATED, result);
+            finish();
+        }
+
         return event.getID();
     }
 
@@ -307,7 +313,7 @@ public class EventEditor extends AppCompatActivity {
                     .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
                         @Override
                         public void accepted() {
-                            setResult(Constants.EVENT_DISCARDED);
+                            setResult(Constants.CANCELLED);
                             finish();
                         }
 
@@ -315,7 +321,7 @@ public class EventEditor extends AppCompatActivity {
                         public void denied() {}
                         @Override
                         public void neutral() {}
-                    }).build(getApplicationContext());
+                    }).build(EventEditor.this);
         }
     }
 
@@ -343,12 +349,14 @@ public class EventEditor extends AppCompatActivity {
         private Event event;
         private int eventID;
 
-        private WeakReference<IO> ioWeakReference;
+        private WeakReference<Activity> activityWeakReference;
+        private WeakReference<ProgressDialog> progressDialogWeakReference;
 
-        UnpackTBAEvent(Event e, int eventID, IO io) {
+        UnpackTBAEvent(Event e, int eventID, Activity activity, ProgressDialog d) {
             this.eventID = eventID;
             this.event = e;
-            this.ioWeakReference = new WeakReference<>(io);
+            this.activityWeakReference = new WeakReference<>(activity);
+            this.progressDialogWeakReference = new WeakReference<>(d);
         }
 
         protected Void doInBackground(Void... params) {
@@ -375,7 +383,7 @@ public class EventEditor extends AppCompatActivity {
             /*
              * Add the matches to the respective team models
              */
-            IO io = ioWeakReference.get();
+            IO io = new IO(activityWeakReference.get());
             RForm form = io.loadForm(eventID);
 
             int result;
@@ -401,12 +409,21 @@ public class EventEditor extends AppCompatActivity {
                         }
                         boolean isRed = result == com.cpjd.main.Constants.CONTAINS_TEAM_RED;
                         // add the match to the team, make sure to multiple the Event model's matches times by 1000 (seconds to milliseconds, Roblu works with milliseconds!)
-                        t.addTab(new RTab(name, form.getMatch(), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000));
+                        t.addTab(new RTab(name, Utils.duplicateRMetricArray(form.getMatch()), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000));
                         io.saveTeam(eventID, t);
                     }
                 }
             }
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void params) {
+            Intent result = new Intent();
+            result.putExtra("eventID", eventID);
+            activityWeakReference.get().setResult(Constants.NEW_EVENT_CREATED, result);
+            activityWeakReference.get().finish();
+            progressDialogWeakReference.get().dismiss();
         }
     }
 }

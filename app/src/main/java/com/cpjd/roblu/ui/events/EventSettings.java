@@ -29,7 +29,6 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.forms.FormViewer;
@@ -42,7 +41,6 @@ import com.google.common.io.Files;
 import java.io.File;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -144,7 +142,7 @@ public class EventSettings extends AppCompatActivity {
             findPreference("edit_event").setOnPreferenceClickListener(this);
             findPreference("delete_teams").setOnPreferenceClickListener(this);
             findPreference("delete_event").setOnPreferenceClickListener(this);
-            findPreference("cloud").setOnPreferenceClickListener(this);
+            //findPreference("cloud").setOnPreferenceClickListener(this);
 
             /*
              * Obtain explicit preference references where an attribute of the preference
@@ -387,7 +385,7 @@ public class EventSettings extends AppCompatActivity {
              */
             else if(resultCode == Constants.FORM_CONFIRMED) {
                 Bundle bundle = data.getExtras();
-                RForm form = new RForm((ArrayList<RMetric>) bundle.getSerializable("pit"), (ArrayList<RMetric>) bundle.getSerializable("match"));
+                RForm form = (RForm)bundle.getSerializable("form");
                 form.setUploadRequired(true);
                 new IO(getActivity()).saveForm(event.getID(), form);
             }

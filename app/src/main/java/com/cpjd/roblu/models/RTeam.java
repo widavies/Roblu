@@ -9,7 +9,9 @@ import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
+import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.teams.TeamsView;
+import com.cpjd.roblu.utils.Utils;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -129,11 +131,17 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      */
     public void verify(RForm form) {
         // Check for null or missing Pit & Predictions tabs
-        if (this.tabs == null || this.tabs.size() == 0) {
+        if(this.tabs == null || this.tabs.size() == 0) {
             this.tabs = new ArrayList<>();
-            addTab(new RTab("Pit",(ArrayList<RMetric>)form.getPit().clone() , false, false, 0));
-            addTab(new RTab("Predictions",(ArrayList<RMetric>)form.getMatch().clone() , false, false, 0));
+            addTab(new RTab("Pit", Utils.duplicateRMetricArray(form.getPit()) , false, false, 0));
+            addTab(new RTab("Predictions",Utils.duplicateRMetricArray(form.getMatch()) , false, false, 0));
             return;
+        }
+
+        // Check to make sure the team name and number have been inserted into the form
+        for(RMetric m : this.getTabs().get(0).getMetrics()) {
+            if(m.getID() == 0) ((RTextfield)m).setText(name); // team name
+            else if(m.getID() == 1) ((RTextfield)m).setText(String.valueOf(number)); // team number
         }
 
         // Remove elements that aren't on the form
@@ -192,7 +200,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             }
         }
 
-        // Update default values for non-modified values, also check for some weird scenarioes
+        // Update default values for non-modified values, also check for some weird scenarios
         temp = form.getPit();
         for (int i = 0; i < tabs.size(); i++) {
             if(!tabs.get(i).getTitle().equalsIgnoreCase("PIT")) temp = form.getMatch();
@@ -206,7 +214,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                             ((RBoolean) s).setValue(((RBoolean) e).isValue());
                         else if (e instanceof RCheckbox && s instanceof RCheckbox) {
                             if (!s.isModified()) {
-                                ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
+                                if(((RCheckbox) e).getValues() != null) ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
                             }
                             if (!((RCheckbox) s).getValues().equals(((RCheckbox) e).getValues())) {
                                 ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
@@ -306,7 +314,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         if(filter == TeamsView.SORT_TYPE.ALPHABETICAL) return name.compareTo(team.getName());
         else if(filter == TeamsView.SORT_TYPE.NUMERICAL) return ((Integer)number).compareTo(team.getNumber());
         else if(filter == TeamsView.SORT_TYPE.LAST_EDIT) return ((Long)lastEdit).compareTo(team.getLastEdit());
-        else if(filter == TeamsView.SORT_TYPE.SEARCH || filter == TeamsView.SORT_TYPE.CUSTOM_SORT) return ((Double)customRelevance).compareTo(customRelevance);
+        else if(filter == TeamsView.SORT_TYPE.SEARCH || filter == TeamsView.SORT_TYPE.CUSTOM_SORT) return ((Double)customRelevance).compareTo(team.getCustomRelevance());
         else return 0;
     }
 }

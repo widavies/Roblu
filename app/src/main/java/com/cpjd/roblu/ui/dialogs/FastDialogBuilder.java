@@ -70,7 +70,7 @@ public class FastDialogBuilder {
     }
 
     public FastDialogBuilder setNegativeButtonText(String text) {
-        this.positiveButtonText = text;
+        this.negativeButtonText = text;
         return this;
     }
 
@@ -100,7 +100,7 @@ public class FastDialogBuilder {
         }
 
         if(!neutralButtonText.equals("")) {
-            builder.setPositiveButton(neutralButtonText, new DialogInterface.OnClickListener() {
+            builder.setNeutralButton(neutralButtonText, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     if(listener != null) listener.neutral();
@@ -110,7 +110,7 @@ public class FastDialogBuilder {
         }
 
         if(!negativeButtonText.equals("")) {
-            builder.setPositiveButton(negativeButtonText, new DialogInterface.OnClickListener() {
+            builder.setNegativeButton(negativeButtonText, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     if(listener != null) listener.denied();

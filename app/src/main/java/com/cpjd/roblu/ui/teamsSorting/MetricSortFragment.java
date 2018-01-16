@@ -106,7 +106,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
     public void metricSelected(View v) {
         int position = rv.getChildLayoutPosition(v);
         // User selected the "In Match" option, now we have to display a list of all the matches within the event
-        if(metrics.get(position).getID() == TeamMetricProcessor.PROCESS_METHOD.IN_MATCH) {
+        if(metrics.get(position).getID() == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
             final Dialog d = new Dialog(getActivity());
             d.setTitle("Select match");
             d.setContentView(R.layout.event_import_dialog);
@@ -127,7 +127,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
                 @Override
                 public void onClick(View v) {
                     Intent result = new Intent();
-                    result.putExtra("sortToken", TeamMetricProcessor.PROCESS_METHOD.IN_MATCH+":0:"+values[spinner.getSelectedItemPosition()]);
+                    result.putExtra("sortToken", TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH+":0:"+values[spinner.getSelectedItemPosition()]);
                     getActivity().setResult(Constants.CUSTOM_SORT_CONFIRMED, result);
                     getActivity().finish();
                     d.dismiss();

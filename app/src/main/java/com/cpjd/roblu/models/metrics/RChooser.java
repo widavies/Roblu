@@ -37,10 +37,11 @@ public class RChooser extends RMetric {
 
     @Override
     public String getFormDescriptor() {
+        if(values == null) return "Type: Chooser\nItems: ";
         StringBuilder descriptor = new StringBuilder("Type: Chooser\nItems: ");
-        for(String s : values) descriptor.append(s);
+        for(String s : values) descriptor.append(s).append(", ");
         descriptor.append(" Default value index: ").append(selectedIndex);
-        return descriptor.toString();
+        return descriptor.toString().substring(0, descriptor.toString().length() - 2);
     }
 
     @Override

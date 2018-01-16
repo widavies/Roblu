@@ -264,7 +264,7 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
         startActivityForResult(intent, Constants.GENERAL);
     }
     /**
-     * Called when a new events list is successfully downloaded or searched,
+     * Called when a new events list is successfully downloaded,
      * these events should immediately stored
      */
     @Override
@@ -285,7 +285,10 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
          * just close the current activity
          */
         if(resultCode == Constants.NEW_EVENT_CREATED) {
-            setResult(Constants.NEW_EVENT_CREATED);
+            Bundle b = data.getExtras();
+            Intent intent = new Intent();
+            intent.putExtras(b);
+            setResult(Constants.NEW_EVENT_CREATED, intent);
             finish();
         }
     }

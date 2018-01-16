@@ -1,7 +1,11 @@
 package com.cpjd.roblu.ui.teams;
 
 import android.os.AsyncTask;
+import android.support.v7.app.ActionBar;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
+import android.widget.ProgressBar;
 
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
@@ -61,6 +65,16 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      */
     private String customSortToken;
 
+    public interface LoadTeamsTaskListener {
+        void teamsListLoaded(ArrayList<RTeam> teams);
+    }
+
+    /**
+     * This will send a teams array back to the TeamsView activity if the teams have just been loaded from the file system,
+     * that way the TeamsView activity can keep track of them so they don't have to be continually reloaded
+     */
+    private LoadTeamsTaskListener listener;
+
     /**
      * IO must be kept in a weak reference because it holds a context reference and we don't
      * want to risk leaking memory accidentally
@@ -71,15 +85,18 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      * The teams array will be sent to this adapter when this task is finished
      */
     private WeakReference<TeamsRecyclerAdapter> teamsRecyclerAdapterWeakReference;
-
-    interface LoadTeamsTaskListener {
-        void teamsTaskComplete();
-    }
-
     /**
-     * This listener will be notified when the method finishes and the UI needs to update
+     * Reference to the progress bar so it can be made invisible again after this task finishes
      */
-    private LoadTeamsTaskListener listener;
+    private WeakReference<ProgressBar> progressBarWeakReference;
+    /**
+     * Reference to the recycler view so it can be made visible again after this task finishes
+     */
+    private WeakReference<RecyclerView> recyclerViewWeakReference;
+    /**
+     * Reference to the actionbar so it's subtitle can be updated after this task finishes
+     */
+    private WeakReference<ActionBar> actionBarWeakReference;
 
     /**
      * Instantiates a LoadTeamsTask.
@@ -88,12 +105,16 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      * Also, UI should be adjusted accordingly before calling this class
      *
      * @param io IO object so that this class can interact with the file system
-     * @param listener will receive an event when the UI should update
+     *
      */
-    LoadTeamsTask(IO io, LoadTeamsTaskListener listener, TeamsRecyclerAdapter adapter) {
-        this.listener = listener;
+    LoadTeamsTask(IO io, TeamsRecyclerAdapter adapter, LoadTeamsTaskListener listener, ProgressBar progressBar, RecyclerView recyclerView, ActionBar actionBar) {
         this.ioWeakReference = new WeakReference<>(io);
+        this.listener = listener;
         this.teamsRecyclerAdapterWeakReference = new WeakReference<>(adapter);
+        this.progressBarWeakReference = new WeakReference<>(progressBar);
+        this.recyclerViewWeakReference = new WeakReference<>(recyclerView);
+        this.actionBarWeakReference = new WeakReference<>(actionBar);
+        this.query = "";
     }
 
     /**
@@ -113,6 +134,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         this.eventID = eventID;
         this.filter = filter;
         this.query = query;
+        if(this.query == null) this.query = "";
         this.customSortToken = customSortToken;
     }
 
@@ -135,11 +157,13 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             RTeam[] local = ioWeakReference.get().loadTeams(eventID);
             // no teams were found locally, so return null
             if(local == null || local.length == 0) {
+                Log.d("RBS", "LoadTeamsTask found no teams locally stored.");
                 teams = null;
                 return null;
             }
             // teams were found locally, so attach them to the teams array
             teams = new ArrayList<>(Arrays.asList(local));
+            listener.teamsListLoaded(teams);
         }
 
         /*
@@ -147,9 +171,6 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
          * again, if the teams array is empty, return null
          */
         if(teams == null || teams.size() == 0) return null;
-
-        // Just a quick function to make sure the TeamsView.teams parent team array is instantiated
-        if(teams == null) teams = new ArrayList<>();
 
         /*
          * Next, each RTeam contains a variable named filter, it's a sort of "helper" variable.
@@ -165,6 +186,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         if(filter == TeamsView.SORT_TYPE.LAST_EDIT || filter == TeamsView.SORT_TYPE.NUMERICAL || filter == TeamsView.SORT_TYPE.ALPHABETICAL) {
             try {
                 Collections.sort(teams);
+                if(filter == TeamsView.SORT_TYPE.LAST_EDIT) Collections.reverse(teams);
                 return null;
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
@@ -178,23 +200,18 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
         else if(filter == TeamsView.SORT_TYPE.SEARCH) {
             for(RTeam team : teams) {
                 team.setCustomRelevance(0);
+                team.setFilterTag("");
 
                 // assign search relevance to the team
                 processTeamForSearch(team);
+            }
 
-                try {
-                    Collections.sort(teams);
-                    // Don't forget, this time, all items with 0 relevance need to be removed
-                    for(int i = 0; i < teams.size(); i++) {
-                        if(teams.get(i).getCustomRelevance() == 0) {
-                            teams.remove(i);
-                            i--;
-                        }
-                    }
-                    return null;
-                } catch(Exception e) {
-                    Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
-                }
+            try {
+                Collections.sort(this.teams);
+                Collections.reverse(this.teams);
+                return null;
+            } catch(Exception e) {
+                Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
         }
 
@@ -225,17 +242,24 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             int methodID = Integer.parseInt(customSortToken.split(":")[0]);
             int metricID = Integer.parseInt(customSortToken.split(":")[1]);
 
+            Log.d("RBS", "Custom sorting with methodID: "+methodID+", metricID: "+metricID);
+
             /*
              * Make sure to set the extra "matchTitle" parameter if processMethod==PROCESS_METHOD.IN_MATCH
              */
-            if(methodID == TeamMetricProcessor.PROCESS_METHOD.IN_MATCH && customSortToken.split(":").length == 3) {
+            if(methodID == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH && customSortToken.split(":").length == 3) {
                 teamMetricProcessor.setInMatchTitle(customSortToken.split(":")[2]);
+                Log.d("RBS", "IN match title: "+teamMetricProcessor.getInMatchTitle());
             }
 
             /*
              * Next, perform the operation
              */
-            for(RTeam team : teams) teamMetricProcessor.process(team, methodID, metricID);
+            for(RTeam team : teams) {
+                team.setFilterTag(""); // reset old filter tags
+                team.setCustomRelevance(0); // reset any old relevance
+                teamMetricProcessor.process(team, methodID, metricID);
+            }
 
             /*
              * Finally, check to see if the user also wants to sort through the array
@@ -244,13 +268,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
             try {
                 Collections.sort(teams);
-                // Don't forget, this time, all items with 0 relevance need to be removed
-                for(int i = 0; i < teams.size(); i++) {
-                    if(teams.get(i).getCustomRelevance() == 0) {
-                        teams.remove(i);
-                        i--;
-                    }
-                }
+                Collections.reverse(teams);
                 return null;
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
@@ -297,9 +315,9 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
                 }
             }
             // Alright, now filterTag contains all matches that relate to the query, let's generate a score
-            if(!filterTag.toString().equals(" Contains matches: ")) {
+            if(!filterTag.toString().equals("Contains matches: ")) {
                 // set the filter tag, also, remove the last comma off for nice formatting
-                team.setFilterTag(team.getFilterTag()+"\n"+filterTag.toString().substring(0, filterTag.toString().length() - 2));
+                team.setFilterTag(filterTag.toString().substring(0, filterTag.toString().length() - 2));
                 relevance += 2;
             }
         }
@@ -309,9 +327,15 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected void onPostExecute(Void params) {
-        teamsRecyclerAdapterWeakReference.get().setTeams(teams);
-        teamsRecyclerAdapterWeakReference.get().notifyDataSetChanged();
-        listener.teamsTaskComplete();
+        progressBarWeakReference.get().setVisibility(View.INVISIBLE);
+        recyclerViewWeakReference.get().setVisibility(View.VISIBLE);
+        teamsRecyclerAdapterWeakReference.get().setTeams(teams, !query.equals(""));
+        if(teams != null) {
+            StringBuilder subtitle = new StringBuilder(String.valueOf(teams.size()));
+            subtitle.append(" Team");
+            if(teams.size() != 1) subtitle.append("s");
+            if(actionBarWeakReference.get() != null) actionBarWeakReference.get().setSubtitle(subtitle.toString());
+        }
     }
 
 }

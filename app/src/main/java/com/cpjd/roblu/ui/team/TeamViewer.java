@@ -16,6 +16,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -153,7 +154,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
             Intent result = new Intent();
-            result.putExtra("teamID", team.getID());
+            result.putExtra("teamID", TeamViewer.team.getID());
             setResult(Constants.TEAM_EDITED, result);
             finish();
             return true;
@@ -190,8 +191,10 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         if(page < 2) setColorScheme(rui.getPrimaryColor(), RUI.darker(rui.getPrimaryColor(), 0.85f));
         else {
             if(tabAdapter.isPageRed(page)) setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.red), ContextCompat.getColor(getApplicationContext(), R.color.darkRed));
-            else setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.primary), ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
+            else setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary), ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));
         }
+        TeamViewer.team.setPage(page);
+        new IO(getApplicationContext()).saveTeam(event.getID(), TeamViewer.team);
     }
 
     /**
@@ -244,6 +247,14 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
             if(name.equalsIgnoreCase(team.getTabs().get(i).getTitle())) return i + 1;
         }
         return 0;
+    }
+
+    public void setActionBarTitle(String title) {
+        if(getSupportActionBar() != null) getSupportActionBar().setTitle(title);
+    }
+
+    public void setActionBarSubtitle(String title) {
+        if(getSupportActionBar() != null) getSupportActionBar().setSubtitle(title);
     }
 
     private String processName(Spinner spinner, EditText text) {
@@ -410,6 +421,16 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         d.show();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.team_viewer_actionbar, menu);
+        new UIHandler(this, menu).updateMenu();
+        if(getIntent().getBooleanExtra("readOnly", false)) {
+            menu.findItem(R.id.match_settings).setVisible(false);
+            menu.findItem(R.id.add_match).setVisible(false);
+        }
+        return true;
+    }
     /**
      * This method is called when TBA information for the team is successfully downloaded
      * @param team the TBA team model that contains downloaded information
