@@ -28,6 +28,10 @@ public class FormRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
      * Stores a reference to the adapter
      */
     private final FormRecyclerAdapter mMetricsAdapter;
+    /**
+     * If true, this flag will prevent the cards from being moved or swiped
+     */
+    private boolean lockMovement;
 
     /*
      * Helper variables
@@ -35,7 +39,7 @@ public class FormRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final Drawable xMark, editMark;
     private final int xMarkMargin;
 
-    public FormRecyclerTouchHelper(FormRecyclerAdapter metricsAdapter) {
+    FormRecyclerTouchHelper(FormRecyclerAdapter metricsAdapter) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.mMetricsAdapter = metricsAdapter;
 
@@ -54,6 +58,11 @@ public class FormRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
         editMark.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_ATOP);
     }
 
+    public FormRecyclerTouchHelper(FormRecyclerAdapter mMetricsAdapter, boolean lockMovement) {
+        this(mMetricsAdapter);
+        this.lockMovement = true;
+    }
+
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
         mMetricsAdapter.swap(viewHolder.getAdapterPosition(), target.getAdapterPosition());
@@ -62,11 +71,12 @@ public class FormRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
 
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        if(lockMovement) return 0;
         return super.getMovementFlags(recyclerView, viewHolder);
     }
     @Override
     public boolean isLongPressDragEnabled() {
-        return true;
+        return !lockMovement;
     }
 
     /**
@@ -135,6 +145,8 @@ public class FormRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
      */
     @Override
     public int getSwipeDirs(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        if(lockMovement) return 0;
+
         RMetric metric = mMetricsAdapter.getMetrics().get(viewHolder.getAdapterPosition());
         if((metric.getID() == 0 && metric instanceof RTextfield && ((RTextfield)metric).isOneLine())
                 || (metric.getID() == 1 && metric instanceof RTextfield && ((RTextfield)metric).isNumericalOnly())) {

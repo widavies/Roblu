@@ -50,6 +50,8 @@ public abstract class Constants {
 
     public static final int PREDEFINED_FORM_SELECTED = getNum();
 
+    public static final int CUSTOM_SORT_CANCELLED = getNum();
+
     // Drawer identifier codes
     public static final int CREATE_EVENT = getNum();
     public static final int SCOUT = getNum();

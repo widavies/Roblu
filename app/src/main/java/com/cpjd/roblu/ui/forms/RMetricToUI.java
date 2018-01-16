@@ -8,7 +8,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatEditText;
@@ -22,7 +21,6 @@ import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -409,30 +407,10 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         spinner.setEnabled(editable);
         spinner.setPadding(400, spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
         if(chooser.getValues() != null) {
-            ArrayAdapter<String> adapter =
-                    new ArrayAdapter<String>(activity, R.layout.spinner_item, chooser.getValues())
-                    {
-                        @NonNull
-                        public View getView(int position, View convertView, @NonNull ViewGroup parent) {
-                            View v = super.getView(position, convertView, parent);
-
-                            ((TextView) v).setTextSize(16);
-                            ((TextView) v).setTextColor(rui.getText());
-
-                            return v;
-                        }
-
-                        @Override
-                        public View getDropDownView(int position, View convertView,@NonNull ViewGroup parent) {
-                            View v = super.getDropDownView(position, convertView, parent);
-                            v.setBackgroundColor(rui.getBackground());
-
-                            ((TextView) v).setTextColor(rui.getText());
-                            ((TextView) v).setGravity(Gravity.CENTER);
-                            return v;
-                        }
-                    };
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_item, chooser.getValues());
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
             spinner.setAdapter(adapter);
+            if(chooser.getSelectedIndex() >= chooser.getValues().length) chooser.setSelectedIndex(0);
             spinner.setSelection(chooser.getSelectedIndex());
         }
 
@@ -542,7 +520,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 box.setTag(o.toString());
                 box.setId(Utils.generateViewId());
                 box.setTextColor(rui.getText());
-                box.setChecked(checkbox.getValues().get(o));
+                box.setChecked(checkbox.getValues().get(o.toString()));
                 box.setEnabled(editable);
                 box.setLayoutParams(params);
                 //box.setSupportButtonTintList(colorStateList);
@@ -624,7 +602,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         final TextView timer = new TextView(activity);
         timer.setTextSize(25);
         timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Utils.DPToPX(activity, 15), timer.getPaddingBottom());
-        timer.setText(stopwatch.getTime()+"s");
+        timer.setText(Utils.round(stopwatch.getTime(),1)+"s");
         timer.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, button.getId());
@@ -743,6 +721,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         et.setTextColor(rui.getText());
         if(textfield.isNumericalOnly()) et.setInputType(InputType.TYPE_CLASS_NUMBER);
         if(textfield.isOneLine()) {
+            et.setInputType(InputType.TYPE_CLASS_TEXT);
             et.setSingleLine();
             et.setMaxLines(1);
         }
@@ -824,27 +803,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         layout.addView(textView);
         layout.addView(open);
         return getCard(layout);
-    }
-
-    private CardView getCard(View layout) {
-        CardView card = new CardView(activity);
-        if(editable) {
-            Toolbar.LayoutParams params = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT, Gravity.CENTER);
-            params.rightMargin = 65;
-           // params.setMargins(20, 20, 20, 20);
-            card.setLayoutParams(params);
-            card.setMaxCardElevation(0);
-        } else {
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            card.setLayoutParams(params);
-            card.setCardElevation(5);
-        }
-        card.setUseCompatPadding(true);
-        card.setRadius(rui.getFormRadius());
-        card.setContentPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 8));
-        card.setCardBackgroundColor(rui.getCardColor());
-        card.addView(layout);
-        return card;
     }
 
     public CardView getInfoField(final String name, String data, final String website, final int number) {
@@ -934,6 +892,26 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
         layout.addView(textView); layout.addView(et);
         return getCard(layout);
+    }
+
+    private CardView getCard(View layout) {
+        CardView card = new CardView(activity);
+        if(editable) {
+            Toolbar.LayoutParams params = new Toolbar.LayoutParams(Toolbar.LayoutParams.MATCH_PARENT, Toolbar.LayoutParams.MATCH_PARENT, Gravity.CENTER);
+            params.rightMargin = 65;
+            card.setLayoutParams(params);
+            card.setMaxCardElevation(0);
+        } else {
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            card.setLayoutParams(params);
+            card.setCardElevation(5);
+        }
+        card.setUseCompatPadding(true);
+        card.setRadius(rui.getFormRadius());
+        card.setContentPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 8));
+        card.setCardBackgroundColor(rui.getCardColor());
+        card.addView(layout);
+        return card;
     }
 
 }

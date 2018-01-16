@@ -90,7 +90,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
         FormRecyclerAdapter adapter = new FormRecyclerAdapter(view.getContext(), this);
         rv.setAdapter(adapter);
         // setup gesture listener
-        ItemTouchHelper.Callback callback = new FormRecyclerTouchHelper(adapter);
+        ItemTouchHelper.Callback callback = new FormRecyclerTouchHelper(adapter, true);
         ItemTouchHelper helper = new ItemTouchHelper(callback);
         helper.attachToRecyclerView(rv);
         adapter.setMetrics(metrics);
@@ -106,7 +106,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
     public void metricSelected(View v) {
         int position = rv.getChildLayoutPosition(v);
         // User selected the "In Match" option, now we have to display a list of all the matches within the event
-        if(metrics.get(position).getID() == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
+        if(processMethod == TeamMetricProcessor.PROCESS_METHOD.OTHER && metrics.get(position).getID() == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
             final Dialog d = new Dialog(getActivity());
             d.setTitle("Select match");
             d.setContentView(R.layout.event_import_dialog);
@@ -127,7 +127,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
                 @Override
                 public void onClick(View v) {
                     Intent result = new Intent();
-                    result.putExtra("sortToken", TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH+":0:"+values[spinner.getSelectedItemPosition()]);
+                    result.putExtra("sortToken", TeamMetricProcessor.PROCESS_METHOD.OTHER+":"+TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH+":"+values[spinner.getSelectedItemPosition()]);
                     getActivity().setResult(Constants.CUSTOM_SORT_CONFIRMED, result);
                     getActivity().finish();
                     d.dismiss();

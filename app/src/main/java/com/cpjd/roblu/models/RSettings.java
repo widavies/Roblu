@@ -25,6 +25,12 @@ public class RSettings implements Serializable {
      * reload that event at app startup
      */
     private int lastEventID;
+
+    /**
+     * Sets the last filter the user used so it can be saved when relaunching the app
+     */
+    private int lastFilter;
+
     /**
      * The master form, if the user has specified one
      */

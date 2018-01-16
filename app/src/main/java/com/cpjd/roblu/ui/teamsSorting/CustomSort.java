@@ -11,6 +11,7 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.utils.Constants;
 
 /**
  * CustomSort manages advanced sorting methods that can't be achieved with regular sorting.
@@ -79,6 +80,7 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            setResult(Constants.CUSTOM_SORT_CANCELLED);
             finish();
             return true;
         }
@@ -86,6 +88,7 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
     }
     @Override
     public void onBackPressed() {
+        setResult(Constants.CUSTOM_SORT_CANCELLED);
         finish();
     }
     @Override

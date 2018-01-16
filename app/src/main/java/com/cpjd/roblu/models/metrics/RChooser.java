@@ -39,9 +39,12 @@ public class RChooser extends RMetric {
     public String getFormDescriptor() {
         if(values == null) return "Type: Chooser\nItems: ";
         StringBuilder descriptor = new StringBuilder("Type: Chooser\nItems: ");
-        for(String s : values) descriptor.append(s).append(", ");
-        descriptor.append(" Default value index: ").append(selectedIndex);
-        return descriptor.toString().substring(0, descriptor.toString().length() - 2);
+        for(int i = 0; i < values.length; i++) {
+            descriptor.append(values[i]);
+            if(i != values.length - 1) descriptor.append(", ");
+        }
+        descriptor.append(" Default value index: ").append(String.valueOf(selectedIndex));
+        return descriptor.toString();
     }
 
     @Override

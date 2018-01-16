@@ -267,12 +267,13 @@
                     android:textSize="35sp" />
 
                 <EditText
-                    android:layout_width="100dp"
+                    android:layout_width="200dp"
                     android:layout_height="wrap_content"
+                    android:inputType="text"
+                    android:maxLines="1"
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     android:id="@+id/username"
-                    android:inputType="number"
                     android:layout_below="@id/username_text"/>
             </RelativeLayout>
 

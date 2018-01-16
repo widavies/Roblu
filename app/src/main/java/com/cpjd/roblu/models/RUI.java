@@ -74,7 +74,7 @@ public class RUI implements Serializable {
         buttons = -1;
 
         teamsRadius = 0;
-        formRadius = 12;
+        formRadius = 25;
         dialogDirection = 0;
         preset = 0;
     }
@@ -92,7 +92,7 @@ public class RUI implements Serializable {
         buttons = -16777216;
 
         teamsRadius = 0;
-        formRadius = 12;
+        formRadius = 25;
         dialogDirection = 2;
         preset = 1;
     }

@@ -36,7 +36,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
+public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
 
     /**
      * The int ID of the event whose teams need to be loaded
@@ -145,22 +145,22 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
      * @param params no parameters are accepted here
      * @return will return the array that should be attached to TeamsView.teams
      */
-    protected Void doInBackground(Void... params) {
+    protected Boolean doInBackground(Void... params) {
         /*
-         * Verify that the event actually exists, if not, return null
+         * Verify that the event actually exists
          */
-        if(ioWeakReference.get() == null || !ioWeakReference.get().doesEventExist(eventID)) return null;
+        if(ioWeakReference.get() == null || !ioWeakReference.get().doesEventExist(eventID)) return false;
 
         /*
          * Next, take care of "reload", if reload is true, teams must be reloaded from the file system
          */
         if(teams == null || teams.size() == 0) {
             RTeam[] local = ioWeakReference.get().loadTeams(eventID);
-            // no teams were found locally, so return null
+            // no teams were found locally
             if(local == null || local.length == 0) {
                 Log.d("RBS", "LoadTeamsTask found no teams locally stored.");
                 teams = null;
-                return null;
+                return false;
             }
             // teams were found locally, so attach them to the teams array
             teams = new ArrayList<>(Arrays.asList(local));
@@ -170,9 +170,9 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
         /*
          * This check is necessary because the above method is conditional,
-         * again, if the teams array is empty, return null
+         * again, if the teams array is empty
          */
-        if(teams == null || teams.size() == 0) return null;
+        if(teams == null || teams.size() == 0) return false;
 
         /*
          * Next, each RTeam contains a variable named filter, it's a sort of "helper" variable.
@@ -191,7 +191,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             try {
                 Collections.sort(teams);
                 if(filter == TeamsView.SORT_TYPE.LAST_EDIT) Collections.reverse(teams);
-                return null;
+                return false;
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
@@ -213,7 +213,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             try {
                 Collections.sort(this.teams);
                 Collections.reverse(this.teams);
-                return null;
+                return true;
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
@@ -251,9 +251,11 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
             /*
              * Make sure to set the extra "matchTitle" parameter if processMethod==PROCESS_METHOD.IN_MATCH
              */
-            if(methodID == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH && customSortToken.split(":").length == 3) {
+            boolean shouldHideZeroRelevance = false; // for the "In match" option, zero relevance items should be hidden
+            if(methodID == TeamMetricProcessor.PROCESS_METHOD.OTHER && metricID == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH && customSortToken.split(":").length == 3) {
                 teamMetricProcessor.setInMatchTitle(customSortToken.split(":")[2]);
                 Log.d("RBS", "In match title: "+teamMetricProcessor.getInMatchTitle());
+                shouldHideZeroRelevance = true;
             }
 
             /*
@@ -273,13 +275,14 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
 
             try {
                 Collections.sort(teams);
-                Collections.reverse(teams);
-                return null;
+                // don't reverse array if sorting by "In matches" since in matches uses numerical sub sort
+                if(!(methodID == TeamMetricProcessor.PROCESS_METHOD.OTHER && metricID == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH)) Collections.reverse(teams);
+                return shouldHideZeroRelevance;
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
         }
-        return null;
+        return false;
     }
 
     /**
@@ -331,10 +334,10 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected void onPostExecute(Void params) {
+    protected void onPostExecute(Boolean shouldHideZeroRelevance) {
         progressBarWeakReference.get().setVisibility(View.INVISIBLE);
         recyclerViewWeakReference.get().setVisibility(View.VISIBLE);
-        teamsRecyclerAdapterWeakReference.get().setTeams(teams, !query.equals(""));
+        teamsRecyclerAdapterWeakReference.get().setTeams(teams, shouldHideZeroRelevance);
 
         int numTeams = 0;
         if(teams != null) numTeams = teams.size();

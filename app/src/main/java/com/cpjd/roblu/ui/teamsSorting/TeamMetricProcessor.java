@@ -11,6 +11,7 @@ import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
+import com.cpjd.roblu.ui.teams.TeamsView;
 import com.cpjd.roblu.utils.Utils;
 
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class TeamMetricProcessor {
          */
         static final int MATCHES = 2;
 
-        static final int OTHER = 3;
+        public static final int OTHER = 3;
 
         public static class OTHER_METHOD {
         /*
@@ -315,9 +316,11 @@ public class TeamMetricProcessor {
          * The user requested IN_MATCH
          */
         else if(method == PROCESS_METHOD.OTHER && ID == PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
+            team.setFilter(TeamsView.SORT_TYPE.NUMERICAL);
             for(int i = 2; i < team.getTabs().size(); i++) {
                 if(team.getTabs().get(i).getTitle().equalsIgnoreCase(inMatchTitle)) {
                     team.setFilterTag("\n"+rawData.append("In ").append(inMatchTitle).toString());
+                    team.setCustomRelevance(1);
                 }
             }
         }
@@ -390,7 +393,7 @@ public class TeamMetricProcessor {
             Map.Entry pair = (Map.Entry) o;
             tag.append(pair.getValue()).append(",");
         }
-        tag.setCharAt(tag.toString().length(), ')');
+        tag.setCharAt(tag.toString().length() - 1, ')');
         return tag.toString();
     }
 

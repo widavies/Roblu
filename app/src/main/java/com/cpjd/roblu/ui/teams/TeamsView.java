@@ -153,10 +153,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      */
     private FloatingActionButton searchButton;
     /**
-     * The ProgressBar is displayed when a asynchronous change is beng made to the
+     * The ProgressBar is displayed when a asynchronous change is being made to the
      * teams list
      */
     private ProgressBar bar;
+    /**
+     * Keep a reference to the toolbar so it can be updated if the RUI settings change
+     */
+    private Toolbar toolbar;
     // End UI and other
 
     @Override
@@ -180,7 +184,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
          * Setup UI
          */
         // Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Roblu");
@@ -227,7 +231,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
             @Override
             public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                //if (newState == RecyclerView.SCROLL_STATE_IDLE) searchButton.show();
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) searchButton.show();
                 super.onScrollStateChanged(recyclerView, newState);
             }
         });
@@ -262,6 +266,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
         // Make general changes to UI, keep it synced with RUI
         new UIHandler(this, toolbar, searchButton, true).update();
+
+        // Reload last filter, custom sort, and query
+        lastFilter = settings.getLastFilter();
+        if(lastFilter == SORT_TYPE.CUSTOM_SORT || lastFilter == SORT_TYPE.SEARCH) lastFilter = SORT_TYPE.NUMERICAL; // custom sort or search can't be loaded at startup because lastQuery and lastCustomSortFilter aren't saved
 
         /*
          * Setup events drawer and load events to it
@@ -450,7 +458,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
             io.saveSettings(settings);
         }
-        else if(resultCode == Constants.NEW_EVENT_CREATED){ // The user created an event, let's get the ID and select it
+        else if(resultCode == Constants.NEW_EVENT_CREATED) { // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
             eventDrawerManager.loadEventsToDrawer();
             eventDrawerManager.selectEvent(d != null ? d.getInt("eventID") : 0);
@@ -458,8 +466,12 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
             executeLoadTeamsTask(lastFilter, true);
         }
+        else if(resultCode == Constants.CUSTOM_SORT_CANCELLED) { // user exited custom sort, don't make the button in the filter dialog still display custom sort
+            lastFilter = settings.getLastFilter();
+        }
         else if(resultCode == Constants.TEAM_EDITED) { // the user edited a team, let's toss it in the teams array and reload it also
             if(eventDrawerManager.getEvent() == null) return;
+
             RTeam temp = io.loadTeam(eventDrawerManager.getEvent().getID(), data.getIntExtra("teamID", 0));
             // Reload the teams array
             for(int i = 0; i < teams.size(); i++) {
@@ -470,7 +482,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
             // Reload the edited team into the adapter
             adapter.reAdd(temp);
-            executeLoadTeamsTask(lastFilter, false);
+            if(lastQuery != null && !lastQuery.equals("")) executeLoadTeamsTask(SORT_TYPE.SEARCH, false);
+            else executeLoadTeamsTask(lastFilter, false);
         }
         else if(resultCode == Constants.EVENT_SETTINGS_CHANGED) { // user edited the event
             REvent temp = (REvent) data.getSerializableExtra("event");
@@ -481,8 +494,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             eventDrawerManager.loadEventsToDrawer();
             executeLoadTeamsTask(lastFilter,true);
         }
-        else if(resultCode == Constants.SETTINGS_CHANGED) { // user changed application settings
+        else if(resultCode == Constants.SETTINGS_CHANGED) { // user changed application settings (refresh UI to make sure it matches a possible RUI change)
+            // reload settings
+            settings = new IO(getApplicationContext()).loadSettings();
 
+            new UIHandler(this, toolbar, searchButton).update();
         }
     }
     /**
@@ -504,6 +520,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        settings.setLastFilter(lastFilter);
+        new IO(getApplicationContext()).saveSettings(settings);
     }
 
     @Override
@@ -560,6 +583,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
     @Override
     public void eventSelected(REvent event) {
+        settings = new IO(getApplicationContext()).loadSettings(); // make sure to reload settings, since the event drawer manager will be modifying them
         executeLoadTeamsTask(lastFilter, true);
     }
 

@@ -276,7 +276,7 @@ public class IO {
     /**
      * Saves the specified team
      *
-     * This method will create the /teams/ sub-event-dir if neccessary
+     * This method will create the /teams/ sub-event-dir if necessary
      * @param eventID the event ID to save the team under
      * @param team the team to save
      */

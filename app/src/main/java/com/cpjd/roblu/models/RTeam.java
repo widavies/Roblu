@@ -17,6 +17,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 
 import lombok.Data;
 
@@ -146,7 +147,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
 
         // Remove elements that aren't on the form
         ArrayList<RMetric> temp = form.getPit(); // less if statements, just switches between PIT or MATCH depending on what needs to be verified
-        for (int i = 0; i < tabs.size(); i++) {
+        for(int i = 0; i < tabs.size(); i++) {
             if(!tabs.get(i).getTitle().equalsIgnoreCase("Pit")) temp = form.getMatch();
             for (int j = 0; j < tabs.get(i).getMetrics().size(); j++) {
                 boolean found = false;
@@ -165,9 +166,34 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             }
         }
 
+        /*
+         * Alright, so we removed old elements, but we're still very suspicious. For example,
+         * let's say the user edited the form (by removing an element), didn't re-verify any teams (by not opening them),
+         * and then added a new element in the position of the old one. What will happen is that the above method will
+         * NOT remove the old metric instance, and instead below the metrics name will not get updated. So, here we will
+         * make sure that both the ID and INSTANCE TYPE of each metric (in the form and team) match, otherwise, the metric
+         * gets booted.
+         */
+        temp = form.getPit();
+        for(int i = 0; i < tabs.size(); i++) {
+            if(!tabs.get(i).getTitle().equalsIgnoreCase("Pit")) temp = form.getMatch();
+            for(int j = 0; j < temp.size(); j++) {
+                for(int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
+                    if(tabs.get(i).getMetrics().get(k).getID() == temp.get(j).getID()) {
+                        if(!temp.get(j).getClass().equals(tabs.get(i).getMetrics().get(k).getClass())) {
+                            tabs.get(i).getMetrics().remove(k);
+                            j = 0;
+                            k = 0;
+                        }
+                    }
+                }
+            }
+        }
+
+
         // Add elements that are on the form, but not in this team
         temp = form.getPit();
-        for (int i = 0; i < tabs.size(); i++) {
+        for(int i = 0; i < tabs.size(); i++) {
             if(!tabs.get(i).getTitle().equalsIgnoreCase("Pit")) temp = form.getMatch();
             for (int j = 0; j < temp.size(); j++) {
                 boolean found = false;
@@ -188,7 +214,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
 
         // Update item names
         temp = form.getPit();
-        for (int i = 0; i < tabs.size(); i++) {
+        for(int i = 0; i < tabs.size(); i++) {
             if(!tabs.get(i).getTitle().equalsIgnoreCase("PIT")) temp = form.getMatch();
             for (int j = 0; j < temp.size(); j++) {
                 for (int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
@@ -202,40 +228,57 @@ public class RTeam implements Serializable, Comparable<RTeam> {
 
         // Update default values for non-modified values, also check for some weird scenarios
         temp = form.getPit();
-        for (int i = 0; i < tabs.size(); i++) {
+        for(int i = 0; i < tabs.size(); i++) {
             if(!tabs.get(i).getTitle().equalsIgnoreCase("PIT")) temp = form.getMatch();
-            for (int j = 0; j < temp.size(); j++) {
-                for (int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
+            for(int j = 0; j < temp.size(); j++) {
+                for(int k = 0; k < tabs.get(i).getMetrics().size(); k++) {
                     if (temp.get(j).getID() == tabs.get(i).getMetrics().get(k).getID()) {
                         RMetric e = temp.get(j);
                         RMetric s = tabs.get(i).getMetrics().get(k);
 
-                        if (e instanceof RBoolean && !s.isModified() && s instanceof RBoolean)
+                        if(e instanceof RBoolean && !s.isModified() && s instanceof RBoolean)
                             ((RBoolean) s).setValue(((RBoolean) e).isValue());
-                        else if (e instanceof RCheckbox && s instanceof RCheckbox) {
-                            if (!s.isModified()) {
-                                if(((RCheckbox) e).getValues() != null) ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
+                        else if(e instanceof RCounter && !s.isModified() && s instanceof RCounter) {
+                            ((RCounter)s).setValue(((RCounter)e).getValue());
+                        }
+                        else if(e instanceof RCheckbox && s instanceof RCheckbox) {
+                            // update the titles always, rely on position for this one
+                            LinkedHashMap<String, Boolean> newHash = new LinkedHashMap<>();
+                            // get old values
+                            ArrayList<Boolean> values = new ArrayList<>();
+                            // put values from team checkbox into this array
+                            for(String oKey : ((RCheckbox) s).getValues().keySet()) {
+                                values.add(((RCheckbox) s).getValues().get(oKey));
                             }
-                            if (!((RCheckbox) s).getValues().equals(((RCheckbox) e).getValues())) {
-                                ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
-                                ((RCheckbox) s).setValues(((RCheckbox) e).getValues());
+                            // copy values to new linked hash map, replacing the new keys
+                            int index = 0;
+                            for(String oKey : ((RCheckbox) e).getValues().keySet()) {
+                                newHash.put(oKey, values.get(index));
+                                index++;
+                            }
+                            // set new array back to team metric
+                            ((RCheckbox) s).setValues(newHash);
+
+                            // if the checkbox is not modified, reset the boolean values
+                            if(!s.isModified()) {
+                                for(String key : ((RCheckbox)e).getValues().keySet()) ((RCheckbox)s).getValues().put(key, ((RCheckbox) e).getValues().get(key));
                             }
                         }
-                        //else if (e instanceof RTextfield && !s.isModified()) ((RTextfield) s).setText(((RTextfield) e).getText());
-                        else if (e instanceof RChooser && s instanceof RChooser) {
-                            if (!s.isModified())
-                                ((RChooser) s).setSelectedIndex(((RChooser) e).getSelectedIndex());
+                        else if(e instanceof RTextfield && !s.isModified()) ((RTextfield) s).setText(((RTextfield) e).getText());
+                        else if(e instanceof RChooser && s instanceof RChooser) {
+                            // Always update the title
                             if (!Arrays.equals(((RChooser) s).getValues(), ((RChooser) e).getValues())) {
                                 ((RChooser) s).setValues(((RChooser) e).getValues());
-                                ((RChooser) s).setSelectedIndex(((RChooser) e).getSelectedIndex());
                             }
+                            // if the chooser is not modified, reset the chooser values
+                            if(!s.isModified())
+                                ((RChooser) s).setSelectedIndex(((RChooser) e).getSelectedIndex());
                         } else if (e instanceof RStopwatch && !s.isModified() && s instanceof RStopwatch)
                             ((RStopwatch) s).setTime(((RStopwatch) e).getTime());
                         else if (e instanceof RSlider && !s.isModified() && s instanceof RSlider) {
                             ((RSlider) s).setMax(((RSlider) e).getMax());
-                            ((RSlider) s).setValue(((RSlider) e).getValue());
                             ((RSlider) s).setMin(((RSlider) e).getMin());
-
+                            ((RSlider) s).setValue(((RSlider) e).getValue());
                         } else if (e instanceof RCounter && s instanceof RCounter) {
                             ((RCounter) s).setIncrement(((RCounter) e).getIncrement());
                             if (!s.isModified())

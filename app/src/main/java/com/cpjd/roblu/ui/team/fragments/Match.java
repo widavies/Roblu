@@ -125,11 +125,8 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
      */
     @Override
     public void changeMade(RMetric metric) {
-        Log.d("RBS", "Metric started: "+metric.getTitle());
-
         // set the metric as modified - this is a critical line, otherwise scouting data will get deleted
         metric.setModified(true);
-
 
         /*
          * Check the team name and team number metrics to see if the action bar needs to be updated

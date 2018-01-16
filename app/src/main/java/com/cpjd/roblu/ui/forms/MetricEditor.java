@@ -260,14 +260,11 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
                 if(name.equalsIgnoreCase("title")) {
                     metric.setTitle(charSequence.toString());
                 } else if(name.equalsIgnoreCase("minimum") && metric instanceof RSlider) {
-                    if(charSequence.toString().equals("")) ((RSlider) metric).setMin(0);
-                    else ((RSlider)metric).setMin(Integer.parseInt(charSequence.toString()));
+                    ((RSlider)metric).setMin((int)processTextAsNumber(charSequence, 0));
                 } else if(name.equalsIgnoreCase("maximum") && metric instanceof RSlider) {
-                    if(charSequence.toString().equals("")) ((RSlider) metric).setMax(100);
-                    else ((RSlider)metric).setMax(Integer.parseInt(charSequence.toString()));
+                    ((RSlider)metric).setMax((int)processTextAsNumber(charSequence, 100));
                 } else if(name.equalsIgnoreCase("increment") && metric instanceof RCounter) {
-                    if(charSequence.toString().equals("") || charSequence.toString().equals(".")) ((RCounter) metric).setIncrement(1);
-                    else ((RCounter)metric).setIncrement(Double.parseDouble(charSequence.toString()));
+                    ((RCounter)metric).setIncrement(processTextAsNumber(charSequence, 1));
                 } else if(name.startsWith("Comma")) {
                     if(metric instanceof RCheckbox) {
                         String[] tokens = charSequence.toString().split(",");
@@ -416,5 +413,20 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onNothingSelected(AdapterView<?> adapterView) {}
+
+    /**
+     * Prevents the user from causing an integer overflow error by typing in a number that's too long
+     * @param chars text input to process
+     * @param defaultNumber the number to return if the CharSequence can't be processed
+     * @return number, if overflowed, returns default
+     */
+    private double processTextAsNumber(CharSequence chars, int defaultNumber) {
+        try {
+            if(chars.equals("")) return defaultNumber;
+            return Double.parseDouble(chars.toString());
+        } catch(NumberFormatException e) {
+            return defaultNumber;
+        }
+    }
 
 }
