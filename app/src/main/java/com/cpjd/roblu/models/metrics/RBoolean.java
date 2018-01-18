@@ -37,4 +37,10 @@ public class RBoolean extends RMetric {
         return bool;
     }
 
+    @Override
+    public String toString() {
+        if(value) return "Y";
+        else return "N";
+    }
+
 }

@@ -36,13 +36,8 @@ public class RCheckbox extends RMetric {
     @Override
     public String getFormDescriptor() {
         StringBuilder descriptor = new StringBuilder("Type: Checkbox\nItems (key,defaultValue): ");
-        if(values != null) {
-            for(Object o : values.entrySet()) {
-                Map.Entry pair = (Map.Entry) o;
-                descriptor.append("(").append(pair.getKey()).append(", ").append(pair.getValue()).append(")").append(", ");
-            }
-        }
-        return descriptor.toString().substring(0, descriptor.toString().length() - 2); // make sure to remove trailing comma
+        descriptor.append("\n");
+        return descriptor.append(toString()).toString();
     }
 
     @Override
@@ -50,5 +45,17 @@ public class RCheckbox extends RMetric {
         RCheckbox checkbox = new RCheckbox(ID, title, new LinkedHashMap<>(values));
         checkbox.setRequired(required);
         return checkbox;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder descriptor = new StringBuilder();
+        if(values != null) {
+            for(Object o : values.entrySet()) {
+                Map.Entry pair = (Map.Entry) o;
+                descriptor.append("(").append(pair.getKey()).append(", ").append(pair.getValue()).append(")").append(", ");
+            }
+        }
+        return descriptor.toString().substring(0, descriptor.toString().length() - 2); // make sure to remove trailing comma
     }
 }

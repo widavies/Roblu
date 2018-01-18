@@ -18,6 +18,7 @@ import org.apache.poi.util.IOUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -419,12 +420,17 @@ public class IO {
      * @return File reference to a temporary file location that can be saved to an external location
      */
     public File getNewCSVExportFile() {
-        File dir = new File(context.getCacheDir(), PREFIX+ File.separator+"exports"+File.separator);
-        if(dir.mkdirs()) Log.d("RBS", "Successfully created temporary .csv export directory.");
-        if(dir.exists()) {
-            if(!dir.delete()) Log.d("RBS", "Failed to delete old cached csv export file.");
+        File f = new File(context.getFilesDir(), PREFIX+File.separator+"exports"+File.separator+"ScoutingData.xlsx");
+        if(f.exists()) {
+            if(!f.delete()) Log.d("RBS", "Failed to delete old cached csv export file.");
         }
-        return new File(context.getFilesDir(), PREFIX+File.separator+"exports"+File.separator+"ScoutingData.xlsx");
+        if(f.getParentFile().mkdirs()) Log.d("RBS", "Successfully created temporary .csv export directory.");
+        try {
+            if(f.createNewFile()) Log.d("RBS", "File created successfully.");
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return f;
     }
     // End CSV Methods
 

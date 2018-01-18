@@ -43,7 +43,7 @@ public class RChooser extends RMetric {
             descriptor.append(values[i]);
             if(i != values.length - 1) descriptor.append(", ");
         }
-        descriptor.append(" Default value index: ").append(String.valueOf(selectedIndex));
+        descriptor.append(" Default value: ").append(values[selectedIndex]);
         return descriptor.toString();
     }
 
@@ -52,6 +52,12 @@ public class RChooser extends RMetric {
         RChooser chooser = new RChooser(ID, title, values, selectedIndex);
         chooser.setRequired(required);
         return chooser;
+    }
+
+    @Override
+    public String toString() {
+        if(values == null) return "";
+        return values[selectedIndex];
     }
 }
 

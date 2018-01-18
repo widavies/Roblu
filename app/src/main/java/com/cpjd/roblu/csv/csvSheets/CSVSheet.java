@@ -1,6 +1,8 @@
-package com.cpjd.roblu.csv.sheets;
+package com.cpjd.roblu.csv.csvSheets;
 
 import com.cpjd.roblu.csv.RMatch;
+import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
@@ -37,7 +39,7 @@ import lombok.Setter;
  *  This array is sorting and verified, so it will contain all metrics, even non-modified ones.
  * -If you need help, don't hesitate to check the other child sheets in this package, if help is still needed,
  *  send me an email at wdavies973@gmail.com
- *  -Sheet is automatically thrown in a Thread for you, each sheet subclass is generated in its own thread, for maximum performance.
+ *  -CSVSheet is automatically thrown in a Thread for you, each sheet subclass is generated in its own thread, for maximum performance.
  *  However, you don't need to worry about any of that. (Note: Only generateSheet is run within a thread)
  *
  *  @version 1
@@ -45,13 +47,20 @@ import lombok.Setter;
  *  @author Will Davies
  *
  */
-public abstract class Sheet {
+public abstract class CSVSheet {
+
+    /**
+     * Reference to the loader object if needed
+     */
+    @Setter
+    protected IO io;
 
     /**
      * Workbook access will be automatically provided by ExportCSVTask,
      * it's also used by createCellStyle();
      */
-    protected XSSFWorkbook workbook;
+    @Setter
+    private XSSFWorkbook workbook;
 
     /**
      * Stores a cell style
@@ -65,7 +74,7 @@ public abstract class Sheet {
      * @param sheet add your data to this sheet with its sub methods, look at Apache POI API documentation if you need help learning how to map stuff
      * @param teams access to all the scouting data
      */
-    public abstract void generateSheet(XSSFSheet sheet, RForm form, RTeam[] teams, RMatch[] matches);
+    public abstract void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, RMatch[] matches);
 
     /**
      * Returns the name of this sheet
@@ -94,8 +103,8 @@ public abstract class Sheet {
      * @param sheet a reference to the sheet you're working in
      * @return a new row at the bottom of your sheet
      */
-    protected Row createRow(XSSFSheet sheet) {
-        return sheet.createRow(sheet.getLastRowNum() + 1);
+    Row createRow(XSSFSheet sheet, int rowNum) {
+        return sheet.createRow(rowNum);
     }
 
     /**
@@ -104,8 +113,8 @@ public abstract class Sheet {
      * @param height the height of the row
      * @return a new row at the bottom of your sheet
      */
-    protected Row createRow(XSSFSheet sheet, float height) {
-        Row row = sheet.createRow(sheet.getLastRowNum() + 1);
+    Row createRow(XSSFSheet sheet, int rowNum, float height) {
+        Row row = sheet.createRow(rowNum);
         row.setHeightInPoints(height);
         return row;
     }
@@ -116,7 +125,7 @@ public abstract class Sheet {
      * @param cellIndex the horizontal index of the cell, with 0 being the far left most
      * @param cellText the value to set in the cell
      */
-    protected void createCell(Row row, int cellIndex, String cellText) {
+    void createCell(Row row, int cellIndex, String cellText) {
         Cell cell = row.createCell(cellIndex);
         cell.setCellStyle(style);
         cell.setCellValue(cellText);
@@ -154,7 +163,7 @@ public abstract class Sheet {
      * @param metric the metric to analyze
      * @return a short string identifying the types of data the metric contains, for example, RCounter would return (#) because it stores a number
      */
-    protected String getPossibleValuesForMetric(RMetric metric) {
+    String getPossibleValuesForMetric(RMetric metric) {
         if(metric == null) return "";
 
         if(metric instanceof RBoolean) return "\n(Y/N)";

@@ -33,8 +33,13 @@ public class RStopwatch extends RMetric {
 
     @Override
     public RMetric clone() {
-        RStopwatch stopwach = new RStopwatch(ID, title, time);
-        stopwach.setRequired(required);
-        return stopwach;
+        RStopwatch stopwatch = new RStopwatch(ID, title, time);
+        stopwatch.setRequired(required);
+        return stopwatch;
+    }
+
+    @Override
+    public String toString() {
+        return String.valueOf(time);
     }
 }

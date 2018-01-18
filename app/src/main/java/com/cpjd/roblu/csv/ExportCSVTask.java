@@ -5,8 +5,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.cpjd.roblu.csv.sheets.MatchData;
-import com.cpjd.roblu.csv.sheets.Sheet;
+import com.cpjd.roblu.csv.csvSheets.CSVSheet;
+import com.cpjd.roblu.csv.csvSheets.MatchData;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
@@ -14,22 +14,25 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.ui.teams.TeamsView;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
 /**
- * ExportCSVTask manages the exporting of a .CSV file. It's saved as an .xslx file, meaning that it can be
- * opened in Excel or Sheets. This class will handle some formatting and what not. If you'd like to specify your
- * own export format:
+ * ExportCSVTask manages the exporting of a .CSV file. It's saved as an .XLSX file, meaning that it can be
+ * opened in Excel or Sheets. Quick note: If you're looking to define your own sheet, head over to
+ * @see CSVSheet
+ * Extend that class, and code it to do what you want.
+ * The only time you should mess with this class is to add it to the "CSVSheets" array below so this task loads it
+ * when the user requests and export.
  *
  *
  * @version 2
@@ -39,10 +42,10 @@ import java.util.Collections;
 public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
 
     /**
-     * Specify all the sheets
+     * Specify all the CSVSheets
      * !!ADD YOUR SHEET HERE!!
      */
-    private Sheet[] sheets = {new MatchData()};
+    private CSVSheet[] CSVSheets = {new MatchData()};
 
     /**
      * Reference to the context object for file system access
@@ -70,34 +73,17 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
     private RTeam[] teams;
 
     /**
-     * Specifies whether scouting metrics whose modified value is false should still be included in exports.
-     * If true, this will add a few more seconds to the compute time
-     * @see com.cpjd.roblu.models.metrics.RMetric
-     */
-    private boolean generateVerbose;
-
-    /**
-     * Helper variable for keeping track of how many metrics have been added to the .CSV file
-     */
-    private int metricCount;
-
-    /**
-     * Stores the styles for various spreadsheets cells
-     */
-    private XSSFCellStyle teamStyle, value1Style, value2Style, value3Style, value4Style;
-
-    /**
-     * Keeps track of how many sheet threads have completed, if this is equal to the amount of enabled sheets,
+     * Keeps track of how many sheet threads have completed, if this is equal to the amount of enabled CSVSheets,
      * then listener.csvFileGenerate(File file) will be called
      */
     private int threadsComplete;
 
     /**
-     * Keeps track of how many of the sheets are enabled so this task knows when to stop the thread
+     * Keeps track of how many of the CSVSheets are enabled so this task knows when to stop the thread
      */
     private int enabledSheets;
 
-    interface ExportCSVListener {
+    public interface ExportCSVListener {
         void errorOccurred(String message);
         void csvFileGenerated(File file);
     }
@@ -108,19 +94,30 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
     private ExportCSVListener listener;
 
     /**
+     * Reference to the workbook file so it can be written in onPostExecute()
+     */
+    private final XSSFWorkbook workbook;
+
+    /**
      * Initializes the ExportCSVTask.
      * @param context context object
      * @param listener the listener that should be notified when the task is completed
      * @param event the event that teams and scouting data should be loaded from
-     * @param generateVerbose see generateVerbose variable documentation
      */
-    public ExportCSVTask(Context context, ExportCSVListener listener, REvent event, boolean generateVerbose) {
+    public ExportCSVTask(Context context, ExportCSVListener listener, ProgressDialog progressDialog, REvent event) {
       this.event = event;
       this.contextWeakReference = new WeakReference<>(context);
       this.listener = listener;
-      this.generateVerbose = generateVerbose;
+      this.progressDialogWeakReference = new WeakReference<>(progressDialog);
 
-      for(Sheet s : sheets) if(s.isEnabled()) enabledSheets++;
+      for(CSVSheet s : CSVSheets) if(s.isEnabled()) enabledSheets++;
+
+        /*
+         *
+         *  Create the workbook and start generating data
+         *
+         */
+        this.workbook = new XSSFWorkbook();
     }
 
     @Override
@@ -206,24 +203,28 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
         final RMatch[] matches1 = new RMatch[matches.size()];
         for(int i = 0; i < matches.size(); i++) matches1[i] = matches.get(i);
 
-        /*
-         *
-         *  Create the workbook and start generating data
-         *
-         */
-        final XSSFWorkbook workbook = new XSSFWorkbook();
+        // Create an IO reference
+        final IO io = new IO(contextWeakReference.get());
 
         /*
-         * Start executing all the different sheets generate commands
+         * Start executing all the different CSVSheets generate commands
          */
-        for(final Sheet s : sheets) {
+        for(final CSVSheet s : CSVSheets) {
             new Thread() {
               public void run() {
                   if(s.isEnabled()) {
-                      XSSFSheet sheet = workbook.createSheet(s.getSheetName());
-                      s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
-                      s.generateSheet(sheet, form, teams, matches1);
-                      for(int i = 0; i < sheet.getRow(0).getLastCellNum(); i++) sheet.setColumnWidth(i, s.getColumnWidth());
+                      //try {
+                          s.setIo(io);
+                          s.setWorkbook(workbook);
+                          Log.d("RBS", "Sheet name: "+s.getSheetName());
+                          XSSFSheet csvSheet = workbook.createSheet(s.getSheetName());
+                          s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
+                          s.generateSheet(csvSheet, event, form, teams, matches1);
+                          //for(int i = 0; i < csvSheet.getRow(0).getLastCellNum(); i++) csvSheet.setColumnWidth(i, s.getColumnWidth());
+                      /*} catch(Exception e) {
+                          listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
+                          Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
+                      }*/
                   }
 
                   threadCompleted();
@@ -238,50 +239,28 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
         }
 
 
-
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void params) {
+        progressDialogWeakReference.get().dismiss();
     }
 
     private void threadCompleted() {
         threadsComplete++;
         if(threadsComplete == enabledSheets) {
-            listener.csvFileGenerated(null);
+            File file = new IO(contextWeakReference.get()).getNewCSVExportFile();
+            try {
+                FileOutputStream out = new FileOutputStream(file);
+                workbook.write(out);
+                out.close();
+                listener.csvFileGenerated(file);
+            } catch(IOException e) {
+                e.printStackTrace();
+                Log.d("RBS", "ERR: "+e.getMessage());
+                listener.errorOccurred("Failed to write file.");
+            }
         }
-    }
-
-    private void initStyles(XSSFWorkbook wb) {
-        teamStyle = wb.createCellStyle();
-        setBorder(teamStyle);
-        teamStyle.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
-        teamStyle.setFillForegroundColor(IndexedColors.BLACK.index);
-        Font font = wb.createFont();
-        font.setColor(IndexedColors.WHITE.index);
-        font.setBold(true);
-        teamStyle.setFont(font);
-
-
-        value1Style = wb.createCellStyle(); setBorder(value1Style);
-        value2Style = wb.createCellStyle(); setBorder(value2Style);
-        value3Style = wb.createCellStyle(); setBorder(value3Style);
-        value4Style = wb.createCellStyle(); setBorder(value4Style);
-
-        value1Style.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
-        value1Style.setFillForegroundColor(IndexedColors.CORNFLOWER_BLUE.index);
-
-        value2Style.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
-        value2Style.setFillForegroundColor(IndexedColors.LIGHT_GREEN.index);
-
-        value3Style.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
-        value3Style.setFillForegroundColor(IndexedColors.GREY_50_PERCENT.index);
-
-        value4Style.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
-        value4Style.setFillForegroundColor(IndexedColors.CORAL.index);
-    }
-
-    private void setBorder(XSSFCellStyle style) {
-        style.setBorderRight(BorderStyle.THIN);
-        style.setBorderLeft(BorderStyle.THIN);
-        style.setBorderBottom(BorderStyle.THIN);
-        style.setBorderTop(BorderStyle.THIN);
     }
 }

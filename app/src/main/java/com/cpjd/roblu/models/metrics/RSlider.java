@@ -73,4 +73,9 @@ public class RSlider extends RMetric {
         slider.setRequired(required);
         return slider;
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
 }

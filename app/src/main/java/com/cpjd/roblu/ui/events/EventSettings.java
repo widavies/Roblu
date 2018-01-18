@@ -11,18 +11,24 @@
 package com.cpjd.roblu.ui.events;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.cpjd.roblu.BuildConfig;
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.csv.ExportCSVTask;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
@@ -109,7 +115,7 @@ public class EventSettings extends AppCompatActivity {
         finish();
     }
 
-    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, ExportCSVTask.ExportCSVListener {
 
         /**
          * Store an RUI reference here to give all dialogs below access to user color preferences
@@ -307,27 +313,12 @@ public class EventSettings extends AppCompatActivity {
              * User clicked on "Export to .csv"
              */
             else if (preference.getKey().equals("export_csv")) {
-                new FastDialogBuilder()
-                        .setTitle("Generate verbose data?")
-                        .setMessage("Would you like Roblu to generate verbose data? Verbose data contains all data, even unmodified data, and is useful if you plan on writing formulas to analyze data in Excel.")
-                        .setPositiveButtonText("Yes")
-                        .setNegativeButtonText("No")
-                        .setNeutralButtonText("Cancel")
-                        .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
-                            @Override
-                            public void accepted() {
-                                //new ExportCSVTask((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), true).execute();
-                            }
+                ProgressDialog d = ProgressDialog.show(getActivity(), "Freeze!", "Roblu is generating an spreadsheet file...", true);
+                d.setCancelable(false);
+                d.show();
 
-                            @Override
-                            public void denied() {
-                               // new ExportCSVTask((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), false).execute();
-                            }
+                new ExportCSVTask(getActivity(), this, d, event).execute();
 
-                            @Override
-                            public void neutral() {
-                            }
-                        }).build(getActivity());
             }
             return true;
         }
@@ -397,6 +388,24 @@ public class EventSettings extends AppCompatActivity {
                 RForm form = (RForm)bundle.getSerializable("form");
                 form.setUploadRequired(true);
                 new IO(getActivity()).saveForm(event.getID(), form);
+            }
+        }
+
+        @Override
+        public void errorOccurred(String message) {
+            Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Error occurred while generating .CSV file: "+message, true, 0);
+        }
+
+        @Override
+        public void csvFileGenerated(File file) {
+            Intent intent = new Intent();
+            intent.setAction(Intent.ACTION_SEND);
+            Uri uri = FileProvider.getUriForFile(getActivity(), BuildConfig.APPLICATION_ID, file);
+            intent.setType("application/vnd.ms-excel");
+            intent.putExtra(Intent.EXTRA_STREAM, uri);
+            PackageManager pm = getActivity().getPackageManager();
+            if(intent.resolveActivity(pm) != null) {
+                getActivity().startActivity(Intent.createChooser(intent, "Export spreadsheet to..."));
             }
         }
 

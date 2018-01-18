@@ -77,4 +77,9 @@ public class RTextfield extends RMetric {
         return textfield;
     }
 
+    @Override
+    public String toString() {
+        return text;
+    }
+
 }

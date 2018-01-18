@@ -71,4 +71,10 @@ public class RGallery extends RMetric {
         gallery.setRequired(required);
         return gallery;
     }
+
+    @Override
+    public String toString() {
+        if(images == null) return "";
+        return String.valueOf(images.size());
+    }
 }

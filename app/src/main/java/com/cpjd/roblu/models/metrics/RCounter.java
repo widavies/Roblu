@@ -76,4 +76,9 @@ public class RCounter extends RMetric {
         return counter;
     }
 
+    @Override
+    public String toString() {
+        return String.valueOf(value);
+    }
+
 }
