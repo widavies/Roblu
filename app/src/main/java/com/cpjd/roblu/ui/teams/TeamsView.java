@@ -366,7 +366,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         layout.setOrientation(LinearLayout.VERTICAL);
 
         final AppCompatEditText input = new AppCompatEditText(this);
-        Utils.setInputTextLayoutColor(settings.getRui().getAccent(), settings.getRui().getText(), null, input);
+        Utils.setInputTextLayoutColor(settings.getRui().getAccent(), null, input);
         input.setHighlightColor(settings.getRui().getAccent());
         input.setHintTextColor(settings.getRui().getText());
         input.setTextColor(settings.getRui().getText());
@@ -378,7 +378,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         layout.addView(input);
 
         final AppCompatEditText input2 = new AppCompatEditText(this);
-        Utils.setInputTextLayoutColor(settings.getRui().getAccent(), settings.getRui().getText(), null, input2);
+        Utils.setInputTextLayoutColor(settings.getRui().getAccent(), null, input2);
         input2.setHighlightColor(settings.getRui().getAccent());
         input2.setHintTextColor(settings.getRui().getText());
         input2.setTextColor(settings.getRui().getText());

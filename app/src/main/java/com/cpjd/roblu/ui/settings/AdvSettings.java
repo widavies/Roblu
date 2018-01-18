@@ -240,7 +240,7 @@ public class AdvSettings extends AppCompatActivity {
 
             // this is the team code input edit text
             final AppCompatEditText input = new AppCompatEditText(getActivity());
-            Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), null, input);
+            Utils.setInputTextLayoutColor(rui.getAccent(),null, input);
             input.setHighlightColor(rui.getAccent());
             input.setHintTextColor(rui.getText());
             input.setTextColor(rui.getText());
@@ -274,7 +274,7 @@ public class AdvSettings extends AppCompatActivity {
 
                     // next, join team
                     try {
-                        JSONObject response = (JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Utils.getDeviceID(getActivity())).joinTeam();
+                        JSONObject response = null;//(JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Utils.getDeviceID(getActivity())).joinTeam();
                         if(response.get("status").toString().equalsIgnoreCase("success") && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
                             // it works
                             settings.setCode(input.getText().toString());

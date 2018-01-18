@@ -10,7 +10,6 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.provider.Settings;
 import android.support.annotation.ColorInt;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
@@ -44,49 +43,37 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.content.Context.ACTIVITY_SERVICE;
 
-/*******************************************************
- * Copyright (C) 2016 Will Davies wdavies973@gmail.com
- *
- * This file is part of Roblu
- *
- * Roblu cannot be distributed for a price or to people outside of your local robotics team.
- *******************************************************/
-
 /**
  * Utility library for odds and ends functions.
  *
+ * @version 2
  * @since 1.0.0
  * @author Will Davies
  */
 public class Utils {
 
-    private static int width;
+    /**
+     * The width of the screen in pixels, used for sizing metrics, mainly in RMetricToUI
+     */
+    public static int WIDTH;
 
     /**
      * The width variable is used for controlling a maximum size for certain
      * UI elements. We have to set the width video at startup by reading it
      * from the display.
-     * @param activity
+     * @param activity reference to the main activity
      */
     public static void initWidth(Activity activity) {
         // these lines of code get the width of the phone's screen, in pixels.
         Display display = activity.getWindowManager().getDefaultDisplay();
         Point size = new Point();
         display.getSize(size);
-        width = size.x;
-    }
-
-    /**
-     * Gets the width set by initWidth()
-     * @return
-     */
-    public static int getWidth() {
-        return width;
+        WIDTH = size.x;
     }
 
     /**
      * Checks if the device has an active WiFi or Data connection
-     * @param context
+     * @param context context reference
      * @return true if a connection is available
      */
     public static boolean hasInternetConnection(Context context) {
@@ -102,11 +89,10 @@ public class Utils {
      * Sets TextInputLayout colors to match the scheme set in RUI. (RUI is the UI model in /models that stores
      * all the UI attributes)
      * @param accent the accent color
-     * @param text the text color
      * @param textInputLayout the element to set colors to, layout
      * @param edit the actual edit text element
      */
-    public static void setInputTextLayoutColor(final int accent, final int text, TextInputLayout textInputLayout, final AppCompatEditText edit) {
+    public static void setInputTextLayoutColor(final int accent, TextInputLayout textInputLayout, final AppCompatEditText edit) {
         setCursorColor(edit, accent);
 
         try {
@@ -168,18 +154,6 @@ public class Utils {
     }
 
     /**
-     * Takes a string arraylist and concatenates it into a comma seperated string
-     * @param data
-     * @return
-     */
-    public static String concatenateArraylist(ArrayList<String> data) {
-        if(data == null || data.size() == 0) return "";
-        String temp = "";
-        for(String s : data) temp += s +"\n";
-        return temp;
-    }
-
-    /**
      * Rounds a decimal to the specified number of digits (right of decimal point)
      * @param value the value to round
      * @param precision the amount of digits to keep
@@ -194,7 +168,7 @@ public class Utils {
      * A snackbar is a neat little UI element, it's that horizontal banner that
      * can display messages at the bottom of the screen
      * @param layout the anchor layout to display the snackbar on
-     * @param context
+     * @param context context reference
      * @param text the text to display
      * @param error true if this is an error message
      * @param primary the color of the snackbar, if it's not an error message
@@ -209,8 +183,8 @@ public class Utils {
     /**
      * We can almost always determine the match key of a match based off
      * it's name.
-     * @param matchName
-     * @return
+     * @param matchName the name of the match
+     * @return the guessed TBA key for this match
      */
     public static String guessMatchKey(String matchName) {
         matchName = matchName.toLowerCase();
@@ -262,33 +236,33 @@ public class Utils {
 
     /**
      * Used for displaying a list of teams in a comma seperated string
-     * @param teams
-     * @return
+     * @param teams teams to concatenate
+     * @return a string of concatenated teams string
      */
-    public static String concantenteTeams(ArrayList<RTeam> teams) {
+    public static String concatenateTeams(ArrayList<RTeam> teams) {
         if(teams == null || teams.size() == 0) return "";
 
-        String temp = "";
+        StringBuilder temp = new StringBuilder();
         for(int i = 0; i < teams.size(); i++) {
-            if(i != teams.size() - 1) temp += "#"+teams.get(i).getNumber()+", ";
-            else temp += "#"+teams.get(i).getNumber();
+            if(i != teams.size() - 1) temp.append("#").append(teams.get(i).getNumber()).append(", ");
+            else temp.append("#").append(teams.get(i).getNumber());
         }
-        return temp;
+        return temp.toString();
     }
 
     /**
      * For certain things, the user may need to select an event from a list of locally stored event,
      * this method does just that! The EventSelectListener method will trigger when an event is successfully
      * selected.
-     * @param context
-     * @param listener
-     * @return
+     * @param context context reference
+     * @param listener listener to respond to events
+     * @return true if some events exist
      */
 	public static boolean launchEventPicker(Context context, final EventDrawerManager.EventSelectListener listener) {
         final Dialog d = new Dialog(context);
         d.setTitle("Pick event:");
         d.setContentView(R.layout.event_import_dialog);
-        final Spinner spinner = (Spinner) d.findViewById(R.id.type);
+        final Spinner spinner = d.findViewById(R.id.type);
         String[] values;
         final REvent[] events = new IO(context).loadEvents();
         if(events == null || events.length == 0) return false;
@@ -300,7 +274,7 @@ public class Utils {
         adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adp);
 
-        Button button = (Button) d.findViewById(R.id.button7);
+        Button button = d.findViewById(R.id.button7);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -318,28 +292,16 @@ public class Utils {
      * January 1, 1970. This is because computers are good at keeping track of simple numbers, but things get a bit more
      * tricky when we have to account for hours, minutes, days, timezones, day light savings, etc. Any who, this method
      * converts those milliseconds into a nice friendly string like "Aug 1, 2017 8:23 am"
-     * @param timeMillis
-     * @return
+     * @param timeMillis the unix time in milliseconds
+     * @return the nicely formatted date string
      */
 	public static String convertTime(long timeMillis) {
         if(timeMillis == 0) return "Never";
 		SimpleDateFormat sdf = new SimpleDateFormat("MMM d, yyyy h:mm a", Locale.getDefault());    
-		Date resultdate = new Date(timeMillis);
-		return sdf.format(resultdate);
+		Date resultDate = new Date(timeMillis);
+		return sdf.format(resultDate);
 
 	}
-
-    /**
-     * Same as the above method, except that it only shows time, not date.
-     * @param timeMillis
-     * @return
-     */
-	public static String convertTimeOnly(long timeMillis) {
-        if(timeMillis == 0) return "Never";
-        SimpleDateFormat sdf = new SimpleDateFormat("h:mm a", Locale.getDefault());
-        Date resultdate = new Date(timeMillis);
-        return sdf.format(resultdate);
-    }
 
 
     /**
@@ -362,9 +324,9 @@ public class Utils {
 
     /**
      * Converts DP to pixels. Look it up, its hard to explain.
-     * @param context
-     * @param dp
-     * @return
+     * @param context application context
+     * @param dp the dp to convert
+     * @return pixels (converted from dp)
      */
     public static int DPToPX(Context context, int dp) {
         final float scale = context.getResources().getDisplayMetrics().density;
@@ -377,9 +339,9 @@ public class Utils {
      * and we had the local teams "Team RUSH" and "Team CRUSH", Team CRUSH would actually be ranked
      * higher in search results that "Team RUSH". So, this method gives items a bit more relevance
      * points if, like in 'Team RUSH", the query has whitespace before or after it.
-     * @param string
-     * @param query
-     * @return
+     * @param string the string to search
+     * @param query the query term
+     * @return true if this applies
      */
     public static boolean contains(String string, String query) {
         string = string.toLowerCase();
@@ -407,7 +369,7 @@ public class Utils {
      *
      * Makes sure that nothing is null and that we have the required
      * team name and team number fields
-     * @return
+     * @return creates an empty RForm
      */
     public static RForm createEmpty() {
         ArrayList<RMetric> pit = new ArrayList<>();
@@ -418,20 +380,11 @@ public class Utils {
         pit.add(number);
         return new RForm(pit, matches);
     }
-    /**
-     * Displays the locally stored team code for Roblu Cloud, also allows the user to copy it to their clipboard
-     * automatically or regenerate it.
-     * @param context
-
-     */
-    public static void showTeamCode(final Context context, final String teamCode) {
-
-    }
 
     /**
      * Checks if the Roblu background service is running
-     * @param context
-     * @return true if the background sevice is running
+     * @param context context references
+     * @return true if the background service is running
      */
     public static boolean isMyServiceRunning(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
@@ -441,11 +394,6 @@ public class Utils {
             }
         }
         return false;
-    }
-
-    public static String getDeviceID(Context context) {
-        return Settings.Secure.getString(context.getContentResolver(),
-                Settings.Secure.ANDROID_ID);
     }
 
     /**

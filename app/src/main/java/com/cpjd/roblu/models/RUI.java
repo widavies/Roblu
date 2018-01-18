@@ -52,7 +52,7 @@ public class RUI implements Serializable {
 
     /**
      * Sets the preset var and loads the correct var values
-     * @param preset
+     * @param preset preset code to set
      */
     public void setPreset(int preset) {
         this.preset = preset;
@@ -99,7 +99,7 @@ public class RUI implements Serializable {
 
     /**
      * Gets the resource for the dialog direction variable
-     * @return
+     * @return the animation id
      */
     public int getAnimation() {
         if(dialogDirection == 0) return R.style.dialog_animation;
@@ -109,9 +109,9 @@ public class RUI implements Serializable {
 
     /**
      * Generate a color a few shades darker than the specified, used for the status bar color
-     * @param color
-     * @param factor
-     * @return
+     * @param color the starting color
+     * @param factor the factor to darken the starting color by
+     * @return the darkened color
      */
     @ColorInt
     public static int darker(@ColorInt int color, @FloatRange(from = 0.0, to = 1.0) float factor) {

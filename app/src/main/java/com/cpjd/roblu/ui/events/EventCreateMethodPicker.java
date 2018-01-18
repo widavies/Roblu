@@ -204,7 +204,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
         else if(resultCode == Constants.NEW_EVENT_CREATED) {
             Bundle b = data.getExtras();
             Intent intent = new Intent();
-            intent.putExtras(b);
+            if(b != null) intent.putExtras(b);
             setResult(Constants.NEW_EVENT_CREATED, intent);
             finish();
         }

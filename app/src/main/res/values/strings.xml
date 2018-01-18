@@ -43,6 +43,12 @@
     <string name="last_edited">Last edited</string>
     <string name="custom">Custom</string>
 
+    <!-- Event editor -->
+    <string name="metric_type">Metric type</string>
+
+    <!-- Metric editor -->
+    <string name="not_observed_yet">Not observed yet</string>
+    <string name="s">s</string>
 
 
     <!-- Event creation -->

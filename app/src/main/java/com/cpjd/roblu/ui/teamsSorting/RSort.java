@@ -23,10 +23,10 @@ public class RSort extends RMetric {
     /**
      * The RSort ID here actually represents the TeamMetricProcessor.PROCESS_METHOD
      * @param title the title of this metric
-     * @param method
+     * @param ID the ID of the sort metric
      */
-    public RSort(String title, int method, String description) {
-        super(method, title);
+    RSort(String title, int ID, String description) {
+        super(ID, title);
         this.description = description;
     }
 

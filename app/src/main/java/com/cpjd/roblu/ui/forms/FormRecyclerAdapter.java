@@ -107,7 +107,7 @@ public class FormRecyclerAdapter extends RecyclerView.Adapter<FormRecyclerAdapte
      * Should be used to add new metrics to the array
      * @param metric the metric to add to the array
      */
-    public void addMetric(RMetric metric) {
+    void addMetric(RMetric metric) {
         metric.setID(getNewMetricID());
         metrics.add(metric);
         notifyDataSetChanged();

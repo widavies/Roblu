@@ -142,7 +142,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // don't check either if the boolean isn't modified
         yes.setChecked(bool.isValue());
         no.setChecked(!bool.isValue());
-        no.setPadding(0, 0, 0, 50);
+        no.setPadding(0, 0, 0, Utils.DPToPX(activity, 10));
         group.addView(yes);
         group.addView(no);
         final RelativeLayout layout = new RelativeLayout(activity);
@@ -150,7 +150,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Observed field
         final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
-        observed.setText("Not observed yet");
+        observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
@@ -172,23 +172,21 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         title.setTextSize(20);
         title.setId(Utils.generateViewId());
 
-
         // observed params
         RelativeLayout.LayoutParams oParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         oParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         oParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         oParams.addRule(RelativeLayout.BELOW, group.getId());
         observed.setLayoutParams(oParams);
-        observed.setPadding(0, 50, 0, 0);
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         group.setLayoutParams(params);
-        group.setPadding(group.getPaddingLeft(), group.getPaddingTop(), 50, group.getPaddingBottom());
+        group.setPadding(group.getPaddingLeft(), group.getPaddingTop(), Utils.DPToPX(activity, 10), group.getPaddingBottom());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
-        title.setPadding(18, title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
+        title.setPadding(Utils.DPToPX(activity, 4), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
         title.setLayoutParams(params);
 
         layout.addView(title);
@@ -250,11 +248,11 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Observed field
         final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
-        observed.setText("Not observed yet");
+        observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
-        observed.setPadding(0, 75, 0, 0);
+        observed.setPadding(0, Utils.DPToPX(activity, 20), 0, 0);
         addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -294,7 +292,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         oParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         oParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         oParams.addRule(RelativeLayout.BELOW, number.getId());
-        observed.setPadding(0, 75, 0, 0);
+        observed.setPadding(0, Utils.DPToPX(activity, 20), 0, 0);
         observed.setLayoutParams(oParams);
         
         layout.addView(title);
@@ -347,7 +345,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Observed field
         final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
-        observed.setText("Not observed yet");
+        observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
@@ -405,7 +403,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         Spinner spinner = new Spinner(activity);
         spinner.setId(Utils.generateViewId());
         spinner.setEnabled(editable);
-        spinner.setPadding(400, spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
+        spinner.setPadding(Utils.DPToPX(activity, 100), spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
         if(chooser.getValues() != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_item, chooser.getValues());
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -417,7 +415,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Observed field
         final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
-        observed.setText("Not observed yet");
+        observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
@@ -451,7 +449,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         title.setTextSize(20);
         title.setMaxWidth(width);
         title.setId(Utils.generateViewId());
-        title.setPadding(18, title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
+        title.setPadding(Utils.DPToPX(activity, 10), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
@@ -489,7 +487,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         title.setId(Utils.generateViewId());
         title.setMaxLines(15);
         title.setMaxWidth(width);
-        title.setPadding(18, title.getPaddingTop(), 100, title.getPaddingBottom());
+        title.setPadding(Utils.DPToPX(activity, 10), title.getPaddingTop(), 100, title.getPaddingBottom());
         title.setTextSize(20);
         title.setTextColor(rui.getText());
         title.setText(checkbox.getTitle());
@@ -501,11 +499,10 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Observed field
         final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
-        observed.setText("Not observed yet");
+        observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
-        observed.setPadding(18, Utils.DPToPX(activity, 4), observed.getPaddingRight(), observed.getPaddingBottom());
 
         RelativeLayout.LayoutParams oParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         if(checkbox.getValues() != null) {
@@ -612,11 +609,11 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Observed field
         final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
-        observed.setText("Not observed yet");
+        observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
-        observed.setPadding(Utils.DPToPX(activity, 8), 50, observed.getPaddingRight(), observed.getPaddingBottom());
+        observed.setPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 10), observed.getPaddingRight(), observed.getPaddingBottom());
 
         final RelativeLayout layout = new RelativeLayout(activity);
         button.setOnClickListener(new View.OnClickListener() {
@@ -707,14 +704,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.BELOW, textView.getId());
         AppCompatEditText et = new AppCompatEditText(activity);
-        et.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                AppCompatEditText et2 = (AppCompatEditText)v;
-               // if(hasFocus) et2.setSupportBackgroundTintList(ColorStateList.valueOf(rui.getAccent()));
-                //else et2.setSupportBackgroundTintList(ColorStateList.valueOf(rui.getText()));
-            }
-        });
         Utils.setCursorColor(et, rui.getAccent());
         et.setText(textfield.getText());
         et.setEnabled(editable);

@@ -387,7 +387,7 @@ public class TeamMetricProcessor {
      * @return a string representing the RCheckbox's data
      */
     private String friendlyCheckbox(RCheckbox metric) {
-        if(!metric.isModified()) return "No values observed (N.O.)";
+        if(!metric.isModified()) return "(N.O.)";
         StringBuilder tag = new StringBuilder("(");
         for(Object o : metric.getValues().entrySet()) {
             Map.Entry pair = (Map.Entry) o;

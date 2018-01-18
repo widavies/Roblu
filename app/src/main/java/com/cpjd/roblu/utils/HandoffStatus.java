@@ -5,6 +5,7 @@ package com.cpjd.roblu.utils;
  *
  * @since 4.0.0
  */
+@SuppressWarnings("unused")
 public class HandoffStatus {
     /*
      * STATE TYPES

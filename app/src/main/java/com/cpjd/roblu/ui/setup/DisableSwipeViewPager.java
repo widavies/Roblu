@@ -22,7 +22,15 @@ public class DisableSwipeViewPager extends ViewPager {
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return false;
+        boolean swipeEnabled = false;
+        boolean result = swipeEnabled && super.onTouchEvent(event);
+        if(result) performClick();
+        return result;
+    }
+    
+    @Override
+    public boolean performClick() {
+        return super.performClick();
     }
 
     public void goToNextPage() {

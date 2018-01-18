@@ -147,7 +147,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         TextView elements = new TextView(this);
         elements.setTextColor(rui.getText());
         elements.setId(Utils.generateViewId());
-        elements.setText("Metric type");
+        elements.setText(R.string.metric_type);
         elements.setLayoutParams(params);
         layout.addView(elements);
 
@@ -216,7 +216,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         inputLayout.setHint(name);
         inputLayout.setId(Utils.generateViewId());
         AppCompatEditText nameInput = new  AppCompatEditText(this);
-        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), inputLayout, nameInput);
+        Utils.setInputTextLayoutColor(rui.getAccent(), inputLayout, nameInput);
         nameInput.setTextColor(rui.getText());
         nameInput.setHighlightColor(rui.getAccent());
         nameInput.setId(Utils.generateViewId());
@@ -334,6 +334,22 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
          * User decided to save changes, return the metric
          */
         else if(item.getItemId() == R.id.add_element) {
+            /*
+             * Prevent some errors by making sure some metrics can't be exported with a null value set
+             */
+            if(metric instanceof RCheckbox) {
+                if(((RCheckbox) metric).getValues() == null || ((RCheckbox) metric).getValues().size() == 0) {
+                    Utils.showSnackbar(findViewById(R.id.add_element_layout), getApplicationContext(), "Can't create checkbox, no values defined.", true, 0);
+                    return true;
+                }
+            }
+            else if(metric instanceof RChooser) {
+                if(((RChooser) metric).getValues() == null || ((RChooser) metric).getValues().length == 0) {
+                    Utils.showSnackbar(findViewById(R.id.add_element_layout), getApplicationContext(), "Can't create chooser, no values defined.", true, 0);
+                    return true;
+                }
+            }
+
             Intent result = new Intent();
             metric.setModified(false);
             result.putExtra("metric", metric);

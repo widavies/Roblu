@@ -136,7 +136,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                     case "PIT":
                         continue;
                     case "MATCH":
-                        form.setPit((ArrayList<RMetric>) metrics.clone());
+                        form.setPit(new ArrayList<>(metrics));
                         metrics.clear();
                         continue;
                     case "DEFAULTS":
@@ -150,39 +150,41 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                  * Process file
                  */
                 String[] tokens = line.split(",");
-                if(tokens[0].equals("counter")) {
-                    metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])));
-                    ID++;
-                }
-                else if(tokens[0].equals("chooser")) {
-                    metrics.add(new RChooser(ID, tokens[1], tokens[2].split(":"), Integer.parseInt(tokens[3])));
-                    ID++;
-                }
-                else if(tokens[0].equals("slider")) {
-                    metrics.add(new RSlider(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4])));
-                    ID++;
-                }
-                else if(tokens[0].equals("checkbox")) {
-                    LinkedHashMap<String, Boolean> temp = new LinkedHashMap<>();
-                    for(String s : tokens[2].split(":")) temp.put(s, false);
-                    metrics.add(new RCheckbox(ID, tokens[1], temp));
-                    ID++;
-                }
-                else if(tokens[0].equals("textfield")) {
-                    metrics.add(new RTextfield(ID, tokens[1], ""));
-                    ID++;
-                }
-                else if(tokens[0].equals("stopwatch")) {
-                    metrics.add(new RStopwatch(ID, tokens[1], Double.parseDouble(tokens[2])));
-                    ID++;
-                }
-                else if(tokens[0].equals("boolean")) {
-                    metrics.add(new RBoolean(ID, tokens[1], Boolean.parseBoolean(tokens[2])));
-                    ID++;
-                }
-                else if(tokens[0].equals("gallery")) {
-                    metrics.add(new RGallery(ID, tokens[1]));
-                    ID++;
+                switch(tokens[0]) {
+                    case "counter":
+                        metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])));
+                        ID++;
+                        break;
+                    case "chooser":
+                        metrics.add(new RChooser(ID, tokens[1], tokens[2].split(":"), Integer.parseInt(tokens[3])));
+                        ID++;
+                        break;
+                    case "slider":
+                        metrics.add(new RSlider(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4])));
+                        ID++;
+                        break;
+                    case "checkbox":
+                        LinkedHashMap<String, Boolean> temp = new LinkedHashMap<>();
+                        for(String s : tokens[2].split(":")) temp.put(s, false);
+                        metrics.add(new RCheckbox(ID, tokens[1], temp));
+                        ID++;
+                        break;
+                    case "textfield":
+                        metrics.add(new RTextfield(ID, tokens[1], ""));
+                        ID++;
+                        break;
+                    case "stopwatch":
+                        metrics.add(new RStopwatch(ID, tokens[1], Double.parseDouble(tokens[2])));
+                        ID++;
+                        break;
+                    case "boolean":
+                        metrics.add(new RBoolean(ID, tokens[1], Boolean.parseBoolean(tokens[2])));
+                        ID++;
+                        break;
+                    case "gallery":
+                        metrics.add(new RGallery(ID, tokens[1]));
+                        ID++;
+                        break;
                 }
             }
             form.setMatch(metrics);

@@ -1,6 +1,7 @@
 package com.cpjd.roblu.ui.setup;
 
 import android.app.Activity;
+import android.support.annotation.NonNull;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,7 +12,7 @@ public class SetupFragmentAdapter extends PagerAdapter {
 
     private final Activity activity;
 
-    public SetupFragmentAdapter(Activity activity) {
+    SetupFragmentAdapter(Activity activity) {
         this.activity = activity;
     }
 
@@ -20,8 +21,9 @@ public class SetupFragmentAdapter extends PagerAdapter {
         return 5;
     }
 
+    @NonNull
     @Override
-    public Object instantiateItem(ViewGroup container, int position) {
+    public Object instantiateItem(@NonNull ViewGroup container, int position) {
         int resId = 0;
 
         switch (position) {
@@ -46,12 +48,12 @@ public class SetupFragmentAdapter extends PagerAdapter {
     }
 
     @Override
-    public void destroyItem(ViewGroup container, int position, Object object) {
+    public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
         // Do nothing
     }
 
     @Override
-    public boolean isViewFromObject(View view, Object object) {
+    public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
         return view == object;
     }
 }

@@ -351,7 +351,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         d.setTitle("Create match");
         d.setContentView(R.layout.match_create_dialog);
         final AppCompatEditText number = d.findViewById(R.id.editText);
-        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), null, number);
+        Utils.setInputTextLayoutColor(rui.getAccent(), null, number);
         TextView spinnerTip = d.findViewById(R.id.spinner_tip);
         spinnerTip.setTextColor(rui.getText());
         TextView numberTip = d.findViewById(R.id.number_tip);

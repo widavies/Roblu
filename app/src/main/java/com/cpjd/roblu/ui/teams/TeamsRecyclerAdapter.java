@@ -182,7 +182,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
         private void bindTeam(RTeam team){
             this.name.setText(team.getName());
             this.name.setTextColor(rui.getText());
-            this.name.setMaxWidth((int)(Utils.getWidth()* 0.85));
+            this.name.setMaxWidth((int)(Utils.WIDTH* 0.85));
 
             this.number.setText("#"+team.getNumber());
             this.number.setTextColor(rui.getText());

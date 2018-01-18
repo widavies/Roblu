@@ -420,7 +420,7 @@ public class IO {
      */
     public File getNewCSVExportFile() {
         File dir = new File(context.getCacheDir(), PREFIX+ File.separator+"exports"+File.separator);
-        dir.mkdirs();
+        if(dir.mkdirs()) Log.d("RBS", "Successfully created temporary .csv export directory.");
         if(dir.exists()) {
             if(!dir.delete()) Log.d("RBS", "Failed to delete old cached csv export file.");
         }
@@ -444,9 +444,9 @@ public class IO {
      * @param checkoutID the checkout ID to laod
      * @return RCheckout object instance
      */
-    public RCheckout loadCheckout(int checkoutID) {
+    private RCheckout loadCheckout(int checkoutID) {
         RCheckout checkout = (RCheckout) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser"));
-        checkout.setID(checkoutID);
+        if(checkout != null) checkout.setID(checkoutID);
         return checkout;
     }
 
@@ -501,7 +501,7 @@ public class IO {
      */
     public RCheckout loadPendingCheckout(int checkoutID) {
         RCheckout checkout = (RCheckout) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator+checkoutID+".ser"));
-        checkout.setID(checkoutID);
+        if(checkout != null) checkout.setID(checkoutID);
         return checkout;
     }
 
@@ -560,7 +560,7 @@ public class IO {
      */
     public File getTempPictureFile() {
         File path = new File(context.getCacheDir(), PREFIX + File.separator +"temp.jpg");
-        path.mkdirs();
+        if(path.mkdirs()) Log.d("RBS", "Successfully created temporary picture file directory.");
         if(path.exists()) {
             if(!path.delete()) Log.d("RBS", "Failed to delete old cached picture file.");
         }

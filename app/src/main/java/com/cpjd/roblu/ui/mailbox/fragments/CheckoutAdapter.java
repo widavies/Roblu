@@ -112,9 +112,9 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         private MyViewHolder(View view){
             super(view);
 
-            title = (TextView) view.findViewById(R.id.title);
-            subtitle = (TextView) view.findViewById(R.id.subtitle);
-            number = (TextView) view.findViewById(R.id.number);
+            title = view.findViewById(R.id.title);
+            subtitle =  view.findViewById(R.id.subtitle);
+            number = view.findViewById(R.id.number);
         }
 
         private void bindMovie(RCheckout checkout) {
@@ -123,14 +123,14 @@ public class CheckoutAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             title.setTextColor(rui.getText());
             number.setTextColor(rui.getText());
             subtitle.setTextColor(rui.getText());
-            this.title.setMaxWidth((int)(Utils.getWidth()* 0.85));
+            this.title.setMaxWidth((int)(Utils.WIDTH* 0.85));
             if(mode == MYMATCHES) {
                 title.setText(checkout.getTeam().getTabs().get(0).getTitle());
                 number.setText("");
                 String alliance = "blue alliance";
                 if(checkout.getTeam().getTabs().get(0).isRedAlliance()) alliance = "red alliance";
-                subtitle.setText("Match scheduled for "+ Utils.convertTime(checkout.getTeam().getTabs().get(0).getTime())+"\nYou are on the "+alliance+"\nTeammates: "+ Utils.concantenteTeams(checkout.getTeam().getTabs().get(0).getTeammates())
-                        +"\nOpponents: "+ Utils.concantenteTeams(checkout.getTeam().getTabs().get(0).getOpponents()));
+                subtitle.setText("Match scheduled for "+ Utils.convertTime(checkout.getTeam().getTabs().get(0).getTime())+"\nYou are on the "+alliance+"\nTeammates: "+ Utils.concatenateTeams(checkout.getTeam().getTabs().get(0).getTeammates())
+                        +"\nOpponents: "+ Utils.concatenateTeams(checkout.getTeam().getTabs().get(0).getOpponents()));
                 return;
             }
             /*if(mode == INBOX) {

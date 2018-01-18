@@ -75,13 +75,6 @@ public class EventEditor extends AppCompatActivity {
      * UI element where the user can manually change TheBlueAlliance event key
      */
     private EditText tbaKeyText;
-    /**
-     * This item will be set if this activity is called form the TBAEventSelector activity, all it's saying is that
-     * all the data within this Event model should be included when creating the REvent
-     */
-    private Event event;
-
-    private ProgressDialog d;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -116,7 +109,7 @@ public class EventEditor extends AppCompatActivity {
         /*
          * Bind user color preferences to the UI elements
          */
-        Utils.setInputTextLayoutColor(rui.getAccent(), rui.getText(), (TextInputLayout)findViewById(R.id.name_wrapper), (AppCompatEditText)findViewById(R.id.event_create_name_edit));
+        Utils.setInputTextLayoutColor(rui.getAccent(), (TextInputLayout)findViewById(R.id.name_wrapper), (AppCompatEditText)findViewById(R.id.event_create_name_edit));
 
         /*
          * Setup editing/non-editing UI specifics
@@ -125,7 +118,11 @@ public class EventEditor extends AppCompatActivity {
             TextView t = findViewById(R.id.event_create_form_label);
             t.setTextColor(rui.getAccent());
             if(getIntent().getSerializableExtra("tbaEvent") != null) {
-                event = (Event) getIntent().getSerializableExtra("tbaEvent");
+                /*
+                 * This item will be set if this activity is called form the TBAEventSelector activity, all it's saying is that
+                 * all the data within this Event model should be included when creating the REvent
+                 */
+                Event event = (Event) getIntent().getSerializableExtra("tbaEvent");
                 eventName.setText(event.name);
             }
         } else {
@@ -267,7 +264,7 @@ public class EventEditor extends AppCompatActivity {
      * an event will get created from EventEditor whenever this method is called, no exceptions.
      * @param form the form to save with the event
      */
-    private int createEvent(RForm form) {
+    private void createEvent(RForm form) {
         IO io = new IO(getApplicationContext());
         REvent event = new REvent(io.getNewEventID(), eventName.getText().toString());
         io.saveEvent(event); // we call this twice because the /event/ dir is required for the form to save
@@ -277,7 +274,7 @@ public class EventEditor extends AppCompatActivity {
          * We need to check if the user included any TBA information that we should include in this event creation
          */
         if(!editing && getIntent().getSerializableExtra("tbaEvent") != null) {
-            d = ProgressDialog.show(this, "Hold on tight!","Generating team profiles from event...", true);
+            ProgressDialog d = ProgressDialog.show(this, "Hold on tight!", "Generating team profiles from event...", true);
             d.setCancelable(false);
             event.setKey(((Event)getIntent().getSerializableExtra("tbaEvent")).key);
             io.saveEvent(event);
@@ -295,8 +292,6 @@ public class EventEditor extends AppCompatActivity {
             setResult(Constants.NEW_EVENT_CREATED, result);
             finish();
         }
-
-        return event.getID();
     }
 
     /**

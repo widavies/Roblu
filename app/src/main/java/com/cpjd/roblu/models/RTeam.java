@@ -190,7 +190,6 @@ public class RTeam implements Serializable, Comparable<RTeam> {
             }
         }
 
-
         // Add elements that are on the form, but not in this team
         temp = form.getPit();
         for(int i = 0; i < tabs.size(); i++) {

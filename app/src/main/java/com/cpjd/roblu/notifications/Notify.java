@@ -22,7 +22,7 @@ import com.cpjd.roblu.ui.mailbox.Mailbox;
 
 public class Notify {
     public static void notify(Context activity, String title, String content) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(activity).setSmallIcon(R.drawable.launcher)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "roblu-master").setSmallIcon(R.drawable.launcher)
                 .setContentTitle(title).setContentText(content);
 
         Intent result = new Intent(activity, Mailbox.class);
@@ -30,6 +30,6 @@ public class Notify {
         builder.setContentIntent(pending);
 
         NotificationManager notifyMgr = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-        notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());
+        if(notifyMgr != null) notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());
     }
 }

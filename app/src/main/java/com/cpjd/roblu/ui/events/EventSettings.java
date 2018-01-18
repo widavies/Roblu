@@ -316,12 +316,12 @@ public class EventSettings extends AppCompatActivity {
                         .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
                             @Override
                             public void accepted() {
-                                //new ExportCSV((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), true).execute();
+                                //new ExportCSVTask((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), true).execute();
                             }
 
                             @Override
                             public void denied() {
-                               // new ExportCSV((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), false).execute();
+                               // new ExportCSVTask((RelativeLayout)getActivity().findViewById(R.id.event_settings), event, getActivity(), false).execute();
                             }
 
                             @Override
@@ -344,7 +344,7 @@ public class EventSettings extends AppCompatActivity {
              * User selected the cloud sync button
              */
             if(preference.getKey().equals("sync")) {
-                //Todo specify how this will work
+
             }
             return true;
         }

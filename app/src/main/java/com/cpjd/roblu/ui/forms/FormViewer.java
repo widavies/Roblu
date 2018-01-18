@@ -64,12 +64,6 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
      */
     private int currentTab;
 
-    private RecyclerView rv;
-    /**
-     * Stores the user's UI preferences
-     */
-    private RUI rui;
-
     /**
      * If the user requests a metric edit and decides to discard it,
      * the old metric needs to be added without any modified attributes,
@@ -85,7 +79,10 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
 		/*
 		 * Load dependencies
 		 */
-        rui = new IO(getApplicationContext()).loadSettings().getRui();
+        /*
+      Stores the user's UI preferences
+     */
+        RUI rui = new IO(getApplicationContext()).loadSettings().getRui();
 
 		/*
 		 * Setup UI
@@ -113,7 +110,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
         fab.setOnClickListener(this);
 
         // Recycler view setup
-        rv = findViewById(R.id.movie_recycler_view);
+        RecyclerView rv = findViewById(R.id.movie_recycler_view);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);

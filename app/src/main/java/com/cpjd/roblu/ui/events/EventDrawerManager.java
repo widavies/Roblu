@@ -104,11 +104,23 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         settings = ContextCompat.getDrawable(activity, R.drawable.settings_circle);
         cloud = ContextCompat.getDrawable(activity, R.drawable.cloud);
         // Configure them to match the UI preferences
-        create.mutate(); create.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
-        masterForm.mutate(); masterForm.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
-        tutorials.mutate(); tutorials.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
-        settings.mutate(); settings.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
-        cloud.mutate(); cloud.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        if(create != null) {
+            create.mutate();
+            create.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
+        if(masterForm != null) {
+            masterForm.mutate();
+            masterForm.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
+        if(tutorials != null) {
+            tutorials.mutate(); tutorials.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
+        if(settings != null) {
+            settings.mutate(); settings.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
+        if(cloud != null) {
+            cloud.mutate(); cloud.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
 
         /*
          * Specify all the different items that will be contained in our drawer
@@ -317,7 +329,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         }
 
         @Override
-        public void bindView(EventDrawerManager.DividerDrawerItem.ViewHolder viewHolder, List payloads) {
+        public void bindView(EventDrawerManager.DividerDrawerItem.ViewHolder viewHolder, List<Object> payloads) {
             super.bindView(viewHolder, payloads);
 
             //set the identifier from the drawerItem here. It can be used to run tests

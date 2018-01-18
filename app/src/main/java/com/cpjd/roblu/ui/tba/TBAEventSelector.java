@@ -361,7 +361,7 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
          */
         private TBALoadEventsTask.LoadTBAEventsListener listener;
 
-        public ImportEvent(TBALoadEventsTask.LoadTBAEventsListener listener) {
+        ImportEvent(TBALoadEventsTask.LoadTBAEventsListener listener) {
             this.listener = listener;
         }
 
