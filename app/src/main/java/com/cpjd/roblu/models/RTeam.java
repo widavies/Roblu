@@ -135,14 +135,14 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         if(this.tabs == null || this.tabs.size() == 0) {
             this.tabs = new ArrayList<>();
             addTab(new RTab("Pit", Utils.duplicateRMetricArray(form.getPit()) , false, false, 0));
-            addTab(new RTab("Predictions",Utils.duplicateRMetricArray(form.getMatch()) , false, false, 0));
-            return;
-        }
+            addTab(new RTab("Predictions", Utils.duplicateRMetricArray(form.getMatch()) , false, false, 0));
+            // Check to make sure the team name and number have been inserted into the form
+            for(RMetric m : this.getTabs().get(0).getMetrics()) {
+                if(m.getID() == 0) ((RTextfield)m).setText(name); // team name
+                else if(m.getID() == 1) ((RTextfield)m).setText(String.valueOf(number)); // team number
+            }
 
-        // Check to make sure the team name and number have been inserted into the form
-        for(RMetric m : this.getTabs().get(0).getMetrics()) {
-            if(m.getID() == 0) ((RTextfield)m).setText(name); // team name
-            else if(m.getID() == 1) ((RTextfield)m).setText(String.valueOf(number)); // team number
+            return;
         }
 
         // Remove elements that aren't on the form
@@ -263,7 +263,8 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                                 for(String key : ((RCheckbox)e).getValues().keySet()) ((RCheckbox)s).getValues().put(key, ((RCheckbox) e).getValues().get(key));
                             }
                         }
-                        else if(e instanceof RTextfield && !s.isModified()) ((RTextfield) s).setText(((RTextfield) e).getText());
+                        // if one line is true, it means its the team name or number metric and its value shouldn't be overrided
+                        else if(e instanceof RTextfield && !s.isModified() && !((RTextfield) e).isOneLine()) ((RTextfield) s).setText(((RTextfield) e).getText());
                         else if(e instanceof RChooser && s instanceof RChooser) {
                             // Always update the title
                             if (!Arrays.equals(((RChooser) s).getValues(), ((RChooser) e).getValues())) {

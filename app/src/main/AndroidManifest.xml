@@ -129,6 +129,9 @@
         <activity android:name=".ui.mymatches.MyMatches"
                   android:label="My matches"/>
         <activity android:name=".ui.settings.UICustomizer"/>
+        <activity android:name=".ui.images.FullScreenImageGalleryActivity"/>
+        <activity android:name=".ui.images.ImageGalleryActivity"/>
+        <activity android:name=".ui.images.Drawing"/>
     </application>
 
 </manifest>

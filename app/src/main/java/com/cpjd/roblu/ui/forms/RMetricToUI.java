@@ -2,9 +2,13 @@ package com.cpjd.roblu.ui.forms;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -17,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
@@ -36,7 +41,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
@@ -47,12 +51,12 @@ import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
+import com.cpjd.roblu.ui.images.FullScreenImageGalleryActivity;
+import com.cpjd.roblu.ui.images.FullScreenImageGalleryAdapter;
+import com.cpjd.roblu.ui.images.ImageGalleryActivity;
+import com.cpjd.roblu.ui.images.ImageGalleryAdapter;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
-import com.etiennelawlor.imagegallery.library.activities.FullScreenImageGalleryActivity;
-import com.etiennelawlor.imagegallery.library.activities.ImageGalleryActivity;
-import com.etiennelawlor.imagegallery.library.adapters.FullScreenImageGalleryAdapter;
-import com.etiennelawlor.imagegallery.library.adapters.ImageGalleryAdapter;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -89,16 +93,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
      */
     @Setter
     private MetricListener listener;
-
-    @Override
-    public void loadFullScreenImage(ImageView iv, String imageUrl, int width, LinearLayout bglinearLayout) {
-
-    }
-
-    @Override
-    public void loadImageThumbnail(ImageView iv, String imageUrl, int dimension) {
-
-    }
 
     public interface MetricListener {
         /**
@@ -745,7 +739,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
      * @param gallery RGallery reference to be set to the UI
      * @return a UI CardView
      */
-    public CardView getGallery(final boolean demo, final RCheckout handoff, final RGallery gallery) {
+    public CardView getGallery(final boolean demo, final int tabIndex, final int eventID, final RGallery gallery) {
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
         textView.setTextColor(rui.getText());
@@ -764,15 +758,23 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             @Override
             public void onClick(View v) {
                 if(demo) return;
+
+                if(gallery.getImages() != null) Log.d("RBS", "Gallery loaded "+gallery.getImages().size()+" image(s).");
+
+                // Don't forget to pass off the reference to the loaded images to the image gallery so the images don't have to be reloaded
+                ImageGalleryActivity.IMAGES = gallery.getImages();
+
                 ImageGalleryActivity.setImageThumbnailLoader(RMetricToUI.this);
                 FullScreenImageGalleryActivity.setFullScreenImageLoader(RMetricToUI.this);
+
                 Intent intent = new Intent(activity, ImageGalleryActivity.class);
                 Bundle bundle = new Bundle();
-                bundle.putString(ImageGalleryActivity.KEY_TITLE, gallery.getTitle());
-                bundle.putInt("ID", gallery.getID());
-                bundle.putInt("checkout", handoff.getID());
-                //bundle.putInt("tabID", tabID);
-                bundle.putBoolean("readOnly", editable);
+                bundle.putString("title", gallery.getTitle());
+                bundle.putInt("eventID", gallery.getID());
+                bundle.putInt("galleryID", gallery.getID());
+                bundle.putInt("eventID", eventID);
+                bundle.putInt("rTabIndex", tabIndex);
+                bundle.putBoolean("editable", editable);
                 intent.putExtras(bundle);
                 activity.startActivityForResult(intent, Constants.GENERAL);
             }
@@ -902,5 +904,68 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         card.addView(layout);
         return card;
     }
+
+    @Override
+    public void loadFullScreenImage(ImageView iv, byte[] image, int width, LinearLayout bglinearLayout) {
+        Bitmap bitmap = BitmapFactory.decodeByteArray(image, 0, image.length);
+
+        if(bitmap != null) {
+            iv.setImageBitmap(bitmap);
+        } else {
+            iv.setImageDrawable(null);
+        }
+    }
+
+    @Override
+    public void loadImageThumbnail(ImageView iv, byte[] image, int dimension) {
+        Bitmap bitmap = scaleCenterCrop(BitmapFactory.decodeByteArray(image, 0, image.length), dimension, dimension);
+
+        if(bitmap != null) {
+            iv.setImageBitmap(bitmap);
+        } else {
+            iv.setImageDrawable(null);
+        }
+    }
+
+    /**
+     * Scales a bitmap
+     * @param source the source to scale
+     * @param newHeight the new height
+     * @param newWidth the new width
+     * @return the scaled bitmap
+     */
+    private Bitmap scaleCenterCrop(Bitmap source, int newHeight, int newWidth) {
+        int sourceWidth = source.getWidth();
+        int sourceHeight = source.getHeight();
+
+        // Compute the scaling factors to fit the new height and width, respectively.
+        // To cover the final image, the final scaling will be the bigger
+        // of these two.
+        float xScale = (float) newWidth / sourceWidth;
+        float yScale = (float) newHeight / sourceHeight;
+        float scale = Math.max(xScale, yScale);
+
+        // Now get the size of the source bitmap when scaled
+        float scaledWidth = scale * sourceWidth;
+        float scaledHeight = scale * sourceHeight;
+
+        // Let's find out the upper left coordinates if the scaled bitmap
+        // should be centered in the new size give by the parameters
+        float left = (newWidth - scaledWidth) / 2;
+        float top = (newHeight - scaledHeight) / 2;
+
+        // The target rectangle for the new, scaled version of the source bitmap will now
+        // be
+        RectF targetRect = new RectF(left, top, left + scaledWidth, top + scaledHeight);
+
+        // Finally, we create a new bitmap of the specified size and draw our new,
+        // scaled bitmap onto it.
+        Bitmap dest = Bitmap.createBitmap(newWidth, newHeight, source.getConfig());
+        Canvas canvas = new Canvas(dest);
+        canvas.drawBitmap(source, null, targetRect, null);
+
+        return dest;
+    }
+
 
 }

@@ -5,12 +5,14 @@ import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.res.ColorStateList;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.annotation.ColorInt;
+import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
@@ -437,5 +439,19 @@ public class Utils {
         }
 
         return values;
+    }
+
+    public static boolean isInLandscapeMode(@NonNull Context context) {
+        boolean isLandscape = false;
+        if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            isLandscape = true;
+        }
+        return isLandscape;
+    }
+
+    public static int getScreenWidth(@NonNull Context context) {
+        Point size = new Point();
+        ((Activity) context).getWindowManager().getDefaultDisplay().getSize(size);
+        return size.x;
     }
 }

@@ -312,7 +312,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(metric instanceof RCheckbox) toolbar.addView(rMetricToUI.getCheckbox((RCheckbox) metric));
         else if(metric instanceof RStopwatch) toolbar.addView(rMetricToUI.getStopwatch((RStopwatch) metric));
         else if(metric instanceof RTextfield) toolbar.addView(rMetricToUI.getTextfield((RTextfield) metric));
-        else if(metric instanceof RGallery) toolbar.addView(rMetricToUI.getGallery(true, null, ((RGallery)metric)));
+        else if(metric instanceof RGallery) toolbar.addView(rMetricToUI.getGallery(true, 0, 0, ((RGallery)metric)));
     }
 
     /**

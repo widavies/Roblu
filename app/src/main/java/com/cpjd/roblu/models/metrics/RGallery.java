@@ -37,7 +37,7 @@ public class RGallery extends RMetric {
      * Adds a new image to the image array
      * @param image a byte[] representing the image, format must match that UI requirements
      */
-    private void addImage(byte[] image) {
+    public void addImage(byte[] image) {
         if(images == null) images = new ArrayList<>();
 
         images.add(image);

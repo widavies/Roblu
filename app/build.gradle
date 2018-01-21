@@ -95,7 +95,6 @@ dependencies {
     compile 'com.roughike:bottom-bar:2.1.1'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
     compile 'pub.devrel:easypermissions:0.2.1'
-    compile 'com.github.lawloretienne:imagegallery:0.1.0'
     compile 'com.google.guava:guava:22.0-android'
     compile 'com.jrummyapps:colorpicker:2.1.6'
     compile 'com.github.infotech-group:CanvasView:release'
@@ -107,7 +106,6 @@ dependencies {
     compile 'pub.devrel:easypermissions:0.2.1'
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile('com.mikepenz:aboutlibraries:5.9.5@aar') { transitive = true }
-    compile 'com.github.lawloretienne:imagegallery:0.1.0'
     compile 'com.android.support:appcompat-v7:27.0.2'
     compile 'com.google.android.gms:play-services-auth:11.8.0'
 

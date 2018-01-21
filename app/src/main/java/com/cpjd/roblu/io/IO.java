@@ -420,7 +420,7 @@ public class IO {
      * @return File reference to a temporary file location that can be saved to an external location
      */
     public File getNewCSVExportFile() {
-        File f = new File(context.getFilesDir(), PREFIX+File.separator+"exports"+File.separator+"ScoutingData.xlsx");
+        File f = new File(context.getCacheDir(), PREFIX+File.separator+"exports"+File.separator+"ScoutingData.xlsx");
         if(f.exists()) {
             if(!f.delete()) Log.d("RBS", "Failed to delete old cached csv export file.");
         }
@@ -565,15 +565,17 @@ public class IO {
      * @return returns file where the picture can be stored temporarily
      */
     public File getTempPictureFile() {
-        File path = new File(context.getCacheDir(), PREFIX + File.separator +"temp.jpg");
-        if(path.mkdirs()) Log.d("RBS", "Successfully created temporary picture file directory.");
-        if(path.exists()) {
-            if(!path.delete()) Log.d("RBS", "Failed to delete old cached picture file.");
+        File f = new File(context.getCacheDir(), PREFIX+File.separator+"images"+File.separator+"image.jpg");
+        if(f.exists()) {
+            if(!f.delete()) Log.d("RBS", "Failed to delete old cached image file.");
         }
+        if(f.getParentFile().mkdirs()) Log.d("RBS", "Successfully created temporary image directory.");
         try {
-            if(!path.createNewFile()) Log.d("RBS", "Failed to create a picture cache file.");
-        } catch(Exception e) { return null; }
-        return path;
+            if(f.createNewFile()) Log.d("RBS", "File created successfully.");
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+        return f;
     }
 
     /**

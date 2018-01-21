@@ -109,14 +109,14 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
     }
 
     private void loadMetric(RMetric e) {
-        if (e instanceof RBoolean) layout.addView(els.getBoolean((RBoolean)e));
-        else if (e instanceof RCheckbox) layout.addView(els.getCheckbox((RCheckbox)e));
-        else if (e instanceof RChooser) layout.addView(els.getChooser((RChooser)e));
-        else if (e instanceof RCounter) layout.addView(els.getCounter((RCounter) e));
-        else if (e instanceof RGallery) layout.addView(els.getGallery(false, null, (RGallery) e));
-        else if (e instanceof RSlider) layout.addView(els.getSlider((RSlider) e));
-        else if (e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e));
-        else if (e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
+        if(e instanceof RBoolean) layout.addView(els.getBoolean((RBoolean)e));
+        else if(e instanceof RCheckbox) layout.addView(els.getCheckbox((RCheckbox)e));
+        else if(e instanceof RChooser) layout.addView(els.getChooser((RChooser)e));
+        else if(e instanceof RCounter) layout.addView(els.getCounter((RCounter) e));
+        else if(e instanceof RGallery) layout.addView(els.getGallery(false, event.getID(), position, (RGallery) e));
+        else if(e instanceof RSlider) layout.addView(els.getSlider((RSlider) e));
+        else if(e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e));
+        else if(e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
         else Log.d("RBS", "Couldn't resolve metric with name: "+e.getTitle());
     }
 
