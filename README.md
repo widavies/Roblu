@@ -11,7 +11,7 @@ inconsistencies. Help support this project by downloading the app and testing / 
 bug free, and not only functional, but beautiful, efficient, concise, and intuitive scouting solution.
 
 # Learn Roblu
-[View official tutorial](https://docs.google.com/document/d/1fp3aq5ta4SpJE6AOiHujj8NVpqYdq6gSVoLAl3wQ7f8/edit?usp=sharing)
+[View official tutorials](https://www.youtube.com/playlist?list=PLjv2hkWcHVGZoyJC8bs7JCAp78OABK9b0)
 
 # How to download this repository and run it
 [View installation tutorial](https://www.youtube.com/watch?v=eIHYhmTAWqg&feature=youtu.be)
