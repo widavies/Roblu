@@ -22,7 +22,7 @@ Roblu is not designed for a specific year of FRC robotics, it's designed to be a
 ## Powerful, useful, and relevant forms. Forms, your way
 Custom forms allow you to create your own take on how scouting should be done Through custom forms, you can create and organize
 elements to display information that you need while you need it. Currently, Roblu supports the following elements: boolean, counter, slider, chooser, checkbox, stopwatch, textfield, and image gallery. Roblu supports two form types: PIT and match forms. PIT forms contain general, single instance data about a team while match forms contain infomration determined from a team's performance in a match. Forms can be edited at any time to meet your team's scouting needs. Forms can be manually created or choosen from a predefined list. Roblu supports a "master form", so multiple events can share the same form. 
-## Syncing, safety in numbers (coming soon)
+## Syncing, safety in numbers
 Syncing sets Roblu apart from all other scouting apps. The mission statement for Roblu syncing is simplicity. As syncing is one of the most valuable and useful features for teams, we wanted to do it right. Bullet points are cool:  
 * Syncing is accomplished through Amazon Cloud Services, so you can expect world class security and stablilty
 * The head of scouting on your team can use the Roblu master app to deliver "assignments" to scouters, assignments will show up on Roblu client apps and allow scouters to easily input information.
