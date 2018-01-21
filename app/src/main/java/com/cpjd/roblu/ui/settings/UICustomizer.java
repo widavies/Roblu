@@ -12,6 +12,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
@@ -46,6 +47,7 @@ public class UICustomizer extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
+            Toast.makeText(getApplicationContext(), "Notice: You may have to restart the app for some changes to take effect.", Toast.LENGTH_LONG).show();
             finish();
             return true;
         }
@@ -54,6 +56,7 @@ public class UICustomizer extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        Toast.makeText(getApplicationContext(), "Notice: You may have to restart the app for some changes to take effect.", Toast.LENGTH_LONG).show();
         finish();
     }
 

@@ -3,10 +3,13 @@ package com.cpjd.roblu.csv;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 
 import com.cpjd.roblu.csv.csvSheets.CSVSheet;
 import com.cpjd.roblu.csv.csvSheets.MatchData;
+import com.cpjd.roblu.csv.csvSheets.OurMatches;
+import com.cpjd.roblu.csv.csvSheets.PitData;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
@@ -25,6 +28,8 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  * ExportCSVTask manages the exporting of a .CSV file. It's saved as an .XLSX file, meaning that it can be
@@ -45,7 +50,7 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
      * Specify all the CSVSheets
      * !!ADD YOUR SHEET HERE!!
      */
-    private CSVSheet[] CSVSheets = {new MatchData()};
+    private CSVSheet[] CSVSheets = {new MatchData(), new PitData(), new OurMatches()};
 
     /**
      * Reference to the context object for file system access
@@ -99,6 +104,12 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
     private final XSSFWorkbook workbook;
 
     /**
+     * For some reason, sheet creation isn't thread safe and causes an exception.
+     * Therefore, sheets should be generated in the constructor
+     */
+    private HashMap<String, XSSFSheet> sheets;
+
+    /**
      * Initializes the ExportCSVTask.
      * @param context context object
      * @param listener the listener that should be notified when the task is completed
@@ -110,18 +121,32 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
       this.listener = listener;
       this.progressDialogWeakReference = new WeakReference<>(progressDialog);
 
-      for(CSVSheet s : CSVSheets) if(s.isEnabled()) enabledSheets++;
-
         /*
          *
          *  Create the workbook and start generating data
          *
          */
         this.workbook = new XSSFWorkbook();
+
+        sheets = new LinkedHashMap<>();
+
+        // Create the sheets here since it doesn't work in the thread.
+        for(CSVSheet s : CSVSheets) {
+            if(s.isEnabled()) {
+                enabledSheets++;
+                XSSFSheet sheet = this.workbook.createSheet(s.getSheetName());
+                sheets.put(s.getSheetName(), sheet);
+            }
+        }
     }
 
     @Override
     protected Void doInBackground(Void... voids) {
+        if(Build.VERSION.SDK_INT < 21) {
+            listener.errorOccurred("Your device does not support CSV exporting.");
+            return null;
+        }
+
         /*
          * Check to see if the event is null, if it is, we must cancel this task
          */
@@ -213,18 +238,17 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
             new Thread() {
               public void run() {
                   if(s.isEnabled()) {
-                      //try {
+                     // try {
                           s.setIo(io);
                           s.setWorkbook(workbook);
-                          Log.d("RBS", "Sheet name: "+s.getSheetName());
-                          XSSFSheet csvSheet = workbook.createSheet(s.getSheetName());
+                          Log.d("RBS", "ExportCSVTask: Generating sheet: "+s.getSheetName());
                           s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
-                          s.generateSheet(csvSheet, event, form, teams, matches1);
-                          //for(int i = 0; i < csvSheet.getRow(0).getLastCellNum(); i++) csvSheet.setColumnWidth(i, s.getColumnWidth());
-                      /*} catch(Exception e) {
-                          listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
-                          Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
-                      }*/
+                          s.generateSheet(sheets.get(s.getSheetName()), event, form, teams, matches1);
+                          for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
+                      //} catch(Exception e) {
+                     //     listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
+                     //     Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
+                      //}
                   }
 
                   threadCompleted();
@@ -237,7 +261,6 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
               }
             }.start();
         }
-
 
         return null;
     }

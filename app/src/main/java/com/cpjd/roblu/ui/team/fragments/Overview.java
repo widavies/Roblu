@@ -78,7 +78,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
         TeamViewer.team.setMotto(tbaTeam.motto);
         TeamViewer.team.setWebsite(tbaTeam.website);
         TeamViewer.team.setRookieYear((int)tbaTeam.rookie_year);
-        new IO(getActivity()).saveTeam(getArguments().getInt("eventID"), TeamViewer.team);
+        new IO(getView().getContext()).saveTeam(getArguments().getInt("eventID"), TeamViewer.team);
 
         // TBA info card
         getActivity().runOnUiThread(new Runnable() {

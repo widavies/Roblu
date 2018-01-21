@@ -4,8 +4,10 @@ import com.cpjd.roblu.csv.RMatch;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RMetric;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
@@ -25,15 +27,16 @@ public class PitData extends CSVSheet {
         /*
          * Create some styles
          */
-        XSSFCellStyle[] styles = {setCellStyle(BorderStyle.THIN, IndexedColors.CORNFLOWER_BLUE, IndexedColors.BLACK, false), setCellStyle(BorderStyle.THIN, IndexedColors.GREEN, IndexedColors.BLACK, false),
-                setCellStyle(BorderStyle.THIN, IndexedColors.GREY_50_PERCENT, IndexedColors.BLACK, false), setCellStyle(BorderStyle.THIN, IndexedColors.RED, IndexedColors.BLACK, false)};
-
+        XSSFCellStyle[] styles = {setCellStyle(BorderStyle.THIN, IndexedColors.CORAL, IndexedColors.BLACK, false), setCellStyle(BorderStyle.THIN, IndexedColors.LIGHT_GREEN, IndexedColors.BLACK, false),
+                setCellStyle(BorderStyle.THIN, IndexedColors.GREY_50_PERCENT, IndexedColors.BLACK, false), setCellStyle(BorderStyle.THIN, IndexedColors.CORNFLOWER_BLUE, IndexedColors.BLACK, false)};
 
         /*
-         * Create row one (metric names)
+         * Create row 1 (predictions metric names)
          */
         Row metricNames = createRow(sheet, 60);
+        setCellStyle(BorderStyle.THIN, IndexedColors.BLACK, IndexedColors.WHITE, true);
         createCell(metricNames, 0, "Team#");
+
         int styleCounter = 0;
         for(int i = 0; i < form.getMatch().size(); i++) {
             // decide the which style to use
@@ -43,10 +46,13 @@ public class PitData extends CSVSheet {
 
             createCell(metricNames, i + 1, form.getMatch().get(i).getTitle()+getPossibleValuesForMetric(form.getMatch().get(i)));
         }
+
         /*
-         * Add divider indicator
+         * Add divider
          */
+        setCellStyle(BorderStyle.THIN, IndexedColors.BLACK, IndexedColors.WHITE, true);
         createCell(metricNames, form.getMatch().size() + 1, "<--PREDICTIONS\nPIT-->");
+
         /*
          * Add pit metric names
          */
@@ -59,30 +65,75 @@ public class PitData extends CSVSheet {
 
             createCell(metricNames, i + form.getMatch().size() + 2, form.getPit().get(i).getTitle()+getPossibleValuesForMetric(form.getPit().get(i)));
         }
+
         /*
-         * Process predictions and pit scouting data
+         * Start adding scouting data
          */
-        styleCounter = 0;
         for(RTeam team : teams) {
-            // decide the which style to use
-            if(styleCounter == 4) styleCounter = 0;
-            setStyle(styles[styleCounter]);
-            styleCounter++;
+            Row row = createRow(sheet);
 
-            Row teamsRow = createRow(sheet, 0);
-            createCell(teamsRow, 0, team.getName());
-            for(int j = 0; j < team.getTabs().get(1).getMetrics().size(); j++) { // use getTabs().get(1) for predictions tab
-                if(team.getTabs().get(1).getMetrics().get(j).isModified()) createCell(teamsRow, j + 1, team.getTabs().get(1).getMetrics().get(j).toString());
-                else createCell(teamsRow, j + 1, "");
+            // Team number column
+            setCellStyle(BorderStyle.THIN, IndexedColors.BLACK, IndexedColors.WHITE, true);
+            getStyle().setAlignment(HorizontalAlignment.RIGHT);
+            createCell(row, 0, String.valueOf(team.getNumber()));
+
+            /*
+             * Add scouting data
+             */
+
+            // Loop through the form metrics array
+            for(int i = 0; i < form.getMatch().size(); i++) {
+
+                // Set style
+                setStyle(styles[i % styles.length]);
+
+                // If the team contains the match and the metric is modified, add it to the excel sheet
+                // We found the match, let's quickly find the metric
+                RMetric teamMetric = null;
+                for(RMetric metric : team.getTabs().get(1).getMetrics()) {
+                    if(metric.getID() == form.getMatch().get(i).getID()) {
+                        teamMetric = metric;
+                        break;
+                    }
+                }
+
+                if(teamMetric.isModified()) {
+                    createCell(row, 1 + i, teamMetric.toString());
+                } else createCell(row, 1 + i, ""); // Still add a cell so the formatting applies
             }
-            // Create black divider cell
-            setCellStyle(BorderStyle.THIN, IndexedColors.BLACK, IndexedColors.WHITE, false);
-            createCell(teamsRow, team.getTabs().get(1).getMetrics().size() + 2, "");
 
-            // Process pit
-            for(int j = 0; j < team.getTabs().get(0).getMetrics().size(); j++) { // use getTabs().get(0) for PIT tab
-                if(team.getTabs().get(0).getMetrics().get(j).isModified()) createCell(teamsRow, team.getTabs().get(1).getMetrics().size() + 3 + j, team.getTabs().get(0).getMetrics().get(j).toString());
-                else createCell(teamsRow, team.getTabs().get(1).getMetrics().size() + 3 + j, "");
+            // Add divider column
+            setCellStyle(BorderStyle.THIN, IndexedColors.BLACK, IndexedColors.WHITE, true);
+            getStyle().setAlignment(HorizontalAlignment.RIGHT);
+            createCell(row, 1 + form.getMatch().size(), "");
+
+            // Loop through the pit metrics array
+            for(int i = 0; i < form.getPit().size(); i++) {
+
+                // Set style
+                setStyle(styles[i % styles.length]);
+
+                RMetric teamMetric = null;
+                for(RMetric metric : team.getTabs().get(0).getMetrics()) {
+                    if(metric.getID() == form.getPit().get(i).getID()) {
+                        teamMetric = metric;
+                        break;
+                    }
+                }
+
+                // always add the team name and number fields, even if they aren't modified
+                if(teamMetric.getID() == 0) {
+                    createCell(row, 2 + form.getMatch().size() + i, team.getName());
+                    continue;
+                }
+                if(teamMetric.getID() == 1) {
+                    createCell(row, 2 + form.getMatch().size() + i, String.valueOf(team.getNumber()));
+                    continue;
+                }
+
+                if(teamMetric.isModified()) {
+                    createCell(row, 2 + i + form.getMatch().size(), teamMetric.toString());
+                } else createCell(row, 2 + i + form.getMatch().size(), ""); // Still add a cell so the formatting applies
             }
         }
 
@@ -100,6 +151,6 @@ public class PitData extends CSVSheet {
 
     @Override
     public int getColumnWidth() {
-        return 512;
+        return 2000;
     }
 }

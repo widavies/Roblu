@@ -38,6 +38,10 @@
             android:title="Create .csv"
             android:key="export_csv"
             android:summary="Export the event as a .csv file" />
+        <CheckBoxPreference
+            android:title="Keep .CSV synced"
+            android:key="csv_sync"
+            android:summary="Keep the .CSV file up to date on the server" />
         <Preference
             android:title="Duplicate"
             android:key="duplicate"

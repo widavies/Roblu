@@ -498,7 +498,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             // reload settings
             settings = new IO(getApplicationContext()).loadSettings();
 
-            new UIHandler(this, toolbar, searchButton).update();
+            new UIHandler(this, toolbar).update();
+            //eventDrawerManager = new EventDrawerManager(this, toolbar, this);
         }
     }
     /**

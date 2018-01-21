@@ -15,6 +15,7 @@ import com.cpjd.roblu.models.metrics.RStopwatch;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
@@ -69,6 +70,8 @@ public abstract class CSVSheet {
     @Setter
     private XSSFCellStyle style;
 
+    private int currentRowNum = -1;
+
     /**
      * Generates the sheet in its own thread
      * @param sheet add your data to this sheet with its sub methods, look at Apache POI API documentation if you need help learning how to map stuff
@@ -103,8 +106,9 @@ public abstract class CSVSheet {
      * @param sheet a reference to the sheet you're working in
      * @return a new row at the bottom of your sheet
      */
-    Row createRow(XSSFSheet sheet, int rowNum) {
-        return sheet.createRow(rowNum);
+    Row createRow(XSSFSheet sheet) {
+        currentRowNum++;
+        return sheet.createRow(currentRowNum);
     }
 
     /**
@@ -113,8 +117,9 @@ public abstract class CSVSheet {
      * @param height the height of the row
      * @return a new row at the bottom of your sheet
      */
-    Row createRow(XSSFSheet sheet, int rowNum, float height) {
-        Row row = sheet.createRow(rowNum);
+    Row createRow(XSSFSheet sheet, float height) {
+        currentRowNum++;
+        Row row = sheet.createRow(currentRowNum);
         row.setHeightInPoints(height);
         return row;
     }
@@ -148,7 +153,7 @@ public abstract class CSVSheet {
         style.setBorderLeft(borderStyle);
         style.setBorderBottom(borderStyle);
         style.setBorderTop(borderStyle);
-        style.setFillPattern(XSSFCellStyle.SOLID_FOREGROUND);
+        style.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         style.setFillForegroundColor(cellColor.index);
         Font font = workbook.createFont();
         font.setColor(fontColor.index);
