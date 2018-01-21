@@ -305,6 +305,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * @return index of sorted, newly added tab
      */
     public int addTab(RTab tab) {
+        if(this.tabs == null) this.tabs = new ArrayList<>();
         tabs.add(tab);
         Collections.sort(tabs);
         for(int i = 0; i < tabs.size(); i++) if(tabs.get(i).getTitle().equals(tab.getTitle())) return i;

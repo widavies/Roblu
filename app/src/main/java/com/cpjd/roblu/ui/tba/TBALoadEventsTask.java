@@ -124,8 +124,8 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
         if(events == null || events.size() == 0) {
             try {
                 Event[] events;
-                if(onlyShowMyEvents) events = new TBA().getEvents(year, false);
-                else events = new TBA().getTeamEvents(teamNumber, year, false);
+                if(onlyShowMyEvents) events = new TBA().getTeamEvents(teamNumber, year, false);
+                else events = new TBA().getEvents(year, false);
                 /*
                  * Clean up the downloaded data a bit
                  */

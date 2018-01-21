@@ -65,6 +65,7 @@ public abstract class Constants {
     public static final int HEADER = getNum();
     public static final int TUTORIALS = getNum();
     public static final int MAILBOX = getNum();
+    public static final int MY_MATCHES = getNum();
 
     // Intent request and result codes
     public static final int GENERAL = getNum(); // when the request code doesn't matter
@@ -78,7 +79,6 @@ public abstract class Constants {
     public static final int EVENT_SETTINGS_CHANGED = getNum();
     public static final int SETTINGS_CHANGED = getNum();
     public static final int MAILBOX_EXITED = getNum();
-
 
     private static int count = 0;
     private static int getNum() {

@@ -57,8 +57,18 @@ import com.cpjd.roblu.ui.images.ImageGalleryActivity;
 import com.cpjd.roblu.ui.images.ImageGalleryAdapter;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -770,7 +780,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 Intent intent = new Intent(activity, ImageGalleryActivity.class);
                 Bundle bundle = new Bundle();
                 bundle.putString("title", gallery.getTitle());
-                bundle.putInt("eventID", gallery.getID());
                 bundle.putInt("galleryID", gallery.getID());
                 bundle.putInt("eventID", eventID);
                 bundle.putInt("rTabIndex", tabIndex);
@@ -967,5 +976,48 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         return dest;
     }
 
+    /*
+     * Statistics!
+     */
+    public CardView generateLineChart(String metricName, String[] matchTitles, double[] values) {
+        LineChart chart = new LineChart(activity);
+        chart.setNoDataTextColor(rui.getText());
+        chart.getXAxis().setValueFormatter(new MyAxisValueFormatter(matchTitles));
+        chart.getXAxis().setTextColor(rui.getText());
+        chart.getXAxis().setGranularity(1f);
+        chart.getAxis(YAxis.AxisDependency.LEFT).setTextColor(rui.getText());
+        chart.getAxis(YAxis.AxisDependency.RIGHT).setTextColor(rui.getText());
+        chart.getLegend().setTextColor(rui.getText());
+        chart.getLegend().setTextSize(15f);
+        chart.setMinimumHeight(1000);
+        Description d = new Description();
+        d.setText("");
+        chart.setDescription(d);
+        List<Entry> entries = new ArrayList<>();
+        for(int i = 0; i < values.length; i++) {
+            entries.add(new Entry(i, (float)(values[i])));
+        }
+        LineDataSet set = new LineDataSet(entries, metricName);
+        set.setValueTextSize(12f);
+        set.setValueTextColor(rui.getText());
+        LineData data = new LineData(set);
+        chart.setData(data);
+        chart.invalidate();
+        return getCard(chart);
+    }
 
+    public class MyAxisValueFormatter implements IAxisValueFormatter {
+        private String[] titles;
+
+        public MyAxisValueFormatter(String[] titles) {
+            this.titles = titles;
+        }
+
+        @Override
+        public String getFormattedValue(float value, AxisBase axis) {
+            // "value" represents the position of the label on the axis (x or y)
+            if(value < 0) value = 0;
+            return titles[(int)value];
+        }
+    }
 }

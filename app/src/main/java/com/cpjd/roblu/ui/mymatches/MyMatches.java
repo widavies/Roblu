@@ -27,6 +27,7 @@ import com.cpjd.roblu.ui.mailbox.CheckoutListener;
 import com.cpjd.roblu.ui.mailbox.fragments.CheckoutAdapter;
 import com.cpjd.roblu.ui.mailbox.fragments.CheckoutsTouchHelper;
 import com.cpjd.roblu.ui.team.TeamViewer;
+import com.cpjd.roblu.utils.Constants;
 
 import java.util.ArrayList;
 
@@ -164,11 +165,18 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            setResult(Constants.CANCELLED);
             finish();
             return true;
         }
 
         return false;
+    }
+
+    @Override
+    public void onBackPressed() {
+        setResult(Constants.CANCELLED);
+        finish();
     }
 
     // user tapped on a match, let's load the "jump to team" dialog
@@ -181,18 +189,18 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
                 final Dialog d = new Dialog(MyMatches.this);
                 d.setTitle("Open team ");
                 d.setContentView(R.layout.event_import_dialog);
-                final Spinner spinner = (Spinner) d.findViewById(R.id.type); // load up a chooser with 6 teams into it (3 teammates, 3 opponents)
+                final Spinner spinner = d.findViewById(R.id.type); // load up a chooser with 6 teams into it (3 teammates, 3 opponents)
                 String[] values = new String[6];
                 for(int i = 0; i < values.length; i++) {
                      if(i < 3) values[i] = checkout.getTeam().getTabs().get(0).getTeammates().get(i).getNumber() + " (Teammate)";
                      else values[i] = checkout.getTeam().getTabs().get(0).getOpponents().get(i - 3).getNumber() + " (Opponent)";
                 }
-                TextView t = (TextView) d.findViewById(R.id.spinner_tip);
+                TextView t = d.findViewById(R.id.spinner_tip);
                 t.setText(R.string.team);
                 ArrayAdapter<String> adp = new ArrayAdapter<>(MyMatches.this, android.R.layout.simple_list_item_1, values);
                 adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                 spinner.setAdapter(adp);
-                Button button = (Button) d.findViewById(R.id.button7);
+                Button button = d.findViewById(R.id.button7);
                 button.setText(R.string.open);
                 // launch teamviewer if the user selects a team and taps "open"
                 button.setOnClickListener(new View.OnClickListener() {

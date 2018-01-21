@@ -19,6 +19,7 @@ import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.ui.mailbox.Mailbox;
 import com.cpjd.roblu.ui.forms.FormViewer;
+import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.settings.AdvSettings;
 import com.cpjd.roblu.ui.tutorials.Tutorial;
 import com.cpjd.roblu.utils.Constants;
@@ -193,6 +194,12 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 }
             }
         }
+        else if(identifier == Constants.MY_MATCHES) {
+            Intent intent = new Intent(activity, MyMatches.class);
+
+            intent.putExtra("eventID", event.getID());
+            activity.startActivityForResult(intent, Constants.GENERAL);
+        }
         else if(identifier == Constants.EDIT_MASTER_FORM) {
             Intent start = new Intent(activity, FormViewer.class);
             start.putExtra("form", new IO(activity).loadSettings().getMaster());
@@ -265,16 +272,18 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         Collections.reverse(events);
 
         // Load icons
-        Drawable folder, scout, options, mail;
+        Drawable folder, scout, options, mail, pit;
         folder = ContextCompat.getDrawable(activity, R.drawable.event);
         scout = ContextCompat.getDrawable(activity, R.drawable.match);
         options = ContextCompat.getDrawable(activity, R.drawable.settings_circle);
         mail = ContextCompat.getDrawable(activity, R.drawable.mail);
+        pit = ContextCompat.getDrawable(activity, R.drawable.pit);
         // Set UI preferences to drawable icon
         folder.mutate(); folder.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         scout.mutate(); scout.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         options.mutate(); options.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         mail.mutate(); mail.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        pit.mutate(); pit.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
 
         // Specify the list of items that have to be added to the drawer
         ArrayList<IDrawerItem> items = new ArrayList<>();
@@ -283,11 +292,13 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 items.add(new ExpandableDrawerItem().withTextColor(rui.getText()).withName(e.getName()).withTag(e.getID()).withArrowColor(rui.getText()).withIcon(folder).withIdentifier(Constants.HEADER).withSelectable(false).withSubItems(
                         new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Scout").withLevel(2).withIcon(scout).withIdentifier(Constants.SCOUT).withTag(e.getID()),
                         new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Mailbox").withLevel(2).withIcon(mail).withIdentifier(Constants.MAILBOX).withTag(e.getID()),
+                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
                         new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
                 );
             } else {
                 items.add(new ExpandableDrawerItem().withTextColor(rui.getText()).withName(e.getName()).withTag(e.getID()).withArrowColor(rui.getText()).withIcon(folder).withIdentifier(Constants.HEADER).withSelectable(false).withSubItems(
                         new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Scout").withLevel(2).withIcon(scout).withIdentifier(Constants.SCOUT).withTag(e.getID()),
+                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
                         new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
                 );
             }
@@ -296,7 +307,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         // Clear old events from the drawer
         for(int i = 0; i < eventDrawer.getDrawerItems().size(); i++) {
             long identifier = eventDrawer.getDrawerItems().get(i).getIdentifier();
-            if(identifier == Constants.HEADER || identifier == Constants.SCOUT || identifier == Constants.EVENT_SETTINGS || identifier == Constants.MAILBOX) {
+            if(identifier == Constants.HEADER || identifier == Constants.SCOUT || identifier == Constants.EVENT_SETTINGS || identifier == Constants.MAILBOX || identifier == Constants.MY_MATCHES) {
                 eventDrawer.removeItemByPosition(i);
                 i = 0;
             }

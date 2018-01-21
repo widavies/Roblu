@@ -441,6 +441,18 @@ public class Utils {
         return values;
     }
 
+    public static double[] objectListToDoubleArray(ArrayList<Double> list) {
+        double[] values = new double[list.size()];
+        for(int i = 0; i < list.size(); i++) values[i] = list.get(i);
+        return values;
+    }
+
+    public static String[] stringListToArray(ArrayList<String> list) {
+        String[] values = new String[list.size()];
+        for(int i = 0; i < list.size(); i++) values[i] = list.get(i);
+        return values;
+    }
+
     public static boolean isInLandscapeMode(@NonNull Context context) {
         boolean isLandscape = false;
         if (context.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {

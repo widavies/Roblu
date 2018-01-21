@@ -134,7 +134,7 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
         showTeam.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long l) {
-                onlyShowMyEvents = parent.getItemAtPosition(position).toString().equals("All events");
+                onlyShowMyEvents = parent.getItemAtPosition(position).toString().equals("My events");
                 rv.setVisibility(View.INVISIBLE);
                 bar.setVisibility(View.VISIBLE);
                 TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);

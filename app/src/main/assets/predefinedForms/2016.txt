@@ -3,7 +3,7 @@ DEFAULTS
 textfield,Comments,
 gallery,Pictures,
 MATCH
-counter,Points possible,0,1
+counter,Points possible,1,0
 chooser,Autonomous?,Yes:No:Sometimes:Unknown,3
 checkbox,Defenses,Portcullis:Cheval de Frise:Moat:Ramparts:Drawbridge:Sally port:Rock wall:Rough terrain:Low bar
 textfield,Comments,

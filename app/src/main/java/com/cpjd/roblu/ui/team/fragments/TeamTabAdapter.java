@@ -116,7 +116,6 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
     private Fragment loadMatch(int position) {
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putLong("team", TeamViewer.team.getID());
         bundle.putSerializable("form", form);
         bundle.putBoolean("editable", editable);
         bundle.putInt("position", position);
@@ -140,7 +139,6 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
-        bundle.putLong("team", TeamViewer.team.getID());
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", false);
         bundle.putInt("position", position);

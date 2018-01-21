@@ -108,7 +108,7 @@ dependencies {
     compile('com.mikepenz:aboutlibraries:5.9.5@aar') { transitive = true }
     compile 'com.android.support:appcompat-v7:27.0.2'
     compile 'com.google.android.gms:play-services-auth:11.8.0'
-
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
     compile "org.projectlombok:lombok:1.16.16"
     annotationProcessor 'org.projectlombok:lombok:1.16.16'
     compile 'javax.annotation:jsr250-api:1.0'
