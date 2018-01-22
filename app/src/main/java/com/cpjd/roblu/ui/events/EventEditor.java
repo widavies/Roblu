@@ -136,7 +136,6 @@ public class EventEditor extends AppCompatActivity {
             tbaKeyText = findViewById(R.id.key_edit);
             tbaKeyText.setText(getIntent().getStringExtra("key"));
             eventName.setText(getIntent().getStringExtra("name"));
-
         }
 
         // General UI syncing

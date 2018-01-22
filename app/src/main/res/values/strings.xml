@@ -20,6 +20,8 @@
     <string name="contains_no_images">Contains 0 images</string>
     <string name="contains_one_image">Contains 1 image</string>
     <string name="edit_history">Edit history</string>
+    <string name="Blue_Alliance_Team_Page">Blue Alliance team page</string>
+    <string name="Team_website">Team website</string>
 
     <!-- Activity titles -->
     <string name="title_activity_predefined">Predefined</string>

@@ -212,6 +212,8 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
             byte[] array = stream.toByteArray();
 
+            Log.d("RBS", "Saving image to rTabIndex "+rTabIndex+" with gallery ID: "+galleryID);
+
             // save the ID to the gallery
             for(int i = 0; i < TeamViewer.team.getTabs().get(rTabIndex).getMetrics().size(); i++) {
                 if(TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i).getID() == galleryID) {

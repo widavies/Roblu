@@ -58,13 +58,18 @@ import com.cpjd.roblu.ui.images.ImageGalleryAdapter;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.PercentFormatter;
+import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -812,24 +817,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         textView.setTextColor(rui.getText());
         textView.setId(Utils.generateViewId());
 
-        if(number != -1) {
-            final Drawable reset = ContextCompat.getDrawable(activity, R.drawable.export);
-            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
-            final ImageView page = new ImageView(activity);
-            page.setBackground(reset);
-            page.setLayoutParams(params);
-            page.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.setData(Uri.parse("https://www.thebluealliance.com/team/" + number));
-                    activity.startActivity(i);
-                }
-            });
-            layout.addView(page);
-        }
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.BELOW, textView.getId());
         TextView et = new TextView(activity);
@@ -846,8 +833,9 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             params.addRule(RelativeLayout.BELOW, et.getId());
             Button b = new Button(activity);
             b.setTextColor(rui.getText());
-            b.setText(website);
+            b.setText(R.string.Team_website);
             b.setLayoutParams(params);
+            b.setId(Utils.generateViewId());
             b.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -857,6 +845,22 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 }
             });
             layout.addView(b);
+            Button tbaTeamSite = new Button(activity);
+            tbaTeamSite.setText(R.string.Blue_Alliance_Team_Page);
+            tbaTeamSite.setId(Utils.generateViewId());
+            tbaTeamSite.setTextColor(rui.getText());
+            tbaTeamSite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(Intent.ACTION_VIEW);
+                    i.setData(Uri.parse("https://www.thebluealliance.com/team/" + number));
+                    activity.startActivity(i);
+                }
+            });
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, b.getId());
+            tbaTeamSite.setLayoutParams(params);
+            layout.addView(tbaTeamSite);
         }
 
         layout.addView(textView); layout.addView(et);
@@ -891,6 +895,25 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         et.setLayoutParams(params);
 
         layout.addView(textView); layout.addView(et);
+        return getCard(layout);
+    }
+
+    public CardView getImageView(String title, Bitmap bitmap) {
+        RelativeLayout layout = new RelativeLayout(activity);
+        TextView textView = new TextView(activity);
+        textView.setText(title);
+        textView.setPadding(textView.getPaddingLeft(), textView.getPaddingTop(), textView.getPaddingRight(), Utils.DPToPX(activity, 10));;
+        textView.setTextColor(rui.getText());
+        textView.setId(Utils.generateViewId());
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, textView.getId());
+        layout.addView(textView);
+        ImageView imageView = new ImageView(activity);
+        imageView.setAdjustViewBounds(true);
+        imageView.setImageBitmap(bitmap);
+        imageView.setLayoutParams(params);
+        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        layout.addView(imageView);
         return getCard(layout);
     }
 
@@ -979,10 +1002,10 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
     /*
      * Statistics!
      */
-    public CardView generateLineChart(String metricName, String[] matchTitles, double[] values) {
+    public CardView generateLineChart(String metricName, LinkedHashMap<String, Object> data) {
         LineChart chart = new LineChart(activity);
         chart.setNoDataTextColor(rui.getText());
-        chart.getXAxis().setValueFormatter(new MyAxisValueFormatter(matchTitles));
+        chart.getXAxis().setValueFormatter(new MyAxisValueFormatter(data));
         chart.getXAxis().setTextColor(rui.getText());
         chart.getXAxis().setGranularity(1f);
         chart.getAxis(YAxis.AxisDependency.LEFT).setTextColor(rui.getText());
@@ -990,18 +1013,45 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         chart.getLegend().setTextColor(rui.getText());
         chart.getLegend().setTextSize(15f);
         chart.setMinimumHeight(1000);
-        Description d = new Description();
-        d.setText("");
-        chart.setDescription(d);
+        chart.getDescription().setEnabled(false);
         List<Entry> entries = new ArrayList<>();
-        for(int i = 0; i < values.length; i++) {
-            entries.add(new Entry(i, (float)(values[i])));
+        int index = 0;
+        for(Object o : data.keySet()) {
+            if(data.get(o.toString()) instanceof String) entries.add(new Entry(index, Float.parseFloat((String)data.get(o.toString()))));
+            else entries.add(new Entry(index, ((Double)data.get(o.toString())).floatValue()));
+            index++;
         }
+
         LineDataSet set = new LineDataSet(entries, metricName);
         set.setValueTextSize(12f);
         set.setValueTextColor(rui.getText());
-        LineData data = new LineData(set);
-        chart.setData(data);
+        LineData lineData = new LineData(set);
+        chart.setData(lineData);
+        chart.invalidate();
+        return getCard(chart);
+    }
+
+    public CardView generatePieChart(String metricName, LinkedHashMap<String, Object> data) {
+        PieChart chart = new PieChart(activity);
+        chart.setMinimumHeight(1000);
+        chart.setDrawHoleEnabled(false);
+        chart.setUsePercentValues(true);
+        chart.getLegend().setTextColor(rui.getText());
+        chart.setCenterText(metricName);
+        chart.setCenterTextColor(rui.getText());
+        chart.setCenterTextSize(15f);
+        chart.getDescription().setEnabled(false);
+        List<PieEntry> entries = new ArrayList<>();
+        for(Object o : data.keySet()) {
+            entries.add(new PieEntry(((Double)data.get(o.toString())).floatValue(), o.toString()));
+        }
+        PieDataSet set = new PieDataSet(entries, "");
+        set.setColors(ColorTemplate.MATERIAL_COLORS);
+        set.setValueTextSize(12f);
+        set.setValueTextColor(rui.getText());
+        PieData pieData = new PieData(set);
+        pieData.setValueFormatter(new PercentFormatter());
+        chart.setData(pieData);
         chart.invalidate();
         return getCard(chart);
     }
@@ -1009,13 +1059,17 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
     public class MyAxisValueFormatter implements IAxisValueFormatter {
         private String[] titles;
 
-        public MyAxisValueFormatter(String[] titles) {
-            this.titles = titles;
+        MyAxisValueFormatter(LinkedHashMap<String, Object> values) {
+            titles = new String[values.size()];
+            int index = 0;
+            for(Object o : values.keySet()) {
+                titles[index] = o.toString();
+                index++;
+            }
         }
 
         @Override
         public String getFormattedValue(float value, AxisBase axis) {
-            // "value" represents the position of the label on the axis (x or y)
             if(value < 0) value = 0;
             return titles[(int)value];
         }

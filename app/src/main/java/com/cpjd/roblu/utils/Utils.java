@@ -441,9 +441,12 @@ public class Utils {
         return values;
     }
 
-    public static double[] objectListToDoubleArray(ArrayList<Double> list) {
+    /*
+     * Array conversion methods
+     */
+    public static double[] objectListToDoubleArray(ArrayList<String> list) {
         double[] values = new double[list.size()];
-        for(int i = 0; i < list.size(); i++) values[i] = list.get(i);
+        for(int i = 0; i < list.size(); i++) values[i] = Double.parseDouble(list.get(i));
         return values;
     }
 

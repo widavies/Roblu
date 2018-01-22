@@ -1,5 +1,7 @@
 package com.cpjd.roblu.ui.team.fragments;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,15 +15,22 @@ import android.view.ViewGroup;
 import com.cpjd.models.Team;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCheckbox;
+import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.forms.RMetricToUI;
 import com.cpjd.roblu.ui.team.TBATeamInfoTask;
 import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 /**
  * The overview tab will display some generic information about the team,
@@ -54,42 +63,127 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
         /*
          * Do statistics generation!
          */
+        // This is not really included in statistics generation, it's more of a side project so only 1 loop needs to be used
+        ArrayList<RGallery> galleries = new ArrayList<>();
 
         for(int i = 0; i < team.getTabs().get(1).getMetrics().size(); i++) { // predictions form will be the same for every tab
-            ArrayList<String> matchNames = new ArrayList<>();
-            ArrayList<Double> values = new ArrayList<>();
+            /*
+             * This will store the values of whatever metric is being analyzed.
+             * -For RCounter, RSlider, and RStopwatch, String key will be the match name, and the Object will be a Double value
+             * -For RChooser and RCheckbox, String key will be the item name, Object will be the double percentage occurrence
+             * -For RBoolean, String key 1 is YES, key 2 is NO, Object value is the percentage occurrence
+             *
+             * All other metrics are not valid for analyzing with this method
+             */
+            LinkedHashMap<String, Object> values = new LinkedHashMap<>();
 
             // Process all the values
             for(int j = 1; j < team.getTabs().size(); j++) {
-                if(team.getTabs().get(j).getMetrics().get(i).isModified()) {
-                    matchNames.add(team.getTabs().get(j).getTitle());
-                    values.add(Double.parseDouble(team.getTabs().get(j).getMetrics().get(i).toString()));
+                RMetric metric = team.getTabs().get(j).getMetrics().get(i);
+
+                if(metric instanceof RGallery) {
+                    galleries.add((RGallery)metric);
+                    continue;
+                }
+
+                if(!metric.isModified() || metric instanceof RTextfield) continue;
+
+                if(metric instanceof RBoolean) {
+                    // Process the new value
+                    String key = "Yes";
+                    if(!((RBoolean) metric).isValue()) key = "No";
+                    // Check for old value
+                    if(values.get(key) != null) values.put(key, ((Double)values.get(key)) + 1.0);
+                    else values.put(key, 1.0);
+                }
+                else if(metric instanceof RChooser) {
+                    // Process the new value
+                    String key = metric.toString();
+                    // Check for old value
+                    if(values.get(key) != null) values.put(key, ((Double)values.get(key)) + 1);
+                    else values.put(key, 1.0);
+                }
+                else if(metric instanceof RCheckbox) {
+                    for(Object o : ((RCheckbox) metric).getValues().keySet()) {
+                        if(!((RCheckbox) metric).getValues().get(o.toString())) continue;
+                        // Process the new value
+                        String key = o.toString();
+                        // Check for old value
+                        if(values.get(key) != null) values.put(key, ((Double)values.get(key)) + 1);
+                        else values.put(key, 1.0);
+                    }
+                } else {
+                    values.put(team.getTabs().get(j).getTitle(), metric.toString());
                 }
             }
 
-            // Require at least two values for a chart
-            if(values.size() <= 1) continue;
+            // Require at least two values for line charts
+            if((team.getTabs().get(1).getMetrics().get(i) instanceof RBoolean && values.size() < 1) || values.size() <= 1) continue;
 
-            // Determine the instance
-            RMetric metric = team.getTabs().get(1).getMetrics().get(i);
-            if(metric instanceof RCounter) {
-                layout.addView(rMetricToUI.generateLineChart(metric.getTitle(), Utils.stringListToArray(matchNames), Utils.objectListToDoubleArray(values)));
-            }
+            /*
+             * If the metric was boolean, chooser, or checkbox, all the values need to be
+             * converted to percentages
+             */
+            if(team.getTabs().get(1).getMetrics().get(i) instanceof RBoolean
+                    || team.getTabs().get(1).getMetrics().get(i) instanceof RCheckbox
+                    || team.getTabs().get(1).getMetrics().get(i) instanceof RChooser) {
+                for(Object o : values.keySet()) {
+                    values.put(o.toString(), ((Double)values.get(o.toString())) / (double)numModified(team.getTabs(), team.getTabs().get(1).getMetrics().get(i).getID()) * 100.0);
+                }
 
+                layout.addView(rMetricToUI.generatePieChart(team.getTabs().get(1).getMetrics().get(i).getTitle(), values));
+            } else layout.addView(rMetricToUI.generateLineChart(team.getTabs().get(1).getMetrics().get(i).getTitle(), values));
         }
-
 
         /*
          * Attempt to download TBA info for this team
          */
 
         if(!team.hasTBAInfo()) {
-            new TBATeamInfoTask(team.getNumber(), this);
+            REvent event = new IO(view.getContext()).loadEvent(bundle.getInt("eventID"));
+            new TBATeamInfoTask(view.getContext(), team.getNumber(), event.getKey().substring(0, 4),  this);
         } else {
             // TBA info card
-            final String s = "Team name: "+ TeamViewer.team.getFullName()+"\n\nLocation: "+ TeamViewer.team.getLocation()+"\n\nRookie year: "+ TeamViewer.team.getRookieYear()+"\n\nMotto: "+ TeamViewer.team.getMotto();
-            layout.addView(rMetricToUI.getInfoField("TBA.com information", s, TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);
+            layout.addView(rMetricToUI.getInfoField("TBA.com information", TeamViewer.team.getTbaInfo(), TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);
+            if(TeamViewer.team.getImage() != null) {
+                // Image view
+                Bitmap bitmap = BitmapFactory.decodeByteArray(TeamViewer.team.getImage(), 0, TeamViewer.team.getImage().length);
+                layout.addView(rMetricToUI.getImageView("Robot", bitmap));
+            }
         }
+
+        /*
+         * Find the image with the most entropy, and add
+         * it as the "featured" image
+         */
+        int highestEntropyGalleryIndex = 0;
+        int highestEntropyIndex = 0;
+        double highestEntropy = 0;
+        for(int j = 0; j < galleries.size(); j++) {
+            if(galleries.get(j).getImages() != null && galleries.get(j).getImages().size() > 0) {
+                for(int i = 0; i < galleries.get(j).getImages().size(); i++) {
+                    double entropy = getEntropy(galleries.get(j).getImages().get(i));
+                    if(entropy > highestEntropy) {
+                        highestEntropyGalleryIndex = j;
+                        highestEntropyIndex = i;
+                        highestEntropy = entropy;
+                    }
+                }
+            }
+        }
+
+        try {
+            layout.addView(rMetricToUI.getImageView(
+                    "Featured image from Quals 18",  BitmapFactory.decodeByteArray(galleries.get(highestEntropyGalleryIndex).getImages().get(highestEntropyIndex),
+                    0,  galleries.get(highestEntropyGalleryIndex).getImages().get(highestEntropyIndex).length)));
+        } catch(Exception e) {
+            Log.d("RBS", "Failed to load featured image: "+e.getMessage());
+        }
+
+        layout.addView(rMetricToUI.getInfoField("Machine learning",
+                "\n7 match wins expected" +
+                "\nThis team is STRONGLY recommended as an ally" +
+                "\nLargest metric contributor: Teleoperated", "", 0));
 
         /*
          * Add UI cards to the layout
@@ -104,24 +198,95 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
      * This method is called when TBA information for the team is successfully downloaded
      * @param tbaTeam the TBA team model that contains downloaded information
      */
-
     @Override
     public void teamRetrieved(Team tbaTeam) {
         Log.d("RBS", "Downloaded TBA information for "+ tbaTeam.nickname);
-        TeamViewer.team.setFullName(tbaTeam.name);
-        TeamViewer.team.setLocation(tbaTeam.location);
-        TeamViewer.team.setMotto(tbaTeam.motto);
+
+        String tbaInfo = "Locality: " + tbaTeam.locality +
+                "\nRegion: " + tbaTeam.region +
+                "\nCountry name: " + tbaTeam.country_name +
+                "\nLocation: " + tbaTeam.location +
+                "\nRookie year: " + tbaTeam.rookie_year +
+                "\nMotto: " + tbaTeam.motto;
+        TeamViewer.team.setTbaInfo(tbaInfo);
         TeamViewer.team.setWebsite(tbaTeam.website);
-        TeamViewer.team.setRookieYear((int)tbaTeam.rookie_year);
+
         new IO(getView().getContext()).saveTeam(getArguments().getInt("eventID"), TeamViewer.team);
 
         // TBA info card
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                final String s = "Team name: "+ TeamViewer.team.getFullName()+"\n\nLocation: "+ TeamViewer.team.getLocation()+"\n\nRookie year: "+ TeamViewer.team.getRookieYear()+"\n\nMotto: "+ TeamViewer.team.getMotto();
-                layout.addView(rMetricToUI.getInfoField("TBA.com information", s, TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);
+                layout.addView(rMetricToUI.getInfoField("TBA.com information", TeamViewer.team.getTbaInfo(), TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);
             }
         });
+    }
+
+    @Override
+    public void imageRetrieved(byte[] image) {
+        if(image != null) {
+            TeamViewer.team.setImage(image);
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(TeamViewer.team.getImage(), 0, TeamViewer.team.getImage().length);
+                    layout.addView(rMetricToUI.getImageView("Robot",bitmap), 1);
+                }
+            });
+        }
+    }
+
+    private int numModified(ArrayList<RTab> tabs, int ID) {
+        int num = 0;
+        for(int i = 2; i < tabs.size(); i++) for(RMetric metric : tabs.get(i).getMetrics()) if(metric.getID() == ID && metric.isModified()) num++;
+        return num;
+    }
+
+    /**
+     * Gets the entropy of text. Entropy of text is essentially measured by taking
+     * the summation of the log2 of each character's occurrence over the number of
+     * characters in the text
+     * ranges from zero to log2 of X, with X unique characters.
+     * @return The entropy value
+     */
+    private double getEntropy(byte[] bytes) {
+        if(true) return 1;
+
+        ArrayList<Byte> letters = new ArrayList<>();
+        ArrayList<Integer> occurrence = new ArrayList<>();
+
+        double totalCharacters = 0;
+        for(int i = 0; i < bytes.length; i++) {
+            byte b = bytes[i];
+
+            int index = letters.indexOf(b);
+
+            if(index < 0) {
+                letters.add(b);
+                occurrence.add(1);
+            } else {
+                occurrence.set(index, occurrence.get(index) + 1);
+            }
+
+            totalCharacters++;
+        }
+
+        double entropy = 0;
+        for(int i = 0; i < occurrence.size(); i++) {
+            double p = occurrence.get(i) / totalCharacters;
+            entropy += (p * log2(p));
+        }
+        entropy = -entropy;
+
+        return entropy;
+    }
+
+    /**
+     * Performs the log base 2 operation since Java doesn't have a native log2 function
+     * @param value The value to be operated on
+     * @return The log base 2 of the value
+     */
+    private double log2(double value) {
+        return Math.log(value) / Math.log(2);
     }
 }

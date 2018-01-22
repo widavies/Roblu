@@ -70,8 +70,9 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * TBA data is only downloaded once. Roblu can infer whether the download
      * happened by checking the below data.
      */
-    private String fullName, location, motto, website;
-    private int rookieYear;
+    private String tbaInfo;
+    private String website;
+    private byte[] image;
 
     /**
      * Stores a SORT_TYPE variable for how this team should return compareTo() if it's included in a sorting operation
@@ -296,7 +297,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
      * @return true if we've got locally stored TBA data
      */
     public boolean hasTBAInfo() {
-        return fullName != null || location != null || motto != null || website != null || rookieYear > 0;
+        return tbaInfo != null;
     }
 
     /**
