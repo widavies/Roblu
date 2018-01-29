@@ -180,11 +180,6 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
             Log.d("RBS", "Failed to load featured image: "+e.getMessage());
         }
 
-        layout.addView(rMetricToUI.getInfoField("Machine learning",
-                "\n7 match wins expected" +
-                "\nThis team is STRONGLY recommended as an ally" +
-                "\nLargest metric contributor: Teleoperated", "", 0));
-
         /*
          * Add UI cards to the layout
          */
@@ -201,7 +196,6 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
     @Override
     public void teamRetrieved(Team tbaTeam) {
         Log.d("RBS", "Downloaded TBA information for "+ tbaTeam.nickname);
-
         String tbaInfo = "Locality: " + tbaTeam.locality +
                 "\nRegion: " + tbaTeam.region +
                 "\nCountry name: " + tbaTeam.country_name +

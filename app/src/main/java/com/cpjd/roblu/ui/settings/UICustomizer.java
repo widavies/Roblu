@@ -151,6 +151,7 @@ public class UICustomizer extends AppCompatActivity {
             }
 
             rui.setPreset(2);
+            rui.setUploadRequired(true);
             settings.setRui(rui);
             new IO(getActivity()).saveSettings(settings);
             Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
@@ -187,6 +188,7 @@ public class UICustomizer extends AppCompatActivity {
                     else if(checkedId == R.id.alphabetical) pos = 1;
                     else if(checkedId == R.id.last_edited) pos = 2;
                     rui.setPreset(pos);
+                    rui.setUploadRequired(true);
                     settings.setRui(rui);
                     new IO(getActivity()).saveSettings(settings);
                     Toolbar toolbar = (Toolbar) getActivity().findViewById(R.id.toolbar);
@@ -226,6 +228,7 @@ public class UICustomizer extends AppCompatActivity {
                     else if(checkedId == R.id.last_edited) pos = 2;
                     else if(checkedId == R.id.custom) pos = 3;
                     rui.setDialogDirection(pos);
+                    rui.setUploadRequired(true);
                     settings.setRui(rui);
                     new IO(getActivity()).saveSettings(settings);
                     d.dismiss();

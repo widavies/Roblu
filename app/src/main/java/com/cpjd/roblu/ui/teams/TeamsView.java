@@ -35,7 +35,7 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.sync.cloud.sync.Service;
+import com.cpjd.roblu.sync.cloud.Service;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
 import com.cpjd.roblu.ui.mymatches.MyMatches;

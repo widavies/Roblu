@@ -340,6 +340,19 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         tabs.add(pit);
         tabs.add(predictions);
     }
+
+    /**
+     * Removes all the tabs expected the tab at the specified position
+     * @param position position of the tab to keep
+     */
+    public void removeAllTabsBut(int position) {
+        if(tabs == null || tabs.size() == 0) return;
+
+        RTab tab = tabs.get(position);
+        tabs.clear();
+        tabs.add(tab);
+    }
+
     /**
      * Returns the number of matches this team is in
      * @return returns the number of matches this team contains
@@ -347,6 +360,19 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     public int getNumMatches() {
         if(tabs == null) return 0;
         else return tabs.size() - 2;
+    }
+
+    /**
+     * Creates a new instance of this class
+     * @return a new RTeam instance
+     */
+    @Override
+    public RTeam clone() {
+        RTeam team = new RTeam(name, number, ID);
+        team.setTabs((ArrayList<RTab>) this.tabs.clone());
+        team.setPage(0);
+        team.setLastEdit(lastEdit);
+        return team;
     }
 
     /**

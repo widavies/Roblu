@@ -38,7 +38,7 @@ public class RCheckout implements Serializable, Comparable<RCheckout> {
      * as a separate parameter. The internal ID should match the external ID on the server. Note: Roblu Master doesn't care about
      * the ID, it doesn't need to be synced there.
      */
-    private transient int ID;
+    private int ID;
 
     /**
      * RCheckout is designed specifically for transferring a team object with some meta data. This is the all important,

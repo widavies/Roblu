@@ -18,13 +18,25 @@
         android:allowBackup="true"
         android:icon="@drawable/launcher"
         android:theme="@style/AppTheme">
-
-        <service android:name=".sync.cloud.sync.Service"/>
+        <service android:name=".sync.cloud.Service"
+            android:enabled="true"
+            android:exported="false"/>
         <receiver android:name=".utils.BootBroadcastReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".utils.ServiceRestarter"
+            android:enabled="true"
+            android:exported="true"
+            android:label="RestartServiceWhenStopped">
+            <intent-filter>
+                <action android:name="com.cpjd.roblu.service.RestartService"/>
+            </intent-filter>
+        </receiver>
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.cpjd.roblu"

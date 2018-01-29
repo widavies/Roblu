@@ -20,13 +20,15 @@ public class HandoffStatus {
      */
     public static final int CHECKED_OUT = 1;
     /**
-     * The handoff is checked out to the local user
+     * The handoff is checked out to the local user, this is only used
+     * by Roblu Scouter, this code shouldn't be present anywhere else
      */
     public static final int LOCALLY_CHECKED_OUT = 2;
     /**
      * The handoff has been completed
      */
     public static final int COMPLETED = 3;
+
     /*
      * UPLOAD TYPES
      */

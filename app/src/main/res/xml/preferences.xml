@@ -29,7 +29,11 @@
 
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Roblu Cloud">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference
-            android:title="Set Roblu Cloud username"
+            android:title="Server IP"
+            android:key="server_ip"
+            android:summary="Set the IP address if you're using a custom server. Leave blank for the official Roblu Cloud server."/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference
+            android:title="Roblu Cloud username"
             android:key="edit_username"
             android:summary="Set your name, this will appear on everyone's devices next to scouting data you've edited."/>
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference

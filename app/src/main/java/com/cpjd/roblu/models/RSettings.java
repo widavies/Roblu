@@ -12,6 +12,7 @@ import lombok.Data;
  */
 @Data
 public class RSettings implements Serializable {
+
     /**
      * Used for determining if we need to show a changelist
      */
@@ -39,25 +40,37 @@ public class RSettings implements Serializable {
      * Stores the look and feel of the UI, for premium users only
      */
     private RUI rui;
-    /**
-     * Whether the user is signed in with their Google account or not
+
+    /*
+     * Roblu Cloud variables
      */
-    private boolean isSignedIn;
+
     /**
-     * Roblu Cloud API variables
+     * The team's authentication code, links the code with the Roblu Cloud Team profile
      */
-    private String auth; // the user's authentication token, links them with their Roblu Cloud API account
-    private String code; // the team's authentication code, links the code with the Roblu Cloud Team profile
-    private String name, email;
+    private String code;
+
+    /**
+     * The IP address of the server to connect to
+     */
+    private String serverIP;
+
     /**
      * Millisecond timestamp of last successful server checkouts sync
      */
     private long lastCheckoutSync;
 
+    private long lastContentSync;
+
     /**
      * The user's username that will appear on other people's devices next to scouting data this user has edited
      */
     private String username;
+
+    /**
+     * If true, keep sending the /checkouts/purge request to the server
+     */
+    private boolean purgeRequested;
 
     /**
      * Sets the default values for the RSettings class
@@ -67,12 +80,16 @@ public class RSettings implements Serializable {
         lastEventID = -1;
         master = null;
         updateLevel = 0;
-        isSignedIn = false;
+        setServerIPToDefault();
     }
 
     public void setRui(RUI rui) {
-        rui.setModified(true);
+        rui.setUploadRequired(true);
         this.rui = rui;
+    }
+
+    public void setServerIPToDefault() {
+        this.setServerIP("ec2-13-59-164-241.us-east-2.compute.amazonaws.com");
     }
 
 }

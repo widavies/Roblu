@@ -4,7 +4,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.cpjd.roblu.sync.cloud.sync.Service;
+import com.cpjd.roblu.sync.cloud.Service;
+
 /**
  * Starts this app's service when the Android device boots up
  *

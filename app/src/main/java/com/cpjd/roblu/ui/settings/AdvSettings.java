@@ -13,11 +13,15 @@ package com.cpjd.roblu.ui.settings;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ActivityNotFoundException;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -33,19 +37,21 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.cpjd.http.Request;
+import com.cpjd.models.CloudTeam;
+import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.sync.cloud.api.CloudRequest;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.mikepenz.aboutlibraries.Libs;
 import com.mikepenz.aboutlibraries.LibsBuilder;
-
-import org.json.simple.JSONObject;
 
 /**
  *
@@ -143,6 +149,7 @@ public class AdvSettings extends AppCompatActivity {
             // We have to set all the preference click listener so we can process a preference click event and update its value
             findPreference("about").setOnPreferenceClickListener(this);
             findPreference("customizer").setOnPreferenceClickListener(this);
+            findPreference("server_ip").setOnPreferenceChangeListener(this);
             findPreference("display_code").setOnPreferenceClickListener(this);
             findPreference("cloud_support").setOnPreferenceClickListener(this);
             findPreference("reddit").setOnPreferenceClickListener(this);
@@ -173,8 +180,8 @@ public class AdvSettings extends AppCompatActivity {
             }
             else if(preference.getKey().equals("display_code")) { // user tapped display team code
                 // if already signed in, display the team code
-                //if(settings.getCode() != null && !settings.getCode().equals("")) Utils.showTeamCode(getActivity(), settings.getCode(), this);
-                // joinTeam(); // if not, prompt the user for a team code
+                if(settings.getCode() != null && !settings.getCode().equals("")) showTeamCode();
+                else joinTeam(); // if not, prompt the user for a team code
                 return true;
             }
             else if(preference.getKey().equals("cloud_support")) { // open roblu.net in a browser on the user's device
@@ -213,25 +220,37 @@ public class AdvSettings extends AppCompatActivity {
                     preference.setDefaultValue(num);
                 }
                 settings.setTeamNumber(num);
-            } else if(preference.getKey().equals("edit_username")) {
+            }
+            /*
+             * User tapped "server IP"
+             */
+            else if(preference.getKey().equalsIgnoreCase("server_ip")) {
+                if(o.toString() == null || o.toString().equals("") || o.toString().replaceAll(" ", "").equals("")) {
+                    settings.setServerIPToDefault();
+                } else settings.setServerIP(o.toString());
+            }
+            else if(preference.getKey().equals("edit_username")) {
                 settings.setUsername(o.toString());
             }
             new IO(getActivity()).saveSettings(settings); // save the settings to the file system
             return true;
         }
 
-        // prompts the user to enter their team code
+        /*
+         * If this is the user's first time entering their code, open a dialog with a text field
+         */
         private void joinTeam() {
             // check for an internet connection
             if(!Utils.hasInternetConnection(getActivity())) {
                 Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You are not connected to the internet", true, 0);
                 return;
             }
-            // make sure that we have Google account information on the user
-            if(settings.getName() == null || settings.getEmail() == null || settings.getName().equals("") || settings.getEmail().equals("")) {
-                Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Please sign into your Google account before entering your team code.", true, 0);
-                return;
-            }
+            /*
+             * We need to make sure that this thread has access to the internet
+             */
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+            StrictMode.setThreadPolicy(policy);
+
             RUI rui = settings.getRui();
 
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
@@ -255,43 +274,25 @@ public class AdvSettings extends AppCompatActivity {
             builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                  // First, sign in
-                    try {
-                        JSONObject response = (JSONObject) new CloudRequest().signIn(settings.getName(), settings.getEmail(), input.getText().toString());
-                        JSONObject response2 = (JSONObject) response.get("data");
-                        if(!response.get("status").equals("Error: team does not exist")) {
-                            settings.setAuth(response2.get("auth").toString());
-                        } else {
-                            Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Team not found.", true, 0);
-                            return;
-                        }
-                    } catch(Exception e) {
-                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
-                    }
-                    settings.setCode(input.getText().toString());
-                    new IO(getActivity()).saveSettings(settings);
                     dialog.dismiss();
+                    Request r = new Request(settings.getServerIP());
+                    CloudTeamRequest tr = new CloudTeamRequest(r, input.getText().toString());
 
-                    // next, join team
-                    try {
-                        JSONObject response = null;//(JSONObject) new CloudRequest(settings.getAuth(), input.getText().toString(), Utils.getDeviceID(getActivity())).joinTeam();
-                        if(response.get("status").toString().equalsIgnoreCase("success") && !response.get("data").equals("team doesnt exist") && !response.get("data").equals("[]")) {
-                            // it works
-                            settings.setCode(input.getText().toString());
-                            new IO(getActivity()).saveSettings(settings);
-                            toggleJoinTeam(false);
-                            Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team.", false, new IO(getActivity()).loadSettings().getRui().getPrimaryColor());
-                        } else { // didn't exist or already signed in
-                            Snackbar s = Snackbar.make(getActivity().findViewById(R.id.advsettings), "Team doesn't exist.", Snackbar.LENGTH_LONG);
-                            s.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.red));
-                            s.setAction("Purchase Roblu Cloud", new PurchaseListener());
-                            s.show();
-                        }
-                    } catch(Exception e) {
-                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Error occurred while contacting Roblu Server. Please try again later.", true, 0);
+                    if(!r.ping()) {
+                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "It looks like the server is down, try again later.", true, 0);
+                        return;
+                    }
 
-                    } finally {
-                        dialog.dismiss();
+                    if(tr.getTeam(-1) != null) {
+                        settings.setCode(input.getText().toString());
+                        new IO(getActivity()).saveSettings(settings);
+                        toggleJoinTeam(false);
+                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "Successfully joined team.", false, new IO(getActivity()).loadSettings().getRui().getPrimaryColor());
+                    } else {
+                        Snackbar s = Snackbar.make(getActivity().findViewById(R.id.advsettings), "Team code is invalid.", Snackbar.LENGTH_LONG);
+                        s.getView().setBackgroundColor(ContextCompat.getColor(getActivity(), R.color.red));
+                        s.setAction("Purchase Roblu Cloud", new PurchaseListener());
+                        s.show();
                     }
                 }
             });
@@ -302,7 +303,7 @@ public class AdvSettings extends AppCompatActivity {
             TextView view = new TextView(getActivity());
             view.setTextSize(Utils.DPToPX(getActivity(), 5));
             view.setPadding(Utils.DPToPX(getActivity(), 18), Utils.DPToPX(getActivity(), 18), Utils.DPToPX(getActivity(), 18), Utils.DPToPX(getActivity(), 18));
-            view.setText("Team code:\n(provided with Roblu Cloud purchase) ");
+            view.setText("Team code: ");
             view.setTextColor(rui.getText());
             AlertDialog dialog = builder.create();
             dialog.setCustomTitle(view);
@@ -313,6 +314,70 @@ public class AdvSettings extends AppCompatActivity {
             dialog.show();
             dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
             dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
+        }
+
+        private void showTeamCode() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+            builder.setTitle("Your team code is: ");
+            builder.setMessage(settings.getCode());
+
+            builder.setPositiveButton("COPY", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    ClipboardManager clipboard = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("Roblu team code", settings.getCode());
+                    clipboard.setPrimaryClip(clip);
+                    dialog.dismiss();
+                    Toast.makeText(getActivity(), "Team code copied to clipboard", Toast.LENGTH_LONG).show();
+                }
+            });
+            builder.setNegativeButton("Regenerate", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    dialog.dismiss();
+                    new FastDialogBuilder()
+                            .setNeutralButtonText("Cancel")
+                            .setPositiveButtonText("Regenerate")
+                            .setTitle("Warning")
+                            .setMessage("If you regenerate your team code, all of your team members must rejoin this team with the new code.")
+                            .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                                @Override
+                                public void accepted() {
+                                    Request r = new Request(settings.getServerIP());
+                                    CloudTeamRequest tr = new CloudTeamRequest(r, settings.getCode());
+                                    CloudTeam ct = tr.regenerateCode();
+                                    if(ct != null) {
+                                        settings.setCode(ct.getCode());
+                                        new IO(getActivity()).saveSettings(settings);
+                                        showTeamCode();
+                                    }
+                                }
+
+                                @Override
+                                public void denied() {
+
+                                }
+
+                                @Override
+                                public void neutral() {
+
+                                }
+                            }).build(getActivity());
+                }
+            });
+            builder.setNeutralButton("Leave", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    settings.setCode("");
+                    new IO(getActivity()).saveSettings(settings);
+                    toggleJoinTeam(true);
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog dialog = builder.create();
+            if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = settings.getRui().getAnimation();
+            dialog.show();
         }
 
         // Listens to the custom snack bar, displays a link to Roblu Cloud purchase

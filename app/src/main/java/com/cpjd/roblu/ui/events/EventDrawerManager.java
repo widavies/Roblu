@@ -196,8 +196,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         }
         else if(identifier == Constants.MY_MATCHES) {
             Intent intent = new Intent(activity, MyMatches.class);
-
-            intent.putExtra("eventID", event.getID());
+            intent.putExtra("eventID", (int)drawerItem.getTag());
             activity.startActivityForResult(intent, Constants.GENERAL);
         }
         else if(identifier == Constants.EDIT_MASTER_FORM) {

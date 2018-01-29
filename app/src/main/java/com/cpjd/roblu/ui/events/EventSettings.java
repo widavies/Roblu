@@ -17,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
@@ -26,6 +27,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.cpjd.http.Request;
+import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.BuildConfig;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.csv.ExportCSVTask;
@@ -33,8 +36,10 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.sync.cloud.InitPacker;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.forms.FormViewer;
@@ -127,6 +132,8 @@ public class EventSettings extends AppCompatActivity {
          */
         private File backupFile;
 
+        private RUICheckPreference cloud;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -148,7 +155,6 @@ public class EventSettings extends AppCompatActivity {
             findPreference("edit_event").setOnPreferenceClickListener(this);
             findPreference("delete_teams").setOnPreferenceClickListener(this);
             findPreference("delete_event").setOnPreferenceClickListener(this);
-            //findPreference("cloud").setOnPreferenceClickListener(this);
 
             /*
              * Obtain explicit preference references where an attribute of the preference
@@ -156,7 +162,9 @@ public class EventSettings extends AppCompatActivity {
              */
             Preference teams = findPreference("delete_teams");
             Preference deleteEvent = findPreference("delete_event");
-            RUICheckPreference cloud = (RUICheckPreference) findPreference("sync");
+            cloud = (RUICheckPreference) findPreference("sync");
+            cloud.setChecked(event.isCloudEnabled());
+            cloud.setOnPreferenceChangeListener(this);
 
             /*
              * Set the info to the UI that needs to be
@@ -165,7 +173,6 @@ public class EventSettings extends AppCompatActivity {
             teams.setSummary("Delete "+new IO(getActivity()).getNumberTeams(event.getID())+" teams");
             deleteEvent.setSummary("Delete ["+event.getName()+"] event");
 
-            cloud.setChecked(event.isCloudEnabled());
         }
 
         /**
@@ -298,6 +305,13 @@ public class EventSettings extends AppCompatActivity {
                                 io.clearCheckouts();
                                 io.deleteEvent(event.getID());
 
+                                if(event.isCloudEnabled()) {
+                                    RSettings settings = new IO(getActivity()).loadSettings();
+                                    settings.setPurgeRequested(true);
+                                    new IO(getActivity()).saveSettings(settings);
+                                    new IO(getActivity()).clearCheckouts();
+                                }
+
                                 startActivity(new Intent(getActivity(), TeamsView.class));
                                 Toast.makeText(getActivity(), "Event successfully deleted", Toast.LENGTH_LONG).show();
                             }
@@ -335,9 +349,68 @@ public class EventSettings extends AppCompatActivity {
              * User selected the cloud sync button
              */
             if(preference.getKey().equals("sync")) {
+                if((boolean)o) {
+                    /*
+                     * Check if an error message should be shown
+                     */
+                    RSettings settings = new IO(getActivity()).loadSettings();
+                    Request r = new Request(settings.getServerIP());
+                    CloudTeamRequest ctr = new CloudTeamRequest(r, settings.getCode());
+                    StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+                    StrictMode.setThreadPolicy(policy);
 
+                    if(ctr.isActive()) {
+                        new FastDialogBuilder()
+                                .setTitle("Warning")
+                                .setMessage("It looks like you already have some scouting data on the server. Do you want to overwrite this data? If you still have" +
+                                        " a local copy of scouting data on a Roblu Master app, you can safely overwrite cloud data.")
+                                .setPositiveButtonText("Overwrite")
+                                .setNegativeButtonText("Cancel")
+                                .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                                    @Override
+                                    public void accepted() {
+                                        uploadEvent();
+                                    }
+
+                                    @Override
+                                    public void denied() {
+
+                                    }
+
+                                    @Override
+                                    public void neutral() {
+
+                                    }
+                                }).build(getActivity());
+
+                    } else uploadEvent();
+                } else {
+                    event.setCloudEnabled(false);
+                    new IO(getActivity()).saveEvent(event);
+                    RSettings settings = new IO(getActivity()).loadSettings();
+                    settings.setPurgeRequested(true);
+                    new IO(getActivity()).saveSettings(settings);
+                    new IO(getActivity()).clearCheckouts();
+                }
             }
             return true;
+        }
+
+        /**
+         * Uploads the active event to the server
+         */
+        private void uploadEvent() {
+            ProgressDialog pd = ProgressDialog.show(getActivity(), "Fasten your seatbelt!", "Launching packets into Roblu Cloud orbit...", false);
+            pd.setCancelable(false);
+            pd.show();
+            InitPacker ip = new InitPacker(pd, cloud, new IO(getActivity()), event.getID());
+            ip.setListener(new InitPacker.StatusListener() {
+                @Override
+                public void statusUpdate(String message) {
+                    Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), message, false, rui.getPrimaryColor());
+                }
+            });
+            ip.execute();
         }
 
         /**
@@ -408,6 +481,7 @@ public class EventSettings extends AppCompatActivity {
                 getActivity().startActivity(Intent.createChooser(intent, "Export spreadsheet to..."));
             }
         }
+
 
         /**
          * BackupEvent backups up an REvent object into a internal file

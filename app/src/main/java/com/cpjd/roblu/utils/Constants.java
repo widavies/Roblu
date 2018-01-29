@@ -12,6 +12,7 @@ package com.cpjd.roblu.utils;
 public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
+    public static final String RESTART_BROADCAST = "com.cpjd.roblu.service.RestartService";
 
     public static final String UPDATE_MESSAGE = "";
 
