@@ -17,7 +17,6 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.ui.mailbox.Mailbox;
 import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.settings.AdvSettings;
@@ -206,17 +205,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             activity.startActivityForResult(start, Constants.MASTER_FORM);
             eventDrawer.setSelectionAtPosition(-1);
         }
-        else if(identifier == Constants.MAILBOX) {
-            for(int i = 0; i < events.size(); i++) {
-                if(events.get(i).getID() == (Long)drawerItem.getTag()) {
-                    Intent intent = new Intent(activity, Mailbox.class);
-                    intent.putExtra("eventID", events.get(i).getID());
-                    activity.startActivityForResult(intent, Constants.GENERAL);
-                    eventDrawer.setSelectionAtPosition(-1);
-                    break;
-                }
-            }
-        } else if(identifier == Constants.HEADER) return true; // we don't want to close the event drawer for this one
+         else if(identifier == Constants.HEADER) return true; // we don't want to close the event drawer for this one
         eventDrawer.closeDrawer();
         return true;
     }
@@ -271,36 +260,26 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         Collections.reverse(events);
 
         // Load icons
-        Drawable folder, scout, options, mail, pit;
+        Drawable folder, scout, options, pit;
         folder = ContextCompat.getDrawable(activity, R.drawable.event);
         scout = ContextCompat.getDrawable(activity, R.drawable.match);
         options = ContextCompat.getDrawable(activity, R.drawable.settings_circle);
-        mail = ContextCompat.getDrawable(activity, R.drawable.mail);
         pit = ContextCompat.getDrawable(activity, R.drawable.pit);
         // Set UI preferences to drawable icon
         folder.mutate(); folder.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         scout.mutate(); scout.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         options.mutate(); options.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
-        mail.mutate(); mail.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         pit.mutate(); pit.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
 
         // Specify the list of items that have to be added to the drawer
         ArrayList<IDrawerItem> items = new ArrayList<>();
         if(events != null) for(REvent e : events) {
-            if(e.isCloudEnabled()) {
-                items.add(new ExpandableDrawerItem().withTextColor(rui.getText()).withName(e.getName()).withTag(e.getID()).withArrowColor(rui.getText()).withIcon(folder).withIdentifier(Constants.HEADER).withSelectable(false).withSubItems(
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Scout").withLevel(2).withIcon(scout).withIdentifier(Constants.SCOUT).withTag(e.getID()),
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Mailbox").withLevel(2).withIcon(mail).withIdentifier(Constants.MAILBOX).withTag(e.getID()),
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
-                );
-            } else {
-                items.add(new ExpandableDrawerItem().withTextColor(rui.getText()).withName(e.getName()).withTag(e.getID()).withArrowColor(rui.getText()).withIcon(folder).withIdentifier(Constants.HEADER).withSelectable(false).withSubItems(
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Scout").withLevel(2).withIcon(scout).withIdentifier(Constants.SCOUT).withTag(e.getID()),
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
-                        new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
-                );
-            }
+            items.add(new ExpandableDrawerItem().withTextColor(rui.getText()).withName(e.getName()).withTag(e.getID()).withArrowColor(rui.getText()).withIcon(folder).withIdentifier(Constants.HEADER).withSelectable(false).withSubItems(
+                    new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Scout").withLevel(2).withIcon(scout).withIdentifier(Constants.SCOUT).withTag(e.getID()),
+                    new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
+                    new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
+            );
+
         }
 
         // Clear old events from the drawer

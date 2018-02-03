@@ -2,6 +2,7 @@ package com.cpjd.roblu.sync.cloud;
 
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.StrictMode;
 import android.support.annotation.Nullable;
 import android.util.Log;
 
@@ -11,6 +12,7 @@ import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -20,13 +22,13 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.notifications.Notify;
 import com.cpjd.roblu.utils.Constants;
-import com.cpjd.roblu.utils.HandoffStatus;
 import com.cpjd.roblu.utils.Utils;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -64,6 +66,8 @@ public class Service extends android.app.Service {
      * Roblu Cloud sync operations
      */
     public void loop() {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.setThreadPolicy(policy);
         if(!Utils.hasInternetConnection(getApplicationContext())) {
             Log.d("RBS-Service", "No internet connection detected. Ending loop() early.");
             return;
@@ -74,10 +78,17 @@ public class Service extends android.app.Service {
          */
         IO io = new IO(getApplicationContext());
         RSettings settings = io.loadSettings();
+        RCloudSettings cloudSettings = io.loadCloudSettings();
         Request r = new Request(settings.getServerIP());
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         CloudTeamRequest teamRequest = new CloudTeamRequest(r, settings.getCode());
         CloudCheckoutRequest checkoutRequest = new CloudCheckoutRequest(r, settings.getCode());
+
+        if(!r.ping()) {
+            Log.d("Service-RSBS", "Roblu server is down. Unable to connect.");
+            return;
+        }
+
         // Load the active event
         REvent[] events = io.loadEvents();
         REvent activeEvent = null;
@@ -91,9 +102,10 @@ public class Service extends android.app.Service {
         /*
          * Check if a purge is requested
          */
-        if(settings.isPurgeRequested() && checkoutRequest.purge()) {
-            settings.setPurgeRequested(false);
+        if(cloudSettings.isPurgeRequested() && checkoutRequest.purge()) {
+            cloudSettings.setPurgeRequested(false);
             Log.d("RBS-Service", "Event successfully purged from Roblu Cloud.");
+            io.saveCloudSettings(cloudSettings);
         }
 
 
@@ -113,6 +125,7 @@ public class Service extends android.app.Service {
             try {
                 teamRequest.pushUI(mapper.writeValueAsString(settings.getRui()));
                 settings.getRui().setUploadRequired(false);
+                io.saveSettings(settings);
                 Log.d("RBS-Service", "Successfully uploaded RUI to the server.");
             } catch(Exception e) {
                 Log.d("RBS-Service", "Failed to complete an upload required request for RUI.");
@@ -121,9 +134,9 @@ public class Service extends android.app.Service {
         // Download the RUI model from the server
         else {
             try {
-                CloudTeam t = teamRequest.getTeam(settings.getLastContentSync());
+                CloudTeam t = teamRequest.getTeam(cloudSettings.getLastTeamSync());
                 settings.setRui(mapper.readValue(t.getUi(), RUI.class));
-                settings.setLastContentSync(System.currentTimeMillis());
+                cloudSettings.setLastTeamSync(System.currentTimeMillis());
                 Log.d("RBS-Service", "Successfully downloaded RUI");
             } catch(Exception e) {
                 Log.d("RBS-Service", "Failed to download an RUI from the server.");
@@ -145,10 +158,10 @@ public class Service extends android.app.Service {
         // Download the RForm from the server
         else {
             try {
-                CloudTeam t = teamRequest.getTeam(settings.getLastContentSync());
+                CloudTeam t = teamRequest.getTeam(cloudSettings.getLastTeamSync());
                 form = mapper.readValue(t.getForm(), RForm.class);
                 io.saveForm(activeEvent.getID(), form);
-                settings.setLastContentSync(System.currentTimeMillis());
+                cloudSettings.setLastTeamSync(System.currentTimeMillis());
                 Log.d("RBS-Service", "Successfully downloaded a form");
             } catch(Exception e) {
                 Log.d("RBS-Service", "Failed to download an RForm from the server.");
@@ -164,7 +177,7 @@ public class Service extends android.app.Service {
          */
         try {
             Log.d("RBS-Service", "Checking for completed checkouts...");
-            String[] checkouts = checkoutRequest.pullCheckouts(settings.getLastCheckoutSync());
+            String[] checkouts = checkoutRequest.pullCompletedCheckouts(cloudSettings.getLastCheckoutSync());
             for(String checkout1 : checkouts) {
                 // Deserialize the checkout
                 RCheckout checkout = mapper.readValue(checkout1, RCheckout.class);
@@ -191,8 +204,14 @@ public class Service extends android.app.Service {
                 else {
                     for(RTab downloadedTab : checkout.getTeam().getTabs()) {
                         for(RTab localTab : team.getTabs()) {
+                            /*
+                             * Copy over the edit tabs
+                             */
+                            localTab.setEdits(downloadedTab.getEdits());
+
                             // Found the match, start merging
                             if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
+                                Log.d("RBS", "Merging tab: "+localTab.getTitle());
                                 for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
                                     for(RMetric localMetric : localTab.getMetrics()) {
                                         // Found the metric, determine if a merge needs to occur
@@ -204,10 +223,11 @@ public class Service extends android.app.Service {
                                             }
                                             // Otherwise, just do a straight override
                                             else if(!localMetric.isModified()) {
+                                                Log.d("RBS", "Replacing with metric: "+downloadedMetric.getTitle()+" String: "+downloadedMetric.toString());
                                                 int replaceIndex = localTab.getMetrics().indexOf(localMetric);
                                                 localTab.getMetrics().set(replaceIndex, downloadedMetric);
                                             }
-                                            // Otherwise, add the local data back to the checkout
+                                            // Otherwise, add the local data back to the checkout TODO
                                             else {
                                                 int replaceIndex = downloadedTab.getMetrics().indexOf(downloadedMetric);
                                                 downloadedTab.getMetrics().set(replaceIndex, localMetric);
@@ -221,18 +241,24 @@ public class Service extends android.app.Service {
 
                         }
                     }
+                    /*
+                     * Reset the last edit tag, if applicable
+                     */
+                    if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
+                    io.saveTeam(activeEvent.getID(), team);
                 }
-                // So as of now, the data is merged. So just re-upload the checkout with finished data
-                checkout.setUploadType(HandoffStatus.FULL_UPLOAD);
-                io.savePendingObject(checkout);
 
+                //io.savePendingObject(checkout);
+                cloudSettings.setLastCheckoutSync(System.currentTimeMillis());
+                io.saveCloudSettings(cloudSettings);
                 // Notify the user
+                Utils.requestUIRefresh(getApplicationContext());
                 Notify.notify(getApplicationContext(), "Scouting data received", "Merged " + checkout.getTeam() + "'s scouting data over network sync.");
                 // Next, if the user is editing the checkout that was just edited, force close the TeamViewer TODO
                 // If the user is viewing the team's list, refresh it TODO
             }
         } catch(Exception e) {
-            Log.d("RBS-Service", "An error occurred whilst checking for completed checkouts.");
+            Log.d("RBS-Service", "An error occurred while checking for completed checkouts. "+e.getMessage());
         }
 
         /*
@@ -242,11 +268,7 @@ public class Service extends android.app.Service {
             Log.d("RBS-Service", "Checking for any checkouts to upload...");
             RCheckout[] checkouts = io.loadPendingCheckouts();
             ArrayList<RCheckout> toUpload = new ArrayList<>();
-            for(RCheckout checkout : checkouts) {
-                if(checkout.getUploadType() == HandoffStatus.FULL_UPLOAD) { // TODO add meta only
-                    toUpload.add(checkout);
-                }
-            }
+            toUpload.addAll(Arrays.asList(checkouts));
             if(toUpload.size() > 0) {
                 boolean wasSuccess = checkoutRequest.pushCheckouts(mapper.writeValueAsString(toUpload));
                 if(wasSuccess) {
@@ -260,7 +282,7 @@ public class Service extends android.app.Service {
             Log.d("RBS-Service", "An error occurred while attempting to push /pending/ checkouts.");
         }
 
-        io.saveSettings(settings);
+        io.saveCloudSettings(cloudSettings);
         Log.d("RBS-Service", "Sleeping Roblu background service for 10 seconds...");
     }
 

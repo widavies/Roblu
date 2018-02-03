@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,6 +12,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RTextfield")
 public class RTextfield extends RMetric {
 
     /**
@@ -28,6 +31,12 @@ public class RTextfield extends RMetric {
      * This should really only be used for the team name or team number car.
      */
     private boolean oneLine;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RTextfield() {}
 
     /**
      * Instantiates a text field object

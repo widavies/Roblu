@@ -2,6 +2,8 @@ package com.cpjd.roblu.models.metrics;
 
 import com.cpjd.roblu.utils.Utils;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,6 +17,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RCounter")
 public class RCounter extends RMetric {
 
     /**
@@ -27,6 +30,12 @@ public class RCounter extends RMetric {
      * Must be positive.
      */
     private double increment;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RCounter() {}
 
     /**
      * Instantiates an RCounter object

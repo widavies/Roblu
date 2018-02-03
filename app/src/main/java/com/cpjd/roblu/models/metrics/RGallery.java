@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import java.util.ArrayList;
 
 import lombok.Data;
@@ -16,6 +18,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RGallery")
 public class RGallery extends RMetric {
 
     /**
@@ -23,6 +26,12 @@ public class RGallery extends RMetric {
      * Each byte[] represents one image.
      */
     private ArrayList<byte[]> images;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RGallery() {}
 
     /**
      * Instantiates a gallery element

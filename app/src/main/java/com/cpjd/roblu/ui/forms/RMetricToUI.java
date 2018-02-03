@@ -887,7 +887,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             Map.Entry pair = (Map.Entry) o;
             editHistory.append(pair.getKey()).append(" on ").append(Utils.convertTime((Long)pair.getValue()));
         }
-
         et.setText(editHistory.toString());
         et.setSingleLine(false);
         et.setEnabled(false);

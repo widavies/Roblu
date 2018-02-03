@@ -1,13 +1,10 @@
 package com.cpjd.roblu.notifications;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
 
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.ui.mailbox.Mailbox;
 
 
 /*
@@ -25,9 +22,9 @@ public class Notify {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "roblu-master").setSmallIcon(R.drawable.launcher)
                 .setContentTitle(title).setContentText(content);
 
-        Intent result = new Intent(activity, Mailbox.class);
-        PendingIntent pending = PendingIntent.getActivity(activity, 0, result, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(pending);
+        //Intent result = new Intent(activity, Mailbox.class);
+        //PendingIntent pending = PendingIntent.getActivity(activity, 0, result, PendingIntent.FLAG_UPDATE_CURRENT);
+        //builder.setContentIntent(pending);
 
         NotificationManager notifyMgr = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
         if(notifyMgr != null) notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());

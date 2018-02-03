@@ -85,14 +85,6 @@
                 android:value="com.cpjd.roblu.ui.teams.TeamsView"/>
         </activity>
         <activity
-            android:name=".forms.images.ImageGalleryActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label=""/>
-        <activity
-            android:name=".forms.images.FullScreenImageGalleryActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label=""/>
-        <activity
             android:name=".ui.setup.SetupActivity"
             android:label="Setup"
             android:screenOrientation="portrait"/>
@@ -136,8 +128,6 @@
         </activity>
         <activity android:name=".ui.mailbox.Mailbox"
                   android:label="Mailbox"/>
-        <activity android:name =".forms.images.Drawing"
-                  android:label="Drawing"/>
         <activity android:name=".ui.mymatches.MyMatches"
                   android:label="My matches"/>
         <activity android:name=".ui.settings.UICustomizer"/>

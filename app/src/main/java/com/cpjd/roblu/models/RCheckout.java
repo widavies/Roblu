@@ -71,12 +71,10 @@ public class RCheckout implements Serializable, Comparable<RCheckout> {
     // End status tags
 
     /**
-     * This an upload flag. This handoff still has to be loaded from /pending/, but the upload type is determined by
-     * @see com.cpjd.roblu.utils.HandoffStatus
-     * When the correct upload is finished, this handoff will be removed from /pending/
-     * uploadType will be transferred back to Roblu Master, but not acknowledged
+     * The empty constructor is required for de-serialization
      */
-    private int uploadType;
+    @SuppressWarnings("unused")
+    public RCheckout() {}
 
     /**
      * Creates a handoff object

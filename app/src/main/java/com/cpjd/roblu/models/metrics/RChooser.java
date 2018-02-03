@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -10,6 +12,7 @@ import lombok.NonNull;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RChooser")
 public class RChooser extends RMetric {
 
     /**
@@ -21,6 +24,12 @@ public class RChooser extends RMetric {
      * Represents the index of values[] which contains the currently selected item
      */
     private int selectedIndex;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RChooser() {}
 
     /**
      * Instantiates a chooser object

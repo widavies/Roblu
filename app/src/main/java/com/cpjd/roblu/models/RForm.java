@@ -37,6 +37,12 @@ public class RForm implements Serializable {
     private boolean uploadRequired;
 
     /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RForm() {}
+
+    /**
      * Creates a form model
      * @param pit ArrayList of pit metrics
      * @param match ArrayList of match metrics

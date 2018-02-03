@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,9 +12,16 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RBoolean")
 public class RBoolean extends RMetric {
 
     private boolean value;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RBoolean() {}
 
     /**
      * Instantiates a boolean model

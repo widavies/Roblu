@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -10,6 +12,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RSlider")
 public class RSlider extends RMetric {
 
     /**
@@ -26,6 +29,12 @@ public class RSlider extends RMetric {
      * Stores the maximum possible value. value MUST BE <=max
      */
     private int max;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RSlider() {}
 
     /**
      * Instantiates a slider object

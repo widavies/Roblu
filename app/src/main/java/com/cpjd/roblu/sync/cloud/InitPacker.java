@@ -77,6 +77,8 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
 
         IO io = ioWeakReference.get();
         RSettings settings = io.loadSettings();
+        settings.setPurgeRequested(false);
+        io.saveSettings(settings);
         Request r = new Request(settings.getServerIP());
 
         if(!r.ping()) {
@@ -105,6 +107,10 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         for(RTeam team : teams) {
             team.verify(form);
             io.saveTeam(eventID, team);
+            // Remove all these, since the scouter won't use them
+            team.setImage(null);
+            team.setTbaInfo(null);
+            team.setWebsite(null);
             inc++;
             publishProgress((int)(inc / totalProgress * 100.0));
         }
@@ -175,7 +181,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
             Log.d("RBS", "Initializing init packer upload...");
             boolean success = ccr.init(settings.getTeamNumber(), eventName, serializedForm, serializedUI, serializedCheckouts);
-            Log.d("RBS", "Output: "+serializedCheckouts);
 
             /*
              * Disable all other events with cloud syncing enabled
@@ -186,6 +191,8 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
                     events[i].setCloudEnabled(events[i].getID() == eventID);
                     io.saveEvent(events[i]);
                 }
+                settings.setLastCheckoutSync(System.currentTimeMillis());
+                io.saveSettings(settings);
             }
 
             return success;

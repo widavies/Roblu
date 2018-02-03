@@ -56,21 +56,9 @@ public class RSettings implements Serializable {
     private String serverIP;
 
     /**
-     * Millisecond timestamp of last successful server checkouts sync
-     */
-    private long lastCheckoutSync;
-
-    private long lastContentSync;
-
-    /**
      * The user's username that will appear on other people's devices next to scouting data this user has edited
      */
     private String username;
-
-    /**
-     * If true, keep sending the /checkouts/purge request to the server
-     */
-    private boolean purgeRequested;
 
     /**
      * Sets the default values for the RSettings class
@@ -86,6 +74,11 @@ public class RSettings implements Serializable {
     public void setRui(RUI rui) {
         rui.setUploadRequired(true);
         this.rui = rui;
+    }
+
+    public String getUsername() {
+        if(username == null || username.equals("")) return "Anonymous";
+        else return username;
     }
 
     public void setServerIPToDefault() {

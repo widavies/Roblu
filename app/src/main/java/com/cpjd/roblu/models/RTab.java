@@ -56,6 +56,11 @@ public class RTab implements Serializable, Comparable<RTab> {
      */
     private ArrayList<RTeam> teammates, opponents;
 
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RTab() {}
 
     /**
      * Creates a RTab model, or a representation of a pit, predictions, or match tab

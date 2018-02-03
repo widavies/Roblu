@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -9,11 +11,18 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RStopwatch")
 public class RStopwatch extends RMetric {
     /**
      * The time, in seconds, currently on this stopwatch
      */
     private double time;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RStopwatch() {}
 
     /**
      * Instantiates a stopwatch object

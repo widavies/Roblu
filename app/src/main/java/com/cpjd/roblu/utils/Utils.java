@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Point;
@@ -381,6 +382,18 @@ public class Utils {
         pit.add(name);
         pit.add(number);
         return new RForm(pit, matches);
+    }
+
+    /**
+     * Requests a UI refresh in teams view.
+     *
+     * Note: This will reload teams from the disk.
+     * @param context a context reference
+     */
+    public static void requestUIRefresh(Context context) {
+        Intent broadcast = new Intent();
+        broadcast.setAction(Constants.SERVICE_ID);
+        context.sendBroadcast(broadcast);
     }
 
     /**

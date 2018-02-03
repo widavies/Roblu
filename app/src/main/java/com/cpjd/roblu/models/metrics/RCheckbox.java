@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonTypeName;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -13,6 +15,7 @@ import lombok.NonNull;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@JsonTypeName("RCheckbox")
 public class RCheckbox extends RMetric {
 
     /**
@@ -21,6 +24,12 @@ public class RCheckbox extends RMetric {
      */
     @NonNull
     private LinkedHashMap<String, Boolean> values;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RCheckbox() {}
 
     /**
      * Creates a RCheckbox model

@@ -8,7 +8,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SimpleItemAnimator;
 import android.support.v7.widget.Toolbar;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -23,9 +22,6 @@ import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.ui.UIHandler;
-import com.cpjd.roblu.ui.mailbox.CheckoutListener;
-import com.cpjd.roblu.ui.mailbox.fragments.CheckoutAdapter;
-import com.cpjd.roblu.ui.mailbox.fragments.CheckoutsTouchHelper;
 import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.utils.Constants;
 
@@ -50,12 +46,9 @@ import java.util.ArrayList;
  * @since 3.5.9
  * @author Will Davies
  */
-public class MyMatches extends AppCompatActivity implements CheckoutListener {
+public class MyMatches extends AppCompatActivity {
     // recyclerview displays "matches" nicely in cards in a scrollable view
     private RecyclerView rv;
-    // checkouts adapter stores the underlining matches array and is synced to the recyclerview
-    private CheckoutAdapter adapter;
-
     // the active eventID, used for loading the local team model
     private int eventID;
 
@@ -146,17 +139,6 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
         rv.setLayoutManager(linearLayoutManager);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false); // prevents a weird rendering issues
 
-        // load the data into the adapter (synced with recyclerview)
-        adapter = new CheckoutAdapter(getApplicationContext(), CheckoutAdapter.MYMATCHES, this);
-        rv.setAdapter(adapter);
-
-        // manages the gestures that are available to us (recyclerview supports a lot of gestures, we only need the click gesture for this scenario)
-        ItemTouchHelper.Callback callback = new CheckoutsTouchHelper(adapter, CheckoutAdapter.MYMATCHES, eventID);
-        ItemTouchHelper helper = new ItemTouchHelper(callback);
-        helper.attachToRecyclerView(rv);
-
-        adapter.setCheckouts(toSave);
-
         // don't forget to sync our activity ui with the RUI settings
         new UIHandler(this, toolbar).update();
     }
@@ -180,12 +162,11 @@ public class MyMatches extends AppCompatActivity implements CheckoutListener {
     }
 
     // user tapped on a match, let's load the "jump to team" dialog
-    @Override
     public void checkoutClicked(final View v) {
         runOnUiThread(new Runnable() {
             @Override
             public void run() { // must be run on UI thread since it's a dialog and it's in a callback
-                final RCheckout checkout = adapter.getCheckout(rv.getChildAdapterPosition(v));
+                final RCheckout checkout = null;
                 final Dialog d = new Dialog(MyMatches.this);
                 d.setTitle("Open team ");
                 d.setContentView(R.layout.event_import_dialog);

@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -75,19 +76,15 @@ public class IO {
         /*
          * Create parent directories
          */
-        File eventDir = new File(context.getFilesDir(), PREFIX+File.separator+"events");
-        File checkoutsDir = new File(context.getFilesDir(), PREFIX+File.separator+"checkouts");
-        File checkoutsConflictsDir = new File(context.getFilesDir(), PREFIX+File.separator+"conflicts");
-        File pending = new File(context.getFilesDir(), PREFIX+File.separator+"pending");
+        File eventDir = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator);
+        File checkoutsDir = new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator);
+        File pending = new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator);
 
         if(!eventDir.exists()) {
             if(eventDir.mkdir()) Log.d("RBS", "/events/ dir successfully created.");
         }
         if(!checkoutsDir.exists()) {
-            if(eventDir.mkdir()) Log.d("RBS", "/checkouts/ dir successfully created.");
-        }
-        if(!checkoutsConflictsDir.exists()) {
-            if(eventDir.mkdir()) Log.d("RBS", "/conflicts/ dir successfully created.");
+            if(checkoutsDir.mkdir()) Log.d("RBS", "/checkouts/ dir successfully created.");
         }
         if(!pending.exists()) {
             if(pending.mkdir()) Log.d("RBS", "/pending/ dir successfully created.");
@@ -103,6 +100,7 @@ public class IO {
             settings = new RSettings();
             settings.setRui(new RUI());
             settings.setMaster(Utils.createEmpty());
+            new IO(context).saveCloudSettings(new RCloudSettings());
             new IO(context).saveSettings(settings);
             return true;
         }
@@ -127,6 +125,23 @@ public class IO {
     public RSettings loadSettings() {
         return (RSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"settings.ser"));
     }
+
+    /**
+     * Load a cloud settings object from internal storage
+     * @return RCloudSettings object instance
+     */
+    public RCloudSettings loadCloudSettings() {
+        return (RCloudSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
+    }
+
+    /**
+     * Save a cloud settings reference to internal storage
+     * @param settings RCloudSettings object instance
+     */
+    public void saveCloudSettings(RCloudSettings settings) {
+        serializeObject(settings, new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
+    }
+
     // End settings methods
 
     /*
@@ -555,8 +570,18 @@ public class IO {
      * Deletes all checkouts and pending checkouts, presumably because the event has been flagged as in-active by the user
      */
     public void clearCheckouts() {
-        delete(new File(context.getFilesDir(), PREFIX+ File.separator+"pending"+File.separator));
-        delete(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator));
+        File checkoutsDir = new File(context.getFilesDir(), PREFIX + File.separator+"checkouts"+File.separator);
+        if(checkoutsDir != null && checkoutsDir.listFiles() != null) {
+            for(File f : checkoutsDir.listFiles()) {
+                delete(f);
+            }
+        }
+        File pendingDir = new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator);
+        if(pendingDir != null && pendingDir.listFiles() != null) {
+            for(File f : pendingDir.listFiles()) {
+                delete(f);
+            }
+        }
     }
 
     // ********************UTILITY METHODS**************************

@@ -2,6 +2,8 @@ package com.cpjd.roblu.ui.teams;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -69,6 +71,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * @see EventDrawerManager
      */
     private EventDrawerManager eventDrawerManager;
+
+    /**
+     * Provides a link to the background service for starting it or receiving information
+     */
+    private IntentFilter serviceFilter;
 
     /*
      * Teams
@@ -157,10 +164,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      * teams list
      */
     private ProgressBar bar;
-    /**
-     * Keep a reference to the toolbar so it can be updated if the RUI settings change
-     */
-    private Toolbar toolbar;
     // End UI and other
 
     @Override
@@ -184,7 +187,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
          * Setup UI
          */
         // Toolbar
-        toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) {
             getSupportActionBar().setTitle("Roblu");
@@ -278,7 +281,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         eventDrawerManager.selectEvent(settings.getLastEventID());
 
         // Check to see if the background service is running, if it isn't, start it
-        IntentFilter serviceFilter = new IntentFilter();
+        serviceFilter = new IntentFilter();
         serviceFilter.addAction(Constants.SERVICE_ID);
         if(!Utils.isMyServiceRunning(getApplicationContext())) {
             Intent serviceIntent = new Intent(this, Service.class);
@@ -312,7 +315,19 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             io.saveSettings(settings);
         }
     }
-    
+
+    /**
+     * This method can receive global UI refresh requests from other activities or from the background service.
+     */
+    private BroadcastReceiver uiRefreshRequestReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            executeLoadTeamsTask(lastFilter, true);
+            // Make sure data is persistent
+            settings = new IO(getApplicationContext()).loadSettings();
+        }
+    };
+
     /**
      * Displays the filter dialog and refreshes the team's list when the user selects the
      * desired filter method
@@ -345,6 +360,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                     lastFilter = i2;
                     executeLoadTeamsTask(lastFilter, false);
                     d.dismiss();
+                    settings.setLastFilter(lastFilter);
+                    new IO(getApplicationContext()).saveSettings(settings);
                 }
             });
         }
@@ -524,13 +541,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        settings.setLastFilter(lastFilter);
-        new IO(getApplicationContext()).saveSettings(settings);
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.teams_view_actionbar, menu);
         new UIHandler(this, menu).updateMenu();
@@ -587,5 +597,15 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         settings = new IO(getApplicationContext()).loadSettings(); // make sure to reload settings, since the event drawer manager will be modifying them
         executeLoadTeamsTask(lastFilter, true);
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(uiRefreshRequestReceiver, serviceFilter);
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(uiRefreshRequestReceiver);
+    }
 }

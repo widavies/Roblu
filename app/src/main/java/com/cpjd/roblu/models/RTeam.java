@@ -94,6 +94,12 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     private transient String filterTag;
 
     /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RTeam() {}
+
+    /**
      * Creates a new RTeam with default values
      * @param name the team's name
      * @param number the team's number

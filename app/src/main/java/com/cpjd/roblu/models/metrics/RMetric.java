@@ -1,5 +1,8 @@
 package com.cpjd.roblu.models.metrics;
 
+import org.codehaus.jackson.annotate.JsonSubTypes;
+import org.codehaus.jackson.annotate.JsonTypeInfo;
+
 import java.io.Serializable;
 
 import lombok.Data;
@@ -18,6 +21,17 @@ import lombok.NonNull;
  * @since 3
  */
 @Data
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY, property = "type")
+@JsonSubTypes({
+        @JsonSubTypes.Type(value = RBoolean.class, name = "RBoolean"),
+        @JsonSubTypes.Type(value = RCheckbox.class, name = "RCheckbox"),
+        @JsonSubTypes.Type(value = RChooser.class, name = "RChooser"),
+        @JsonSubTypes.Type(value = RCounter.class, name = "RCounter"),
+        @JsonSubTypes.Type(value = RGallery.class, name = "RGallery"),
+        @JsonSubTypes.Type(value = RSlider.class, name = "RSlider"),
+        @JsonSubTypes.Type(value = RStopwatch.class, name = "RStopwatch"),
+        @JsonSubTypes.Type(value = RTextfield.class, name = "RTextfield")
+})
 public abstract class RMetric implements Serializable {
     /**
      * Specifies an object's ID, the primary identification tool
@@ -38,6 +52,12 @@ public abstract class RMetric implements Serializable {
      * be handled by the UI code, not RMetric
      */
     protected boolean required;
+
+    /**
+     * The empty constructor is required for de-serialization
+     */
+    @SuppressWarnings("unused")
+    public RMetric() {}
 
     public RMetric(int ID, String title) {
         this.ID = ID;

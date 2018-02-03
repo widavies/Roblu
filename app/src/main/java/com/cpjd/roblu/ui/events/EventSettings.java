@@ -359,6 +359,11 @@ public class EventSettings extends AppCompatActivity {
                     StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
                     StrictMode.setThreadPolicy(policy);
 
+                    if(settings.getCode() == null || settings.getCode().equals("")) {
+                        Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "You must enter a team code in Roblu settings before syncing.", true, 0);
+                        return false;
+                    }
+
                     if(ctr.isActive()) {
                         new FastDialogBuilder()
                                 .setTitle("Warning")
