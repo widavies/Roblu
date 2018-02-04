@@ -10,6 +10,7 @@ import com.cpjd.listeners.RawResponseListener;
 import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -72,12 +73,13 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
-
         Log.d("RBS", "Executing InitPacker task...");
 
         IO io = ioWeakReference.get();
         RSettings settings = io.loadSettings();
-        settings.setPurgeRequested(false);
+        RCloudSettings cloudSettings = io.loadCloudSettings();
+        cloudSettings.setPurgeRequested(false);
+        io.saveCloudSettings(cloudSettings);
         io.saveSettings(settings);
         Request r = new Request(settings.getServerIP());
 
@@ -191,7 +193,8 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
                     events[i].setCloudEnabled(events[i].getID() == eventID);
                     io.saveEvent(events[i]);
                 }
-                settings.setLastCheckoutSync(System.currentTimeMillis());
+                cloudSettings.setLastCheckoutSync(System.currentTimeMillis());
+                io.saveCloudSettings(cloudSettings);
                 io.saveSettings(settings);
             }
 

@@ -178,6 +178,7 @@ public class Service extends android.app.Service {
         try {
             Log.d("RBS-Service", "Checking for completed checkouts...");
             String[] checkouts = checkoutRequest.pullCompletedCheckouts(cloudSettings.getLastCheckoutSync());
+            Log.d("RBS-Service", "Pulled: "+checkouts.length);
             for(String checkout1 : checkouts) {
                 // Deserialize the checkout
                 RCheckout checkout = mapper.readValue(checkout1, RCheckout.class);

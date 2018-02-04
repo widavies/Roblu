@@ -34,6 +34,7 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.csv.ExportCSVTask;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
+import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -306,9 +307,9 @@ public class EventSettings extends AppCompatActivity {
                                 io.deleteEvent(event.getID());
 
                                 if(event.isCloudEnabled()) {
-                                    RSettings settings = new IO(getActivity()).loadSettings();
+                                    RCloudSettings settings = new IO(getActivity()).loadCloudSettings();
                                     settings.setPurgeRequested(true);
-                                    new IO(getActivity()).saveSettings(settings);
+                                    new IO(getActivity()).saveCloudSettings(settings);
                                     new IO(getActivity()).clearCheckouts();
                                 }
 
@@ -367,8 +368,7 @@ public class EventSettings extends AppCompatActivity {
                     if(ctr.isActive()) {
                         new FastDialogBuilder()
                                 .setTitle("Warning")
-                                .setMessage("It looks like you already have some scouting data on the server. Do you want to overwrite this data? If you still have" +
-                                        " a local copy of scouting data on a Roblu Master app, you can safely overwrite cloud data.")
+                                .setMessage("It looks like you already have some scouting data on the server. If you overwrite, you may lose some scouting data. Are you sure you want to overwrite?")
                                 .setPositiveButtonText("Overwrite")
                                 .setNegativeButtonText("Cancel")
                                 .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
@@ -378,23 +378,19 @@ public class EventSettings extends AppCompatActivity {
                                     }
 
                                     @Override
-                                    public void denied() {
-
-                                    }
+                                    public void denied() {}
 
                                     @Override
-                                    public void neutral() {
-
-                                    }
+                                    public void neutral() {}
                                 }).build(getActivity());
 
                     } else uploadEvent();
                 } else {
                     event.setCloudEnabled(false);
-                    new IO(getActivity()).saveEvent(event);
-                    RSettings settings = new IO(getActivity()).loadSettings();
+                    RCloudSettings settings = new IO(getActivity()).loadCloudSettings();
                     settings.setPurgeRequested(true);
-                    new IO(getActivity()).saveSettings(settings);
+                    new IO(getActivity()).saveCloudSettings(settings);
+                    new IO(getActivity()).saveEvent(event);
                     new IO(getActivity()).clearCheckouts();
                 }
             }

@@ -3,7 +3,7 @@ package com.cpjd.roblu.models;
 import android.support.annotation.NonNull;
 
 import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.utils.Utils;
+import com.cpjd.roblu.utils.MatchType;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -48,6 +48,13 @@ public class RTab implements Serializable, Comparable<RTab> {
     private LinkedHashMap<String, Long> edits;
 
     /*
+     * These are variables to assist with sorting, it makes sorting way, way faster.
+     */
+    private MatchType matchType;
+    private int matchOrder = 0;
+    private int subMatchOrder = 0;
+
+    /*
      * Roblu Scouter ONLY helper variables
      */
     /**
@@ -76,10 +83,28 @@ public class RTab implements Serializable, Comparable<RTab> {
         this.redAlliance = redAlliance;
         this.won = won;
         this.time = time;
+
+        // Process MatchType
+        String matchName = title.toLowerCase().trim();
+        String[] tokens = matchName.split("\\s+");
+
+        matchType = MatchType.getByName(tokens[0]);
+        if(matchType.hasMatchOrder()) matchOrder = Integer.parseInt(tokens[1]);
+        if(matchType.hasSubmatches()) subMatchOrder = Integer.parseInt(tokens[3]);
     }
 
     @Override
     public int compareTo(@NonNull RTab tab) {
-        return ((Long) Utils.getMatchSortScore(title)).compareTo(Utils.getMatchSortScore(tab.getTitle()));
+        if(this.matchType == tab.getMatchType())
+            if(this.matchOrder == tab.getMatchOrder()) return (this.subMatchOrder - tab.getSubMatchOrder());
+            else return (this.matchOrder - tab.getMatchOrder());
+        else return (this.matchType.getMatchTypeOrder() - tab.getMatchType().getMatchTypeOrder());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return (other instanceof RTab) &&
+                (((RTab) other).getMatchType() == this.matchType) &&
+                (((RTab) other).getMatchOrder() == this.matchOrder);
     }
 }

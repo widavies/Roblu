@@ -518,6 +518,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
            // new UIHandler(this, toolbar).update();
             //eventDrawerManager = new EventDrawerManager(this, toolbar, this);
         }
+        if(eventDrawerManager.getEvent().isCloudEnabled()) executeLoadTeamsTask(lastFilter, true);
     }
     /**
      * Called when a new teams list is successfully loaded,
@@ -597,6 +598,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         settings = new IO(getApplicationContext()).loadSettings(); // make sure to reload settings, since the event drawer manager will be modifying them
         executeLoadTeamsTask(lastFilter, true);
     }
+
+
     @Override
     public void onResume() {
         super.onResume();

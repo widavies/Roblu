@@ -2,8 +2,10 @@ package com.cpjd.roblu.ui.team;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
@@ -28,6 +30,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
@@ -82,6 +85,12 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
     private boolean editable;
 
+    /**
+     * The team viewer needs to listen to the background service, if new data is inbound, we have to force close the viewer so the inbound scouting data
+     * doesn't get overwritten
+     */
+    private IntentFilter serviceFilter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,6 +142,12 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         tabLayout.setTabTextColors(RUI.darker(rui.getText(), 0.95f), rui.getText());
         new UIHandler(this, toolbar).update();
         if(team.getPage() > 1) onPageSelected(team.getPage());
+
+        /*
+         * Attach to background service
+         */
+        serviceFilter = new IntentFilter();
+        serviceFilter.addAction(Constants.SERVICE_ID);
     }
 
     /**
@@ -412,6 +427,22 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         d.show();
     }
 
+    /**
+     * This method can receive global UI refresh requests from other activities or from the background service.
+     */
+    private BroadcastReceiver uiRefreshRequestReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            launchParent();
+        }
+    };
+
+    // Force closes the TeamViewer
+    private void launchParent() {
+        Toast.makeText(getApplicationContext(), "TeamViewer has been force closed because new data has been received.", Toast.LENGTH_LONG).show();
+        finish();
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.team_viewer_actionbar, menu);
@@ -421,6 +452,18 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
             menu.findItem(R.id.add_match).setVisible(false);
         }
         return true;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerReceiver(uiRefreshRequestReceiver, serviceFilter);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterReceiver(uiRefreshRequestReceiver);
     }
 
 }

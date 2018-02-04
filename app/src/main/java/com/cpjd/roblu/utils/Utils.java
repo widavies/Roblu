@@ -199,45 +199,6 @@ public class Utils {
     }
 
     /**
-     * This is a really, really bad way of sorting matches. This should be updated
-     * at some point, but currently the developer has more important things to work on,
-     * and if it ain't broke, why fix it?
-     * @param name the match's name (e.g. Quarters 1 Match 2)
-     * @return the score representing this matches name, good for sorting
-     */
-    public static long getMatchSortScore(String name) {
-        long score = 0;
-        String matchName = name.toLowerCase();
-        String[] tokens = matchName.split("\\s+");
-
-        // let's give the local match a score
-        if(matchName.startsWith("pit")) score -= 100000;
-        else if(matchName.startsWith("predictions")) score -= 1000;
-        else if(matchName.startsWith("quals")) score = Integer.parseInt(matchName.split("\\s+")[1]);
-        else if(matchName.startsWith("quarters")) {
-            if(Integer.parseInt(tokens[1]) == 1) score += 1000;
-            else if(Integer.parseInt(tokens[1]) == 2) score += 10000;
-            else if(Integer.parseInt(tokens[1]) == 3) score += 100000;
-            else if(Integer.parseInt(tokens[1]) == 4) score += 1000000;
-
-            score += Integer.parseInt(tokens[3]);
-        }
-        else if(matchName.startsWith("semis")) {
-            if(Integer.parseInt(tokens[1]) == 1) score += 10000000;
-            else if(Integer.parseInt(tokens[1]) == 2) score += 100000000;
-
-            score += Integer.parseInt(tokens[3]);
-        }
-        else if(matchName.startsWith("finals")) {
-            score += 1000000000; // d a b, perfect coding right here
-            score += Integer.parseInt(tokens[1]);
-        }
-        return score;
-    }
-
-
-
-    /**
      * Used for displaying a list of teams in a comma seperated string
      * @param teams teams to concatenate
      * @return a string of concatenated teams string

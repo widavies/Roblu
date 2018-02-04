@@ -2,7 +2,7 @@ package com.cpjd.roblu.csv;
 
 import android.support.annotation.NonNull;
 
-import com.cpjd.roblu.utils.Utils;
+import com.cpjd.roblu.utils.MatchType;
 
 import lombok.Data;
 
@@ -19,10 +19,23 @@ public class RMatch implements Comparable<RMatch> {
     private long score;
     private String matchName;
 
+    /*
+     * These are variables to assist with sorting, it makes sorting way, way faster.
+     */
+    private MatchType matchType;
+    private int matchOrder = 0;
+    private int subMatchOrder = 0;
+
+
     public RMatch(String matchName) {
         this.matchName = matchName;
 
-        score = Utils.getMatchSortScore(matchName);
+        matchName = matchName.toLowerCase().trim();
+        String[] tokens = matchName.split("\\s+");
+
+        matchType = MatchType.getByName(tokens[0]);
+        if(matchType.hasMatchOrder()) matchOrder = Integer.parseInt(tokens[1]);
+        if(matchType.hasSubmatches()) subMatchOrder = Integer.parseInt(tokens[3]);
     }
 
     public String getAbbreviatedName() {
@@ -42,6 +55,16 @@ public class RMatch implements Comparable<RMatch> {
 
     @Override
     public int compareTo(@NonNull RMatch match) {
-        return ((Long)score).compareTo(match.getScore());
+        if(this.matchType == match.getMatchType())
+            if(this.matchOrder == match.getMatchOrder()) return (this.subMatchOrder - match.getSubMatchOrder());
+            else return (this.matchOrder - match.getMatchOrder());
+        else return (this.matchType.getMatchTypeOrder() - match.getMatchType().getMatchTypeOrder());
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return (other instanceof RMatch) &&
+                (((RMatch) other).getMatchType() == this.matchType) &&
+                (((RMatch) other).getMatchOrder() == this.matchOrder);
     }
 }

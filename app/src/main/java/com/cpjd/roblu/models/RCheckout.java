@@ -2,8 +2,6 @@ package com.cpjd.roblu.models;
 
 import android.support.annotation.NonNull;
 
-import com.cpjd.roblu.utils.Utils;
-
 import java.io.Serializable;
 
 import lombok.Data;
@@ -71,6 +69,11 @@ public class RCheckout implements Serializable, Comparable<RCheckout> {
     // End status tags
 
     /**
+     * This shouldn't be serialized, but it's a sorting helper tool
+     */
+    private transient int customRelevance;
+
+    /**
      * The empty constructor is required for de-serialization
      */
     @SuppressWarnings("unused")
@@ -86,7 +89,7 @@ public class RCheckout implements Serializable, Comparable<RCheckout> {
 
     @Override
     public int compareTo(@NonNull RCheckout handoff) {
-        return ((Long)(Utils.getMatchSortScore(getTeam().getTabs().get(0).getTitle()))).compareTo((Utils.getMatchSortScore(handoff.getTeam().getTabs().get(0).getTitle())));
+        return getTeam().getTabs().get(0).compareTo(handoff.getTeam().getTabs().get(0));
     }
 
 }

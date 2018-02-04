@@ -46,7 +46,7 @@ import java.util.ArrayList;
  * @since 3.5.9
  * @author Will Davies
  */
-public class MyMatches extends AppCompatActivity {
+public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter.CheckoutClickListener {
     // recyclerview displays "matches" nicely in cards in a scrollable view
     private RecyclerView rv;
     // the active eventID, used for loading the local team model
@@ -71,6 +71,7 @@ public class MyMatches extends AppCompatActivity {
             finish();
             return;
         }
+
         /*
          * we have a reference to the team's number but not the team'd ID (we need the team's ID to load).
          *
@@ -132,11 +133,15 @@ public class MyMatches extends AppCompatActivity {
         }
 
         // we've got everything we need, let's load it into the UI
-        rv = (RecyclerView) findViewById(R.id.recycler);
-        // manages the layout laoding
+        rv = findViewById(R.id.recycler);
+        // manages the layout loading
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
+        CheckoutsViewAdapter adapter = new CheckoutsViewAdapter(getApplicationContext(), new IO(getApplicationContext()).loadSettings());
+        adapter.setCheckouts(toSave);
+        adapter.setListener(this);
+        rv.setAdapter(adapter);
         ((SimpleItemAnimator) rv.getItemAnimator()).setSupportsChangeAnimations(false); // prevents a weird rendering issues
 
         // don't forget to sync our activity ui with the RUI settings

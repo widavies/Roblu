@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RSettings;
 
 /**
  * Custom preference category that syncs colors with RUI
@@ -33,6 +34,7 @@ public class RUICategory extends PreferenceCategory {
     protected void onBindView(View view) {
         super.onBindView(view);
         TextView titleView = view.findViewById(android.R.id.title);
-        titleView.setTextColor(new IO(getContext()).loadSettings().getRui().getAccent());
+        RSettings settings = new IO(view.getContext()).loadSettings();
+        if(settings != null) titleView.setTextColor(settings.getRui().getAccent());
     }
 }

@@ -1,5 +1,7 @@
 package com.cpjd.roblu.models;
 
+import java.io.Serializable;
+
 import lombok.Data;
 
 /**
@@ -14,7 +16,7 @@ import lombok.Data;
  * @author Will Davies
  */
 @Data
-public class RCloudSettings {
+public class RCloudSettings implements Serializable {
     /**
      * Millisecond timestamp of last successful server form, ui, and team sync
      */
