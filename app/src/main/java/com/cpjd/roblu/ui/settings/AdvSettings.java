@@ -12,6 +12,7 @@ package com.cpjd.roblu.ui.settings;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -44,8 +45,11 @@ import com.cpjd.models.CloudTeam;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RCloudSettings;
+import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.sync.bluetooth.BTDeviceSetup;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.utils.Constants;
@@ -141,10 +145,6 @@ public class AdvSettings extends AppCompatActivity {
             teamNumber.setDefaultValue(settings.getTeamNumber());
             teamNumber.setText(String.valueOf(settings.getTeamNumber()));
             teamNumber.setOnPreferenceChangeListener(this);
-            EditTextPreference username = (EditTextPreference) findPreference("edit_username");
-            username.setDefaultValue(settings.getUsername());
-            username.setText(settings.getUsername());
-            username.setOnPreferenceChangeListener(this);
 
             // We have to set all the preference click listener so we can process a preference click event and update its value
             findPreference("about").setOnPreferenceClickListener(this);
@@ -153,6 +153,8 @@ public class AdvSettings extends AppCompatActivity {
             findPreference("display_code").setOnPreferenceClickListener(this);
             findPreference("cloud_support").setOnPreferenceClickListener(this);
             findPreference("reddit").setOnPreferenceClickListener(this);
+            findPreference("purge").setOnPreferenceClickListener(this);
+            findPreference("bt_devices").setOnPreferenceClickListener(this);
 
             toggleJoinTeam(!(settings.getCode() != null && !settings.getCode().equals("")));
 
@@ -178,11 +180,63 @@ public class AdvSettings extends AppCompatActivity {
                 startActivity(browserIntent);
                 return true;
             }
+            else if(preference.getKey().equals("bt_devices")) { // user tapped on Bluetooth device setup button
+
+                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "Listening for devices", "Roblu is listening for Bluetooth devices...", false);
+                dialog.show();
+                new BTDeviceSetup(null, new BTDeviceSetup.BTDeviceSetupListener() {
+                    @Override
+                    public void success() {
+                        dialog.dismiss();
+                    }
+
+                    @Override
+                    public void error(String message) {
+                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), message, true, 0);
+                        dialog.dismiss();
+                    }
+                });
+                return true;
+            }
             else if(preference.getKey().equals("display_code")) { // user tapped display team code
                 // if already signed in, display the team code
                 if(settings.getCode() != null && !settings.getCode().equals("")) showTeamCode();
                 else joinTeam(); // if not, prompt the user for a team code
                 return true;
+            }
+            else if(preference.getKey().equals("purge")) { // user tapped "purge" event
+                new FastDialogBuilder()
+                        .setTitle("Are you sure?!?")
+                        .setMessage("This will delete ALL scouting data on ALL devices (except locally). You cannot undo this.")
+                        .setPositiveButtonText("Purge")
+                        .setNegativeButtonText("Cancel")
+                        .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                            @Override
+                            public void accepted() {
+                                // Remove all the other synced events
+                                IO io = new IO(getActivity());
+                                REvent[] events = io.loadEvents();
+                                for(int i = 0; events != null && i < events.length; i++) {
+                                    events[i].setCloudEnabled(false);
+                                    io.saveEvent(events[i]);
+                                }
+
+                                // Flag purge!
+                                RCloudSettings cloudSettings = io.loadCloudSettings();
+                                cloudSettings.setPurgeRequested(true);
+                                io.saveCloudSettings(cloudSettings);
+                            }
+
+                            @Override
+                            public void denied() {
+
+                            }
+
+                            @Override
+                            public void neutral() {
+
+                            }
+                        }).build(getActivity());
             }
             else if(preference.getKey().equals("cloud_support")) { // open roblu.net in a browser on the user's device
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://roblu.net"));
@@ -228,9 +282,6 @@ public class AdvSettings extends AppCompatActivity {
                 if(o.toString() == null || o.toString().equals("") || o.toString().replaceAll(" ", "").equals("")) {
                     settings.setServerIPToDefault();
                 } else settings.setServerIP(o.toString());
-            }
-            else if(preference.getKey().equals("edit_username")) {
-                settings.setUsername(o.toString());
             }
             new IO(getActivity()).saveSettings(settings); // save the settings to the file system
             return true;
@@ -345,6 +396,12 @@ public class AdvSettings extends AppCompatActivity {
                                 @Override
                                 public void accepted() {
                                     Request r = new Request(settings.getServerIP());
+
+                                    if(!r.ping()) {
+                                        Toast.makeText(getActivity(), "Looks like the server is down. Please try again later.", Toast.LENGTH_LONG).show();
+                                        return;
+                                    }
+
                                     CloudTeamRequest tr = new CloudTeamRequest(r, settings.getCode());
                                     CloudTeam ct = tr.regenerateCode();
                                     if(ct != null) {

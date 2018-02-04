@@ -56,11 +56,6 @@ public class RSettings implements Serializable {
     private String serverIP;
 
     /**
-     * The user's username that will appear on other people's devices next to scouting data this user has edited
-     */
-    private String username;
-
-    /**
      * Sets the default values for the RSettings class
      */
     public RSettings() {
@@ -75,12 +70,6 @@ public class RSettings implements Serializable {
         rui.setUploadRequired(true);
         this.rui = rui;
     }
-
-    public String getUsername() {
-        if(username == null || username.equals("")) return "Anonymous";
-        else return username;
-    }
-
     public void setServerIPToDefault() {
         this.setServerIP("ec2-13-59-164-241.us-east-2.compute.amazonaws.com");
     }

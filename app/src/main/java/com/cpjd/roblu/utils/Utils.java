@@ -358,6 +358,18 @@ public class Utils {
     }
 
     /**
+     * Updates the server health string in the event drawer
+     * @param context a context reference
+     * @param status the status to update to
+     */
+    public static void requestServerHealthRefresh(Context context, String status) {
+        Intent broadcast = new Intent();
+        broadcast.setAction(Constants.SERVICE_ID);
+        broadcast.putExtra("serverHealth", status);
+        context.sendBroadcast(broadcast);
+    }
+
+    /**
      * Checks if the Roblu background service is running
      * @param context context references
      * @return true if the background service is running

@@ -10,6 +10,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 
 import com.cpjd.roblu.R;
@@ -97,8 +98,9 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         /*
          * Load the various drawable icons for the drawers
          */
-        Drawable create, masterForm, tutorials, settings, cloud;
+        Drawable create, masterForm, tutorials, settings, cloud, wifi;
         create = ContextCompat.getDrawable(activity, R.drawable.create);
+        wifi = ContextCompat.getDrawable(activity, R.drawable.wifi);
         masterForm = ContextCompat.getDrawable(activity, R.drawable.master);
         tutorials = ContextCompat.getDrawable(activity, R.drawable.school);
         settings = ContextCompat.getDrawable(activity, R.drawable.settings_circle);
@@ -118,6 +120,9 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         if(settings != null) {
             settings.mutate(); settings.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
+        if(wifi != null) {
+            wifi.mutate(); wifi.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
         if(cloud != null) {
             cloud.mutate(); cloud.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
@@ -132,6 +137,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         items.add(new DividerDrawerItem(rui.getText()));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.EDIT_MASTER_FORM).withName("Edit master form").withIcon(masterForm));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.TUTORIALS).withName("Tutorials").withIcon(tutorials));
+        items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SERVER_HEALTH).withName("Server status: ").withIcon(wifi).withSelectable(false));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SETTINGS).withName("Settings").withIcon(settings));
 
         /*
@@ -154,6 +160,17 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         }
 
         loadEventsToDrawer();
+    }
+
+    /**
+     * Updates the server status string
+     * @param status the status string to set
+     */
+    public void setServerHealthString(String status) {
+        Log.d("RBS", "Updating server health string...");
+        SecondaryDrawerItem sdi = (SecondaryDrawerItem) eventDrawer.getDrawerItem(Constants.SERVER_HEALTH);
+        sdi.withName("Server status: "+status);
+        eventDrawer.getAdapter().notifyAdapterDataSetChanged();
     }
 
     /**

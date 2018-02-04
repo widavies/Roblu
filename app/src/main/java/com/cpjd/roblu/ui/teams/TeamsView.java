@@ -322,6 +322,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private BroadcastReceiver uiRefreshRequestReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if(intent.getStringExtra("serverHealth") != null) {
+                eventDrawerManager.setServerHealthString(intent.getStringExtra("serverHealth"));
+                return;
+            }
+
             executeLoadTeamsTask(lastFilter, true);
             // Make sure data is persistent
             settings = new IO(getApplicationContext()).loadSettings();
@@ -518,7 +523,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
            // new UIHandler(this, toolbar).update();
             //eventDrawerManager = new EventDrawerManager(this, toolbar, this);
         }
-        if(eventDrawerManager.getEvent().isCloudEnabled()) executeLoadTeamsTask(lastFilter, true);
+        if(eventDrawerManager.getEvent() != null && eventDrawerManager.getEvent().isCloudEnabled()) executeLoadTeamsTask(lastFilter, true);
     }
     /**
      * Called when a new teams list is successfully loaded,
@@ -599,11 +604,16 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         executeLoadTeamsTask(lastFilter, true);
     }
 
+    private static boolean firstLaunch = true;
 
     @Override
     public void onResume() {
         super.onResume();
         registerReceiver(uiRefreshRequestReceiver, serviceFilter);
+        if(!firstLaunch && eventDrawerManager.getEvent() != null && eventDrawerManager.getEvent().isCloudEnabled()) {
+            executeLoadTeamsTask(lastFilter, true);
+            firstLaunch = false;
+        }
     }
 
     @Override

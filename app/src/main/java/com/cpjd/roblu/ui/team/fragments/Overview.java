@@ -141,7 +141,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
 
         if(!team.hasTBAInfo()) {
             REvent event = new IO(view.getContext()).loadEvent(bundle.getInt("eventID"));
-            new TBATeamInfoTask(view.getContext(), team.getNumber(), event.getKey().substring(0, 4),  this);
+            if(event.getKey() != null && event.getKey().length() >= 4) new TBATeamInfoTask(view.getContext(), team.getNumber(), event.getKey().substring(0, 4),  this);
         } else {
             // TBA info card
             layout.addView(rMetricToUI.getInfoField("TBA.com information", TeamViewer.team.getTbaInfo(), TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);

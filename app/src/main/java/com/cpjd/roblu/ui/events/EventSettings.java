@@ -18,6 +18,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
@@ -34,7 +35,6 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.csv.ExportCSVTask;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
-import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -302,14 +302,10 @@ public class EventSettings extends AppCompatActivity {
                             @Override
                             public void accepted() {
                                 IO io = new IO(getActivity());
-                                //TODO make sure syncing is force quit here
                                 io.clearCheckouts();
                                 io.deleteEvent(event.getID());
 
                                 if(event.isCloudEnabled()) {
-                                    RCloudSettings settings = new IO(getActivity()).loadCloudSettings();
-                                    settings.setPurgeRequested(true);
-                                    new IO(getActivity()).saveCloudSettings(settings);
                                     new IO(getActivity()).clearCheckouts();
                                 }
 
@@ -345,7 +341,7 @@ public class EventSettings extends AppCompatActivity {
          * @return true if the event was consumed
          */
         @Override
-        public boolean onPreferenceChange(Preference preference, Object o) {
+        public boolean onPreferenceChange(final Preference preference, Object o) {
             /*
              * User selected the cloud sync button
              */
@@ -378,7 +374,9 @@ public class EventSettings extends AppCompatActivity {
                                     }
 
                                     @Override
-                                    public void denied() {}
+                                    public void denied() {
+                                        ((CheckBoxPreference)preference).setChecked(false);
+                                    }
 
                                     @Override
                                     public void neutral() {}
@@ -387,9 +385,6 @@ public class EventSettings extends AppCompatActivity {
                     } else uploadEvent();
                 } else {
                     event.setCloudEnabled(false);
-                    RCloudSettings settings = new IO(getActivity()).loadCloudSettings();
-                    settings.setPurgeRequested(true);
-                    new IO(getActivity()).saveCloudSettings(settings);
                     new IO(getActivity()).saveEvent(event);
                     new IO(getActivity()).clearCheckouts();
                 }

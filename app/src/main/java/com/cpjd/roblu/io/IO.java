@@ -91,8 +91,8 @@ public class IO {
         }
 
         // Purge old data
-        File dir = new File(context.getFilesDir(), File.separator);
-        if(dir.listFiles() != null && dir.listFiles().length > 0) for(File file : dir.listFiles()) if(!file.getName().equals(PREFIX)) delete(dir);
+        //File dir = new File(context.getFilesDir(), File.separator);
+        //if(dir.listFiles() != null && dir.listFiles().length > 0) for(File file : dir.listFiles()) if(!file.getName().equals(PREFIX)) delete(dir);
 
         // Check settings
         RSettings settings = new IO(context).loadSettings();

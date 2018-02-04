@@ -84,7 +84,11 @@ public class Service extends android.app.Service {
         CloudTeamRequest teamRequest = new CloudTeamRequest(r, settings.getCode());
         CloudCheckoutRequest checkoutRequest = new CloudCheckoutRequest(r, settings.getCode());
 
-        if(!r.ping()) {
+        boolean result = r.ping();
+        if(result) Utils.requestServerHealthRefresh(getApplicationContext(), "online");
+        else Utils.requestServerHealthRefresh(getApplicationContext(), "offline");
+
+        if(result) {
             Log.d("Service-RSBS", "Roblu server is down. Unable to connect.");
             return;
         }
@@ -212,7 +216,6 @@ public class Service extends android.app.Service {
 
                             // Found the match, start merging
                             if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
-                                Log.d("RBS", "Merging tab: "+localTab.getTitle());
                                 for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
                                     for(RMetric localMetric : localTab.getMetrics()) {
                                         // Found the metric, determine if a merge needs to occur
@@ -224,7 +227,6 @@ public class Service extends android.app.Service {
                                             }
                                             // Otherwise, just do a straight override
                                             else if(!localMetric.isModified()) {
-                                                Log.d("RBS", "Replacing with metric: "+downloadedMetric.getTitle()+" String: "+downloadedMetric.toString());
                                                 int replaceIndex = localTab.getMetrics().indexOf(localMetric);
                                                 localTab.getMetrics().set(replaceIndex, downloadedMetric);
                                             }

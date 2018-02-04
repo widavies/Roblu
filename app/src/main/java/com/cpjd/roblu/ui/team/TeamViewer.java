@@ -440,6 +440,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     // Force closes the TeamViewer
     private void launchParent() {
         Toast.makeText(getApplicationContext(), "TeamViewer has been force closed because new data has been received.", Toast.LENGTH_LONG).show();
+        setResult(Constants.CANCELLED);
         finish();
     }
 

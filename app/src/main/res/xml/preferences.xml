@@ -26,26 +26,30 @@
             android:key="customizer"
             android:summary="Change colors, animations, icons, layouts, and more"/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
-
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Roblu Cloud">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference
             android:title="Server IP"
             android:key="server_ip"
             android:summary="Set the IP address if you're using a custom server. Leave blank for the official Roblu Cloud server."/>
-        <com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference
-            android:title="Roblu Cloud username"
-            android:key="edit_username"
-            android:summary="Set your name, this will appear on everyone's devices next to scouting data you've edited."/>
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Join team"
             android:key="display_code"
             android:summary="Enter your team code to join a team"/>
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+            android:title="Purge cloud event"
+            android:key="purge"
+            android:summary="Purge event will reset the server. ALL scouting data will be removed. You should purge events after you're done to save stop all devices from syncing and save data."/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Website"
             android:key="cloud_support"
             android:summary="Purchase, support, and more."/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
-
+    <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Bluetooth">
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+            android:title="Setup device"
+            android:key="bt_devices"
+            android:summary="Setup a Bluetooth device. This option will send the local Bluetooth MAC address to the device so the device knows what to auto-connect to."/>
+    </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="About">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="About"

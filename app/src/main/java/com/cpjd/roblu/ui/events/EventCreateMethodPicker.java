@@ -1,6 +1,8 @@
 package com.cpjd.roblu.ui.events;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -18,6 +20,8 @@ import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.sync.cloud.EventDepacker;
+import com.cpjd.roblu.sync.cloud.Service;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.tba.TBAEventSelector;
 import com.cpjd.roblu.utils.Constants;
@@ -39,13 +43,13 @@ import java.util.Map;
  * @since 3.0.0
  * @author Will Davies
  */
-public class EventCreateMethodPicker extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class EventCreateMethodPicker extends AppCompatActivity implements AdapterView.OnItemClickListener, EventDepacker.EventDepackerListener {
 
     /*
      * Items on the list and their descriptions
      */
-    private final String items[] = { "Import from TheBlueAlliance.com", "Import from backup file", "Create event"};
-    private final String sub_items[] = {"Import the event from an online database.", "Import the event and all information from a previously exported backup file.","Create the event manually."};
+    private final String items[] = { "Import from TheBlueAlliance.com", "Import from Roblu Cloud", "Import from backup file", "Create event"};
+    private final String sub_items[] = {"Import the event from an online database.", "Import an event from Roblu Cloud for use with multiple Roblu Master apps", "Import the event and all information from a previously exported backup file.","Create the event manually."};
 
     //private long tempEventID;
     //private Event tempEvent;
@@ -54,6 +58,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
      * Reference to the user's color and UI preferences
      */
     private RUI rui;
+    private ProgressDialog d;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,7 +126,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
         /*
          * User selected manual event creation
          */
-        if(position == 2) {
+        if(position == 3) {
             startActivityForResult(new Intent(this, EventEditor.class), Constants.GENERAL);
         }
         /*
@@ -132,9 +137,28 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
             startActivityForResult(intent, Constants.GENERAL);
         }
         /*
-         * User selected import from backup file
+         * User selected Roblu Cloud event import
          */
         else if(position == 1) {
+            d = new ProgressDialog(EventCreateMethodPicker.this);
+            d.setTitle("Get ready!");
+            d.setMessage("Roblu is importing an event from Roblu Cloud...");
+            d.setCancelable(false);
+            d.show();
+
+            // Stop the background service so it won't interfere
+            IntentFilter serviceFilter = new IntentFilter();
+            serviceFilter.addAction(Constants.SERVICE_ID);
+            Intent serviceIntent = new Intent(this, Service.class);
+            stopService(serviceIntent);
+            EventDepacker dp = new EventDepacker(new IO(getApplicationContext()));
+            dp.setListener(this);
+            dp.execute();
+        }
+        /*
+         * User selected import from backup file
+         */
+        else if(position == 2) {
             /*
              * Open a file chooser where the user can select a backup file to use.
              * We'll listen to a result in onActivityResult() and import the backup file there
@@ -223,5 +247,31 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
     public void onBackPressed() {
         setResult(Constants.CANCELLED);
         finish();
+    }
+
+    @Override
+    public void errorOccurred(String message) {
+        Utils.showSnackbar(findViewById(R.id.activity_create_event_picker), getApplicationContext(), message, false, rui.getPrimaryColor());
+        d.dismiss();
+    }
+
+    @Override
+    public void success(final REvent event) {
+        d.dismiss();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                // Start the background service
+                IntentFilter serviceFilter = new IntentFilter();
+                serviceFilter.addAction(Constants.SERVICE_ID);
+                Intent serviceIntent = new Intent(EventCreateMethodPicker.this, Service.class);
+                startService(serviceIntent);
+
+                Intent intent = new Intent();
+                intent.putExtra("eventID", event.getID());
+                setResult(Constants.NEW_EVENT_CREATED, intent);
+                finish();
+            }
+        });
     }
 }
