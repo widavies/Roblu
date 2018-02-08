@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
@@ -232,11 +231,13 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
 
         Utils.showSnackbar(findViewById(R.id.activity_apievent_select), getApplicationContext(), "Downloading event...", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
 
+        Log.d("RBS", "Importing event with key: "+event.key);
+
         /*
          * Import the event specifically, eventDownloaded(Event event) will receive the result of this
          * task execution
          */
-        new ImportEvent(this).execute(event.key);
+        new ImportEvent(this, event.key).start();
     }
 
     /**
@@ -351,7 +352,7 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
      * ImportEvent is used when the user has tapped a specific Event and more specific info
      * needs to be downloaded for that event (teams, matches, etc.), so let's do that!
      */
-    private static class ImportEvent extends AsyncTask<String, Void, Event> {
+    private static class ImportEvent extends Thread {
         /**
          * The TBA key of the event to download specific data for
          */
@@ -361,13 +362,13 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
          */
         private TBALoadEventsTask.LoadTBAEventsListener listener;
 
-        ImportEvent(TBALoadEventsTask.LoadTBAEventsListener listener) {
+        ImportEvent(TBALoadEventsTask.LoadTBAEventsListener listener, String key) {
             this.listener = listener;
+            this.key = key;
         }
 
-        protected Event doInBackground(String... key) {
-            this.key = key[0];
-
+        @Override
+        public void run() {
             /*
              * Make sure this thread has network permissions
              */
@@ -379,9 +380,15 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
 
             // notify the listener of the downloaded event
             Event e = new TBA().getEvent(this.key);
-            if(e != null) listener.eventDownloaded(new TBA().getEvent(this.key));
+
+            if(e != null) listener.eventDownloaded(e);
             else listener.errorOccurred("No event found with key: "+this.key+".");
-            return null;
+
+            try {
+                join();
+            } catch(InterruptedException error) {
+                Log.d("RBS", "Failed to stop ImportEvent thread.");
+            }
         }
     }
 
@@ -408,7 +415,7 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
                 try {
                     Utils.showSnackbar(findViewById(R.id.activity_apievent_select), getApplicationContext(), "Downloading event...", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
 
-                    new ImportEvent(TBAEventSelector.this).execute(input.getText().toString().replaceFirst(",", ""));
+                    new ImportEvent(TBAEventSelector.this, input.getText().toString().replaceFirst(",", "")).start();
                 } catch(Exception e) {
                     e.printStackTrace();
                     Utils.showSnackbar(findViewById(R.id.activity_apievent_select), getApplicationContext(), "Invalid key: "+input.getText().toString()+".", true, 0);

@@ -65,9 +65,10 @@ public abstract class Constants {
     public static final int SETTINGS = getNum();
     public static final int HEADER = getNum();
     public static final int TUTORIALS = getNum();
-    public static final int MAILBOX = getNum();
+    public static final int BLUETOOTH_SERVER = getNum();
     public static final int MY_MATCHES = getNum();
     public static final int SERVER_HEALTH = getNum();
+
 
     // Intent request and result codes
     public static final int GENERAL = getNum(); // when the request code doesn't matter

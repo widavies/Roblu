@@ -70,6 +70,11 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
         CloudTeamRequest ctr = new CloudTeamRequest(r, settings.getCode());
         CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
 
+        if(settings.getCode() == null || settings.getCode().equals("")) {
+            if(listener != null) listener.errorOccurred("No team code found in settings. Unable to import event.");
+            return null;
+        }
+
         // Ping
         if(!r.ping()) {
             if(listener != null) listener.errorOccurred("It appears as though the server is offline. Try again later.");
@@ -109,6 +114,8 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
             settings.setRui(mapper.readValue(team.getUi(), RUI.class));
         } catch(IOException e) {
             Log.d("RBS", "Failed to download event");
+            listener.errorOccurred("Failed to import Roblu Cloud event.");
+            return null;
         } finally {
             io.saveSettings(settings);
         }
@@ -121,6 +128,8 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
             for(String s : pulledCheckouts) checkouts.add(mapper.readValue(s, RCheckout.class));
         } catch(IOException e) {
             Log.d("RBS", "Failed to de-package checkouts.");
+            listener.errorOccurred("Failed to import Roblu Cloud event.");
+            return null;
         }
 
         /*

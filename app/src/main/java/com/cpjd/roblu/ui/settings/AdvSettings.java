@@ -57,6 +57,8 @@ import com.cpjd.roblu.utils.Utils;
 import com.mikepenz.aboutlibraries.Libs;
 import com.mikepenz.aboutlibraries.LibsBuilder;
 
+import me.aflak.bluetooth.Bluetooth;
+
 /**
  *
  * AdvSettings is short for "Advanced Settings", because the last version of settings was absolute garbage.
@@ -111,6 +113,13 @@ public class AdvSettings extends AppCompatActivity {
      */
     @SuppressWarnings("WeakerAccess")
     public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
+
+        /**
+         * The Bluetooth connect object, must be managed by an activity. This will allow us to listen for
+         * incoming Bluetooth connections
+         */
+        private Bluetooth bluetooth;
+
         // text constants that will be accessible in the about libraries view
         private final String PRIVACY = "Roblu Privacy & Terms of Use\n" +
                 "\nData that Roblu stores and transfers:\n-Google email\n-Google display name\n-FRC Name and Number\n-Any and all form data, including scouters' data, local data, and more." +
@@ -132,10 +141,13 @@ public class AdvSettings extends AppCompatActivity {
             super.onCreate(savedInstanceState);
 
             // Make sure that this fragment is being loaded in the context of AdvSettings
-            if (!(getActivity() instanceof AdvSettings)) {
+            if(!(getActivity() instanceof AdvSettings)) {
                 getActivity().finish();
                 return;
             }
+
+            // setup Bluetooth
+            bluetooth = new Bluetooth(getActivity());
 
             // Load the preferences specified in xml into the system, we only have to modify a couple of things manually
             addPreferencesFromResource(R.xml.preferences);
@@ -182,9 +194,11 @@ public class AdvSettings extends AppCompatActivity {
             }
             else if(preference.getKey().equals("bt_devices")) { // user tapped on Bluetooth device setup button
 
-                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "Listening for devices", "Roblu is listening for Bluetooth devices...", false);
+                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "Listening for devices", "Your device is visible to nearby devices. Roblu is listening for Bluetooth devices...", false);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(true);
                 dialog.show();
-                new BTDeviceSetup(null, new BTDeviceSetup.BTDeviceSetupListener() {
+                new BTDeviceSetup(bluetooth, new BTDeviceSetup.BTDeviceSetupListener() {
                     @Override
                     public void success() {
                         dialog.dismiss();
@@ -435,6 +449,18 @@ public class AdvSettings extends AppCompatActivity {
             AlertDialog dialog = builder.create();
             if(dialog.getWindow() != null) dialog.getWindow().getAttributes().windowAnimations = settings.getRui().getAnimation();
             dialog.show();
+        }
+
+        @Override
+        public void onStart() {
+            super.onStart();
+            bluetooth.onStart();
+        }
+
+        @Override
+        public void onStop() {
+            super.onStop();
+            bluetooth.onStop();
         }
 
         // Listens to the custom snack bar, displays a link to Roblu Cloud purchase

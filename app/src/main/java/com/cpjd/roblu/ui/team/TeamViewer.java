@@ -433,6 +433,11 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     private BroadcastReceiver uiRefreshRequestReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
+            if(intent.getStringExtra("serverHealth") != null) {
+                return;
+            }
+
+
             launchParent();
         }
     };

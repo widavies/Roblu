@@ -408,9 +408,9 @@ public class EventEditor extends AppCompatActivity {
                         boolean isRed = result == com.cpjd.main.Constants.CONTAINS_TEAM_RED;
                         // add the match to the team, make sure to multiple the Event model's matches times by 1000 (seconds to milliseconds, Roblu works with milliseconds!)
                         t.addTab(new RTab(name, Utils.duplicateRMetricArray(form.getMatch()), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000));
-                        io.saveTeam(eventID, t);
                     }
                 }
+                io.saveTeam(eventID, t);
             }
             return null;
         }

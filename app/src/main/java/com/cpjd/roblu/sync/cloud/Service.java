@@ -88,7 +88,7 @@ public class Service extends android.app.Service {
         if(result) Utils.requestServerHealthRefresh(getApplicationContext(), "online");
         else Utils.requestServerHealthRefresh(getApplicationContext(), "offline");
 
-        if(result) {
+        if(!result) {
             Log.d("Service-RSBS", "Roblu server is down. Unable to connect.");
             return;
         }

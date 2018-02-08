@@ -1,6 +1,7 @@
 package com.cpjd.roblu.ui.events;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -18,6 +19,7 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.sync.bluetooth.BTServer;
 import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.settings.AdvSettings;
@@ -30,6 +32,7 @@ import com.mikepenz.materialdrawer.model.ExpandableDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SecondaryDrawerItem;
 import com.mikepenz.materialdrawer.model.SectionDrawerItem;
+import com.mikepenz.materialdrawer.model.SwitchDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 
 import java.util.ArrayList;
@@ -39,6 +42,7 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
+import me.aflak.bluetooth.Bluetooth;
 
 /**
  * Helps reduce the amount of code in TeamsView by managing the event drawer and its contents
@@ -82,15 +86,18 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      */
     private EventSelectListener listener;
 
+    private Bluetooth bluetooth;
+
     /**
      * Instantiates an EventDrawerManager that will handle loading and receiving actions from the REvent ui drawer
      * @param activity the TeamsView activity reference
      * @param toolbar the TeamsView toolbar (the UI drawer will insert a hamburger button)
      * @param listener an EventSelectListener that will be called when the TeamsView activity should reload the teams list
      */
-    public EventDrawerManager(Activity activity, Toolbar toolbar, EventSelectListener listener) {
+    public EventDrawerManager(Activity activity, Toolbar toolbar, EventSelectListener listener, Bluetooth bluetooth) {
         this.activity = activity;
         this.listener = listener;
+        this.bluetooth = bluetooth;
 
         // Load dependencies objects
         rui = new IO(activity).loadSettings().getRui();
@@ -98,7 +105,8 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         /*
          * Load the various drawable icons for the drawers
          */
-        Drawable create, masterForm, tutorials, settings, cloud, wifi;
+        Drawable create, masterForm, tutorials, settings, cloud, wifi, bluetoothIcon;
+        bluetoothIcon = ContextCompat.getDrawable(activity, R.drawable.bluetooth);
         create = ContextCompat.getDrawable(activity, R.drawable.create);
         wifi = ContextCompat.getDrawable(activity, R.drawable.wifi);
         masterForm = ContextCompat.getDrawable(activity, R.drawable.master);
@@ -109,6 +117,10 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         if(create != null) {
             create.mutate();
             create.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
+        }
+        if(bluetooth != null) {
+            bluetoothIcon.mutate();
+            bluetoothIcon.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
         if(masterForm != null) {
             masterForm.mutate();
@@ -127,6 +139,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             cloud.mutate(); cloud.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
 
+
         /*
          * Specify all the different items that will be contained in our drawer
          */
@@ -138,7 +151,9 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.EDIT_MASTER_FORM).withName("Edit master form").withIcon(masterForm));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.TUTORIALS).withName("Tutorials").withIcon(tutorials));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SERVER_HEALTH).withName("Server status: ").withIcon(wifi).withSelectable(false));
+        items.add(new SwitchDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.BLUETOOTH_SERVER).withName("Bluetooth server").withIcon(bluetoothIcon).withSelectable(false));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SETTINGS).withName("Settings").withIcon(settings));
+
 
         /*
          * Create the drawer
@@ -170,7 +185,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         Log.d("RBS", "Updating server health string...");
         SecondaryDrawerItem sdi = (SecondaryDrawerItem) eventDrawer.getDrawerItem(Constants.SERVER_HEALTH);
         sdi.withName("Server status: "+status);
-        eventDrawer.getAdapter().notifyAdapterDataSetChanged();
+        eventDrawer.getAdapter().notifyItemChanged(eventDrawer.getPosition(sdi));
     }
 
     /**
@@ -198,6 +213,16 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         else if(identifier == Constants.TUTORIALS) {
             activity.startActivity(new Intent(activity, Tutorial.class));
             eventDrawer.setSelectionAtPosition(-1);
+        }
+        else if(identifier == Constants.BLUETOOTH_SERVER) {
+            if(((SwitchDrawerItem)drawerItem).isChecked()) {
+                ProgressDialog dialog = ProgressDialog.show(activity, "Listening for incoming connections...", "Waiting for a device to connect.", false);
+                dialog.setCancelable(false);
+                dialog.show();
+                BTServer server = new BTServer(activity, bluetooth);
+
+                server.start();
+            }
         }
         else if(identifier == Constants.EVENT_SETTINGS) {
             for(int i = 0; i < events.size(); i++) {
@@ -296,13 +321,12 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                     new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
                     new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
             );
-
         }
 
         // Clear old events from the drawer
         for(int i = 0; i < eventDrawer.getDrawerItems().size(); i++) {
             long identifier = eventDrawer.getDrawerItems().get(i).getIdentifier();
-            if(identifier == Constants.HEADER || identifier == Constants.SCOUT || identifier == Constants.EVENT_SETTINGS || identifier == Constants.MAILBOX || identifier == Constants.MY_MATCHES) {
+            if(identifier == Constants.HEADER || identifier == Constants.SCOUT || identifier == Constants.EVENT_SETTINGS || identifier == Constants.MY_MATCHES) {
                 eventDrawer.removeItemByPosition(i);
                 i = 0;
             }

@@ -52,6 +52,8 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
     // the active eventID, used for loading the local team model
     private int eventID;
 
+    private CheckoutsViewAdapter adapter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +70,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
         int number = new IO(getApplicationContext()).loadSettings().getTeamNumber();
         if(number == 0) { // the user hasn't changed their number yet, and since no team is #0, we have to stop the activity
             Toast.makeText(getApplicationContext(), "No team number found. Set it in settings.", Toast.LENGTH_LONG).show();
+            setResult(Constants.CANCELLED);
             finish();
             return;
         }
@@ -91,13 +94,15 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
         }
 
         if(myTeam == null) { // team will be null if it was not contained in the event, if no team, force close this activity
-            Toast.makeText(getApplicationContext(), "Team is missing from event, please add it", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Your team is missing from event, please add it", Toast.LENGTH_LONG).show();
+            setResult(Constants.CANCELLED);
             finish();
             return;
         }
 
          if(myTeam.getTabs() == null || myTeam.getTabs().size() <= 2) { // we found a team, but it doesn't contain any matches, so we can't load "my matches", force close
              Toast.makeText(getApplicationContext(), "Team does not contain any match data, please add some.", Toast.LENGTH_LONG).show();
+             setResult(Constants.CANCELLED);
              finish();
              return;
          }
@@ -138,7 +143,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getApplicationContext());
         linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(linearLayoutManager);
-        CheckoutsViewAdapter adapter = new CheckoutsViewAdapter(getApplicationContext(), new IO(getApplicationContext()).loadSettings());
+        adapter = new CheckoutsViewAdapter(getApplicationContext(), new IO(getApplicationContext()).loadSettings());
         adapter.setCheckouts(toSave);
         adapter.setListener(this);
         rv.setAdapter(adapter);
@@ -171,7 +176,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
         runOnUiThread(new Runnable() {
             @Override
             public void run() { // must be run on UI thread since it's a dialog and it's in a callback
-                final RCheckout checkout = null;
+                final RCheckout checkout = adapter.getCheckouts().get(rv.getChildAdapterPosition(v));
                 final Dialog d = new Dialog(MyMatches.this);
                 d.setTitle("Open team ");
                 d.setContentView(R.layout.event_import_dialog);
@@ -198,8 +203,8 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
                         if(pos < 3) ID = checkout.getTeam().getTabs().get(0).getTeammates().get(pos).getID();
                         else ID = checkout.getTeam().getTabs().get(0).getOpponents().get(pos - 3).getID();
                         Intent intent = new Intent(MyMatches.this, TeamViewer.class);
-                        intent.putExtra("team", new IO(getApplicationContext()).loadTeam(eventID, ID).getID());
-                        intent.putExtra("event", new IO(getApplicationContext()).loadEvent(eventID));
+                        intent.putExtra("teamID", ID);
+                        intent.putExtra("eventID", eventID);
                         startActivity(intent);
                         d.dismiss();
                     }

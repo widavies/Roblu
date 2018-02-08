@@ -41,6 +41,11 @@ public class RSettings implements Serializable {
      */
     private RUI rui;
 
+    /**
+     * If true, the Bluetooth server will be kept running by the background service
+     */
+    private boolean bluetoothServerEnabled;
+
     /*
      * Roblu Cloud variables
      */

@@ -50,6 +50,8 @@ import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
 
+import me.aflak.bluetooth.Bluetooth;
+
 /**
  * TeamsView is the launcher activity.
  *
@@ -166,6 +168,16 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private ProgressBar bar;
     // End UI and other
 
+    /**
+     * Bluetooth server connections are handled in
+     * @see EventDrawerManager
+     * @see com.cpjd.roblu.sync.bluetooth.BTServer
+     *
+     * But this class handles the Bluetooth hardware adapter, this
+     * class is a 3rd party Bluetooth library.
+     */
+    private Bluetooth bluetooth;
+
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -277,7 +289,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         /*
          * Setup events drawer and load events to it
          */
-        eventDrawerManager = new EventDrawerManager(this, toolbar, this);
+        bluetooth = new Bluetooth(this);
+        eventDrawerManager = new EventDrawerManager(this, toolbar, this, bluetooth);
         eventDrawerManager.selectEvent(settings.getLastEventID());
 
         // Check to see if the background service is running, if it isn't, start it
@@ -287,7 +300,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             Intent serviceIntent = new Intent(this, Service.class);
             startService(serviceIntent);
         }
-
 
         /*
          * Display update messages
@@ -620,5 +632,17 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     public void onPause() {
         super.onPause();
         unregisterReceiver(uiRefreshRequestReceiver);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        bluetooth.onStart();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        bluetooth.onStart();
     }
 }
