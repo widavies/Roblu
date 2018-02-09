@@ -11,7 +11,6 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 
 import com.cpjd.roblu.R;
@@ -86,6 +85,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      */
     private EventSelectListener listener;
 
+    @Setter
     private Bluetooth bluetooth;
 
     /**
@@ -94,10 +94,9 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      * @param toolbar the TeamsView toolbar (the UI drawer will insert a hamburger button)
      * @param listener an EventSelectListener that will be called when the TeamsView activity should reload the teams list
      */
-    public EventDrawerManager(Activity activity, Toolbar toolbar, EventSelectListener listener, Bluetooth bluetooth) {
+    public EventDrawerManager(Activity activity, Toolbar toolbar, EventSelectListener listener) {
         this.activity = activity;
         this.listener = listener;
-        this.bluetooth = bluetooth;
 
         // Load dependencies objects
         rui = new IO(activity).loadSettings().getRui();
@@ -180,7 +179,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      * @param status the status string to set
      */
     public void setServerHealthString(String status) {
-        Log.d("RBS", "Updating server health string...");
         SecondaryDrawerItem sdi = (SecondaryDrawerItem) eventDrawer.getDrawerItem(Constants.SERVER_HEALTH);
         sdi.withName("Server status: "+status);
         eventDrawer.getAdapter().notifyItemChanged(eventDrawer.getPosition(sdi));
@@ -218,7 +216,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 dialog.setCancelable(false);
                 dialog.show();
                 BTServer server = new BTServer(activity, bluetooth);
-
                 server.start();
             }
         }

@@ -15,6 +15,12 @@ import lombok.Data;
  */
 @Data
 public class RBackup implements Serializable {
+
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
     private REvent event;
     private RTeam[] teams;
     private RForm form;

@@ -16,6 +16,11 @@ import lombok.EqualsAndHashCode;
 public class RTextfield extends RMetric {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
+    /**
      * The text contained in this text field
      */
     private String text;

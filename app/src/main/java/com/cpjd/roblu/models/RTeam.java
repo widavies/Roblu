@@ -34,6 +34,11 @@ import lombok.Data;
 public class RTeam implements Serializable, Comparable<RTeam> {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
+    /**
      * Unique identifier for this team. No duplicate IDs allowed. Completely arbitrary.
      */
     private int ID;

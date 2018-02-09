@@ -16,6 +16,11 @@ import lombok.EqualsAndHashCode;
 public class RSlider extends RMetric {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
+    /**
      * Stores the integer value
      */
     private int value;

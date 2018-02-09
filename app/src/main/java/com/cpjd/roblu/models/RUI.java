@@ -20,6 +20,11 @@ import lombok.Data;
 public class RUI implements Serializable {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
+    /**
      * If true, this class should be re-sent to the server
      */
     public boolean uploadRequired;

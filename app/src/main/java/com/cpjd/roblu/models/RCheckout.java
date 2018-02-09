@@ -32,6 +32,11 @@ import lombok.Data;
 public class RCheckout implements Serializable, Comparable<RCheckout> {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
+    /**
      * This number is a universal identification number for the handoff. It shouldn't be serialized when transporting, but sent
      * as a separate parameter. The internal ID should match the external ID on the server. Note: Roblu Master doesn't care about
      * the ID, it doesn't need to be synced there.

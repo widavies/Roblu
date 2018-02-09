@@ -17,6 +17,10 @@ import lombok.NonNull;
 @Data
 @JsonTypeName("RCheckbox")
 public class RCheckbox extends RMetric {
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
 
     /**
      * Ordered HashMap containing a title and value for the specified number of elements.

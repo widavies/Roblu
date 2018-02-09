@@ -34,6 +34,10 @@ import lombok.NonNull;
 })
 public abstract class RMetric implements Serializable {
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+    /**
      * Specifies an object's ID, the primary identification tool
      */
     protected int ID;

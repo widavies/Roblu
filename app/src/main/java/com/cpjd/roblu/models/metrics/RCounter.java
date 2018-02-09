@@ -19,6 +19,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName("RCounter")
 public class RCounter extends RMetric {
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
 
     /**
      * Represents the current value in integer form

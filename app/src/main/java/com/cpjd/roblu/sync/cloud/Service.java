@@ -21,7 +21,6 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.notifications.Notify;
-import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
 import org.codehaus.jackson.map.DeserializationConfig;
@@ -289,13 +288,4 @@ public class Service extends android.app.Service {
         Log.d("RBS-Service", "Sleeping Roblu background service for 10 seconds...");
     }
 
-    /**
-     * If the service gets destroyed, automatically restart it
-     */
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        Intent broadcastIntent = new Intent(Constants.RESTART_BROADCAST);
-        sendBroadcast(broadcastIntent);
-    }
 }

@@ -13,6 +13,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName("RStopwatch")
 public class RStopwatch extends RMetric {
+
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
     /**
      * The time, in seconds, currently on this stopwatch
      */

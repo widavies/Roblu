@@ -503,6 +503,8 @@ public class EventSettings extends AppCompatActivity {
 
         @Override
         public void csvFileGenerated(File file) {
+            Toast.makeText(getActivity(), "CSV file successfully generated. Opening device share dialog... This might take a few seconds.", Toast.LENGTH_LONG).show();
+
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_SEND);
             Uri uri = FileProvider.getUriForFile(getActivity(), BuildConfig.APPLICATION_ID, file);

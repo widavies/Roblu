@@ -16,6 +16,10 @@ import lombok.Data;
 public class REvent implements Serializable, Comparable<REvent> {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+    /**
      * The event's ID, this is what differentiates duplicate events and is
      * used for saving the event to the file system
      */

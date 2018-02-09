@@ -20,6 +20,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName("RGallery")
 public class RGallery extends RMetric {
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
 
     /**
      * An ArrayList is used here because it's a bit easier to manage.

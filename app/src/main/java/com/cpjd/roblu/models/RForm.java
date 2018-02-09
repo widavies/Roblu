@@ -19,6 +19,10 @@ import lombok.Data;
 public class RForm implements Serializable {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+    /**
      * Represents the pit metric form. Pit form will be used to generate a PIT form for every team.
      * It's mandatory
      */

@@ -18,6 +18,10 @@ import lombok.Data;
 @Data
 public class RCloudSettings implements Serializable {
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+    /**
      * Millisecond timestamp of last successful server form, ui, and team sync
      */
     private long lastTeamSync;

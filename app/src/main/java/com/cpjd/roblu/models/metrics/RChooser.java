@@ -14,6 +14,10 @@ import lombok.NonNull;
 @Data
 @JsonTypeName("RChooser")
 public class RChooser extends RMetric {
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
 
     /**
      * Represents a list of possible items that can be selected

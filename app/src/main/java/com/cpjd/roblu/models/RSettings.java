@@ -14,6 +14,10 @@ import lombok.Data;
 public class RSettings implements Serializable {
 
     /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+    /**
      * Used for determining if we need to show a changelist
      */
     private int updateLevel;

@@ -14,6 +14,10 @@ import lombok.EqualsAndHashCode;
 @Data
 @JsonTypeName("RBoolean")
 public class RBoolean extends RMetric {
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
 
     private boolean value;
 

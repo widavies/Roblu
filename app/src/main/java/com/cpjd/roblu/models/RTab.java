@@ -21,6 +21,12 @@ import lombok.Data;
  */
 @Data
 public class RTab implements Serializable, Comparable<RTab> {
+
+    /**
+     * Changing this versionUID will render this class incompatible with older versions.
+     */
+    public static final long serialVersionUID = 1L;
+
     /**
      * RTabs are identified by their title, no duplicate titles!
      */

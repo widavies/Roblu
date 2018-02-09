@@ -289,8 +289,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         /*
          * Setup events drawer and load events to it
          */
-        bluetooth = new Bluetooth(this);
-        eventDrawerManager = new EventDrawerManager(this, toolbar, this, bluetooth);
+        eventDrawerManager = new EventDrawerManager(this, toolbar, this);
         eventDrawerManager.selectEvent(settings.getLastEventID());
 
         // Check to see if the background service is running, if it isn't, start it
@@ -644,12 +643,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     @Override
     public void onStop() {
         super.onStop();
-        bluetooth.onStart();
+        bluetooth.onStop();
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        bluetooth = new Bluetooth(this);
         bluetooth.onStart();
+        eventDrawerManager.setBluetooth(bluetooth);
     }
 }
