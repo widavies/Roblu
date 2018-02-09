@@ -243,6 +243,11 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     @Override
     public void onPageScrollStateChanged(int arg0) {}
 
+    /**
+     * Returns true if the match exists
+     * @param name the match title
+     * @return true if it exists
+     */
     private boolean doesExist(String name) {
         for(int i = 0 ; i < team.getTabs().size(); i++) if(team.getTabs().get(i).getTitle().equalsIgnoreCase(name)) return true;
         return false;

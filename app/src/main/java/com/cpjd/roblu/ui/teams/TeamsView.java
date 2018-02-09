@@ -492,6 +492,13 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             }
             io.saveSettings(settings);
         }
+        /*
+         * This must occur BEFORE the straight up NEW_EVENT_CREATED return.
+         * This will be called after the user does a TBA sync
+         */
+        else if(requestCode == Constants.EVENT_SETTINGS_REQUEST && resultCode == Constants.NEW_EVENT_CREATED) {
+            executeLoadTeamsTask(lastFilter, true);
+        }
         else if(resultCode == Constants.NEW_EVENT_CREATED) { // The user created an event, let's get the ID and select it
             Bundle d = data.getExtras();
             eventDrawerManager.loadEventsToDrawer();

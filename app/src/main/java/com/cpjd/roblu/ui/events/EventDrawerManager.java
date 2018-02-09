@@ -139,7 +139,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             cloud.mutate(); cloud.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
 
-
         /*
          * Specify all the different items that will be contained in our drawer
          */
@@ -153,7 +152,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SERVER_HEALTH).withName("Server status: ").withIcon(wifi).withSelectable(false));
         items.add(new SwitchDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.BLUETOOTH_SERVER).withName("Bluetooth server").withIcon(bluetoothIcon).withSelectable(false));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SETTINGS).withName("Settings").withIcon(settings));
-
 
         /*
          * Create the drawer
@@ -229,7 +227,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 if(events.get(i).getID() == (Integer) drawerItem.getTag()) {
                     Intent intent = new Intent(activity, EventSettings.class);
                     intent.putExtra("event", events.get(i));
-                    activity.startActivityForResult(intent, Constants.GENERAL);
+                    activity.startActivityForResult(intent, Constants.EVENT_SETTINGS_REQUEST);
                     eventDrawer.setSelectionAtPosition(-1);
                     break;
                 }

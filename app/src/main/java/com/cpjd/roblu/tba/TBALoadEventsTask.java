@@ -1,4 +1,4 @@
-package com.cpjd.roblu.ui.tba;
+package com.cpjd.roblu.tba;
 
 import android.os.AsyncTask;
 import android.os.StrictMode;
@@ -9,6 +9,7 @@ import android.widget.ProgressBar;
 import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
+import com.cpjd.roblu.ui.tba.TBAEventAdapter;
 import com.cpjd.roblu.utils.Utils;
 
 import java.lang.ref.WeakReference;
@@ -82,7 +83,7 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
         void eventListDownloaded(ArrayList<Event> events);
     }
 
-    TBALoadEventsTask(ProgressBar progressBar, RecyclerView rv, TBAEventAdapter eventAdapter, LoadTBAEventsListener listener, int teamNumber, int year, boolean onlyShowMyEvents) {
+    public TBALoadEventsTask(ProgressBar progressBar, RecyclerView rv, TBAEventAdapter eventAdapter, LoadTBAEventsListener listener, int teamNumber, int year, boolean onlyShowMyEvents) {
         this.tbaEventAdapterWeakReference = new WeakReference<>(eventAdapter);
         this.progressBarWeakReference = new WeakReference<>(progressBar);
         this.recyclerViewWeakReference = new WeakReference<>(rv);

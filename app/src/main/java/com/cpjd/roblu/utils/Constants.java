@@ -57,6 +57,8 @@ public abstract class Constants {
 
     public static final int IMAGE_EDITED = getNum();
 
+    public static final int EVENT_SETTINGS_REQUEST = getNum();
+
     // Drawer identifier codes
     public static final int CREATE_EVENT = getNum();
     public static final int SCOUT = getNum();

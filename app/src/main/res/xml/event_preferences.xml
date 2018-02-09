@@ -26,8 +26,11 @@
             android:title="Sync event with Roblu Cloud"
             android:key="sync"
             android:summary="Enable or disable Roblu Cloud support for this event" />
-
-
+        <com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference
+            android:defaultValue="true"
+            android:key="tba_sync"
+            android:title="Sync event with TBA"
+            android:summary="Adds new matches or teams from TheBlueAlliance.com if our local device doesn't automatically contain." />
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Export">
         <Preference

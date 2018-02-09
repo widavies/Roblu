@@ -29,6 +29,7 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.cpjd.http.Request;
+import com.cpjd.models.Event;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.BuildConfig;
 import com.cpjd.roblu.R;
@@ -41,6 +42,9 @@ import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.sync.cloud.InitPacker;
+import com.cpjd.roblu.tba.ImportEvent;
+import com.cpjd.roblu.tba.TBALoadEventsTask;
+import com.cpjd.roblu.tba.UnpackTBAEvent;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.forms.FormViewer;
@@ -53,6 +57,7 @@ import com.google.common.io.Files;
 import java.io.File;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -121,7 +126,7 @@ public class EventSettings extends AppCompatActivity {
         finish();
     }
 
-    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, ExportCSVTask.ExportCSVListener {
+    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, ExportCSVTask.ExportCSVListener{
 
         /**
          * Store an RUI reference here to give all dialogs below access to user color preferences
@@ -134,6 +139,11 @@ public class EventSettings extends AppCompatActivity {
         private File backupFile;
 
         private RUICheckPreference cloud;
+
+        /**
+         * The progress dialog for TBA match sync
+         */
+        private ProgressDialog tbaSyncDialog;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -156,6 +166,7 @@ public class EventSettings extends AppCompatActivity {
             findPreference("edit_event").setOnPreferenceClickListener(this);
             findPreference("delete_teams").setOnPreferenceClickListener(this);
             findPreference("delete_event").setOnPreferenceClickListener(this);
+            findPreference("tba_sync").setOnPreferenceClickListener(this);
 
             /*
              * Obtain explicit preference references where an attribute of the preference
@@ -203,6 +214,31 @@ public class EventSettings extends AppCompatActivity {
                 intent.putExtra("name", event.getName());
                 intent.putExtra("key", event.getKey());
                 startActivityForResult(intent, Constants.GENERAL);
+            }
+            /*
+             * User clicked "Sync with TBA" option
+             */
+            else if(preference.getKey().equalsIgnoreCase("tba_sync")) {
+                // Download the entire event
+                tbaSyncDialog = ProgressDialog.show(getActivity(), "Syncing event with TheBlueAlliance...", "This may take several seconds.", false);
+                tbaSyncDialog.setCancelable(false);
+                new ImportEvent(new TBALoadEventsTask.LoadTBAEventsListener() {
+                    @Override
+                    public void errorOccurred(String errMsg) {
+                        Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Error occurred while syncing event: "+errMsg, true, 0);
+                    }
+
+                    @Override
+                    public void eventDownloaded(Event e) {
+                        // Start the merge!
+                        new UnpackTBAEvent(e, event.getID(), true, getActivity(), tbaSyncDialog).execute();
+                    }
+
+                    @Override
+                    public void eventListDownloaded(ArrayList<Event> events) {
+                        // not used, but required because of shared constructor
+                    }
+                }, event.getKey()).start();
             }
             /*
              * User clicked on "Duplicate event"
