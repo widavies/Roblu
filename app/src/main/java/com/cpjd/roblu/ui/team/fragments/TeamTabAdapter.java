@@ -133,7 +133,7 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
      * @return the position of the sorted, created match
      */
     public int createMatch(String name, boolean isRed) {
-        int position = TeamViewer.team.addTab(new RTab(name, Utils.duplicateRMetricArray(form.getMatch()), isRed, false, 0));
+        int position = TeamViewer.team.addTab(new RTab(TeamViewer.team.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, false, 0));
         TeamViewer.team.setLastEdit(System.currentTimeMillis());
         new IO(context).saveTeam(event.getID(), TeamViewer.team);
 

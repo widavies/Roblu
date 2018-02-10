@@ -39,6 +39,16 @@ public class RTab implements Serializable, Comparable<RTab> {
      * FALSE for blue alliance, TRUE for red alliance
      */
     private boolean redAlliance;
+
+    /**
+     * This is a helper variable for teams who use the Red Device, Blue Device, etc. scouting system.
+     * This variable can only be imported from the TBA.
+     * Values 1-3 represent red alliance, 4-6 represent Blue alliance position.
+     * However, use the redAlliance variable for display colors, because that's what the user can
+     * change and modify. This should ONLY be used for sorting the4 Red Device, Blue Device checkout order.
+     */
+    private int alliancePosition;
+
     /**
      * Whether this match has been one, not applicable for PIT or PREDICTIONS
      */
@@ -59,6 +69,7 @@ public class RTab implements Serializable, Comparable<RTab> {
     private MatchType matchType;
     private int matchOrder = 0;
     private int subMatchOrder = 0;
+    private int teamOrder = 0;
 
     /*
      * Roblu Scouter ONLY helper variables
@@ -77,13 +88,14 @@ public class RTab implements Serializable, Comparable<RTab> {
 
     /**
      * Creates a RTab model, or a representation of a pit, predictions, or match tab
+     * @param teamNumber only required for sorting, 0 is an OKAY input here
      * @param title unique title identifier
      * @param metrics elements and their included data for this tab
      * @param redAlliance false for blue alliance, true for red
      * @param won whether this match is won
      * @param time millisecond timestamp for when this match is scheduled for
      */
-    public RTab(String title, ArrayList<RMetric> metrics, boolean redAlliance, boolean won, long time) {
+    public RTab(int teamNumber, String title, ArrayList<RMetric> metrics, boolean redAlliance, boolean won, long time) {
         this.metrics = metrics;
         this.title = title;
         this.redAlliance = redAlliance;
@@ -91,20 +103,21 @@ public class RTab implements Serializable, Comparable<RTab> {
         this.time = time;
 
         // Process MatchType
-        String matchName = title.toLowerCase().trim();
+        String matchName = "team# "+teamNumber+" "+title.toLowerCase().trim();
         String[] tokens = matchName.split("\\s+");
 
-        matchType = MatchType.getByName(tokens[0]);
-        if(matchType.hasMatchOrder()) matchOrder = Integer.parseInt(tokens[1]);
-        if(matchType.hasSubmatches()) subMatchOrder = Integer.parseInt(tokens[3]);
+        matchType = MatchType.getByName(tokens[2]);
+        if(matchType.hasMatchOrder()) matchOrder = Integer.parseInt(tokens[3]);
+        if(matchType.hasSubmatches()) subMatchOrder = Integer.parseInt(tokens[5]);
+        teamOrder = Integer.parseInt(tokens[1]);
     }
 
     @Override
     public int compareTo(@NonNull RTab tab) {
         if(this.matchType == tab.getMatchType())
-            if(this.matchOrder == tab.getMatchOrder()) return (this.subMatchOrder - tab.getSubMatchOrder());
-            else return (this.matchOrder - tab.getMatchOrder());
-        else return (this.matchType.getMatchTypeOrder() - tab.getMatchType().getMatchTypeOrder());
+            if(this.matchOrder == tab.getMatchOrder()) return ((this.subMatchOrder + teamOrder) - (tab.getSubMatchOrder() + tab.getTeamOrder()));
+            else return ((this.matchOrder + teamOrder) - (tab.getMatchOrder() + tab.getTeamOrder()));
+        else return ((this.matchType.getMatchTypeOrder() + teamOrder) - (tab.getMatchType().getMatchTypeOrder() + tab.getTeamOrder()));
     }
 
     @Override

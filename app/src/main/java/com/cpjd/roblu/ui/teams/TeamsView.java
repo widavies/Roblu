@@ -597,8 +597,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             searchView.closeSearch();
             lastFilter = SORT_TYPE.NUMERICAL;
             executeLoadTeamsTask(lastFilter, false);
+            return;
         }
+        super.onBackPressed();
     }
+
     @Override
     public void teamSelected(View v) {
         RTeam team = adapter.getTeams().get(rv.getChildLayoutPosition(v));

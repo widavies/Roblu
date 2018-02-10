@@ -415,7 +415,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
                                 @Override
                                 public void neutral() {}
-                            }).build(getApplicationContext());
+                            }).build(TeamViewer.this);
                 } else {
                     boolean isRed = spinner2.getSelectedItemPosition() == 0;
                     pager.setCurrentItem(tabAdapter.createMatch(processedName, isRed));

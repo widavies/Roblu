@@ -2,6 +2,8 @@ package com.cpjd.roblu.models.metrics;
 
 import org.codehaus.jackson.annotate.JsonTypeName;
 
+import java.util.ArrayList;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -18,10 +20,18 @@ public class RStopwatch extends RMetric {
      * Changing this versionUID will render this class incompatible with older versions.
      */
     public static final long serialVersionUID = 1L;
+
     /**
-     * The time, in seconds, currently on this stopwatch
+     * This will store the time that is currently displayed on the stopwatch,
+     * when the user taps the lap button, it will be added to the "times" array
      */
     private double time;
+
+    /**
+     * The time, in seconds, currently on this stopwatch.
+     * This is now an array, since laps have been implemented
+     */
+    private ArrayList<Double> times;
 
     /**
      * The empty constructor is required for de-serialization
@@ -54,6 +64,14 @@ public class RStopwatch extends RMetric {
 
     @Override
     public String toString() {
-        return String.valueOf(time);
+        StringBuilder builder = new StringBuilder();
+        builder.append("Current: ").append(time).append("s");
+        if(times != null) {
+            builder.append(" Laps: (");
+            for(double d : times) builder.append(d).append("s, ");
+            builder.replace(builder.toString().length() - 1, builder.toString().length() - 1, "");
+            builder.append(")");
+        }
+        return builder.toString();
     }
 }

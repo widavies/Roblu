@@ -53,13 +53,14 @@ public class BTServer extends Thread implements CommunicationCallback {
     @Override
     public void run() {
         this.bluetooth.setCommunicationCallback(this);
+        this.bluetooth.startScanning();
     }
 
     @Override
     public void onConnect(BluetoothDevice device) {
         Log.d("RBS", "Successfully connected to device "+device.getName()+". Performing a sync now.");
 
-        bluetooth.send("Hello from Roblu Master!");
+        //bluetooth.send("Hello from Roblu Master!\n");
     }
 
     @Override

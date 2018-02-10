@@ -51,6 +51,7 @@ import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
+import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.images.FullScreenImageGalleryActivity;
 import com.cpjd.roblu.ui.images.FullScreenImageGalleryAdapter;
 import com.cpjd.roblu.ui.images.ImageGalleryActivity;
@@ -161,6 +162,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setTextColor(rui.getText());
         observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
+        observed.setPadding(observed.getPaddingLeft(), Utils.DPToPX(activity, 15), observed.getPaddingRight(), observed.getPaddingBottom());
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
 
@@ -412,7 +414,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         Spinner spinner = new Spinner(activity);
         spinner.setId(Utils.generateViewId());
         spinner.setEnabled(editable);
-        spinner.setPadding(Utils.DPToPX(activity, 100), spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
+        spinner.setPadding(Utils.DPToPX(activity, 140), spinner.getPaddingTop(), spinner.getPaddingRight(), spinner.getPaddingBottom());
         if(chooser.getValues() != null) {
             ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_item, chooser.getValues());
             adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -420,6 +422,10 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             if(chooser.getSelectedIndex() >= chooser.getValues().length) chooser.setSelectedIndex(0);
             spinner.setSelection(chooser.getSelectedIndex());
         }
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        spinner.setLayoutParams(params);
 
         // Observed field
         final TextView observed = new TextView(activity);
@@ -460,7 +466,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         title.setId(Utils.generateViewId());
         title.setPadding(Utils.DPToPX(activity, 10), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
 
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
         spinner.setLayoutParams(params);
@@ -558,10 +564,10 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
      * @param stopwatch RSlider reference to be set to the UI
      * @return a UI CardView
      */
-    public CardView getStopwatch(final RStopwatch stopwatch) {
+    public CardView getStopwatch(final RStopwatch stopwatch, final boolean demo) {
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
-        TextView title = new TextView(activity);
+        params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        final TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
         title.setText(stopwatch.getTitle());
         title.setTextSize(20);
@@ -573,12 +579,16 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         final Drawable play = ContextCompat.getDrawable(activity, R.drawable.play);
         final Drawable pause = ContextCompat.getDrawable(activity,R.drawable.pause);
         final Drawable reset = ContextCompat.getDrawable(activity,R.drawable.replay);
+        final Drawable lap = ContextCompat.getDrawable(activity, R.drawable.lap);
 
         if(play != null) {
             play.mutate();
             play.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
         }
-
+        if(lap != null) {
+            lap.mutate();
+            lap.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+        }
         if(pause != null) {
             pause.mutate();
             pause.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
@@ -594,25 +604,38 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         playButton.setEnabled(editable);
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+        params.addRule(RelativeLayout.BELOW, title.getId());
         playButton.setId(Utils.generateViewId());
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
         playButton.setLayoutParams(params);
+
+        final ImageView lapButton = new ImageView(activity);
+        lapButton.setScaleX(0.80f);
+        lapButton.setScaleY(0.80f);
+        lapButton.setBackground(lap);
+        lapButton.setEnabled(editable);
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, title.getId());
+        lapButton.setId(Utils.generateViewId());
         params.addRule(RelativeLayout.LEFT_OF, playButton.getId());
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
+        lapButton.setLayoutParams(params);
+
+        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, title.getId());
+        params.addRule(RelativeLayout.LEFT_OF, lapButton.getId());
         final ImageView button = new ImageView(activity);
         button.setBackground(reset);
         button.setId(Utils.generateViewId());
         button.setEnabled(editable);
         button.setLayoutParams(params);
+
         final TextView timer = new TextView(activity);
         timer.setTextSize(25);
-        timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Utils.DPToPX(activity, 15), timer.getPaddingBottom());
+        timer.setPadding(timer.getPaddingLeft(), timer.getPaddingTop(), Utils.DPToPX(activity, 5), timer.getPaddingBottom());
         timer.setText(Utils.round(stopwatch.getTime(),1)+"s");
         timer.setTextColor(rui.getText());
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, title.getId());
         params.addRule(RelativeLayout.LEFT_OF, button.getId());
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
         timer.setLayoutParams(params);
 
         // Observed field
@@ -636,6 +659,31 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                         timer.setText(R.string.no_time);
                     }
                 });
+            }
+        });
+
+
+        final ArrayList<Button> laps = new ArrayList<>();
+
+        // Load times into the thing
+        if(stopwatch.getTimes() != null) {
+            for(double d : stopwatch.getTimes()) addStopwatchLapButton(stopwatch, layout, playButton, laps, d);
+        }
+
+        lapButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(demo) return;
+
+                // Add the current time on the stopwatch to the view
+                double t = Double.parseDouble(timer.getText().toString().replace("s", ""));
+                ArrayList<Double> times = stopwatch.getTimes();
+                if(times == null) times = new ArrayList<>();
+                times.add(t);
+                stopwatch.setTimes(times);
+
+                addStopwatchLapButton(stopwatch, layout, playButton, laps, t);
+                listener.changeMade(stopwatch);
             }
         });
 
@@ -694,10 +742,70 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         layout.addView(title);
         layout.addView(timer);
         layout.addView(button);
+        layout.addView(lapButton);
         layout.addView(playButton);
+
         if(!stopwatch.isModified()) layout.addView(observed);
         return getCard(layout);
     }
+
+    private void addStopwatchLapButton(final RStopwatch stopwatch, final RelativeLayout layout, final ImageView playButton, final ArrayList<Button> buttons, double time) {
+        final Button b = new Button(activity);
+        b.setText("Lap "+(buttons.size() +1)+": "+time+" seconds");
+        b.setId(Utils.generateViewId());
+        final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        if(buttons.size() != 0) params.addRule(RelativeLayout.BELOW, buttons.get(buttons.size() - 1).getId());
+        else params.addRule(RelativeLayout.BELOW, playButton.getId());
+        b.setLayoutParams(params);
+        b.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new FastDialogBuilder()
+                        .setTitle("Are you sure?")
+                        .setMessage("Are you sure you want to delete this lap time?")
+                        .setPositiveButtonText("Yes")
+                        .setNegativeButtonText("No")
+                        .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                            @Override
+                            public void accepted() {
+
+                                // Remove the time
+                                stopwatch.getTimes().remove(buttons.indexOf(b));
+                                layout.removeView(b);
+                                buttons.remove(b);
+
+                                // Redo positions
+                                for(int i = 0; i < buttons.size(); i++) {
+                                    final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+                                    if(i == 0) params.addRule(RelativeLayout.BELOW, playButton.getId());
+                                    else params.addRule(RelativeLayout.BELOW, buttons.get(buttons.size() - 1).getId());
+                                    buttons.get(i).setLayoutParams(params);
+                                }
+
+                                listener.changeMade(stopwatch);
+
+
+                            }
+
+                            @Override
+                            public void denied() {
+
+                            }
+
+                            @Override
+                            public void neutral() {
+
+                            }
+                        }).build(activity);
+            }
+        });
+
+        buttons.add(b);
+        layout.addView(b);
+    }
+
+
     /**
      * Gets the Textfield UI card from an RTextfield reference
      * @param textfield RTextfield reference to be set to the UI

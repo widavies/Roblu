@@ -1,3 +1,5 @@
+Title:FRC 2017
+Description:Gears, hopper, load station, shots, etc.
 PIT
 DEFAULTS
 textfield,Comments,

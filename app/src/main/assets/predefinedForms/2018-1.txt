@@ -1,0 +1,18 @@
+Title:FRC 2018
+Description:Courtesy Team 930, Mukwonago BEARs
+PIT
+DEFAULTS
+chooser,Cube Acquisition,Ground:Exchange/Portal Only,0
+checkbox,Autonomous Routine Types,Autoline:Switch:Scale:Switch then Scale:Scale then Switch
+checkbox,Cube Placing Capability,Exchange:Switch:Scale
+chooser,Drivetrain,6 Wheel Drop:Mecanum:Swerve:Other,0
+chooser,Endgame Capability,Hang:Park:Ramp,0
+MATCH
+boolean,Autoline Crossed,false
+counter,Auto Switch Cubes,1,3
+counter,Auto Scale Cubes,1,0
+counter,Teleop Alliance Switch Cubes,1,0
+counter,Teleop Scale Cubes,1,0
+chooser,Endgame state,Not Parked/Hanging:Parked:Hanging,0
+boolean,Win,false
+textfield,Comments\Haikus about Scouting,

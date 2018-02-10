@@ -28,6 +28,8 @@ import com.cpjd.roblu.ui.forms.RMetricToUI;
 import com.cpjd.roblu.ui.team.TeamViewer;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+
 /**
  * Match manages the loading of one RTab object
  *
@@ -115,7 +117,7 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
         else if(e instanceof RCounter) layout.addView(els.getCounter((RCounter) e));
         else if(e instanceof RGallery) layout.addView(els.getGallery(false, position, event.getID(), (RGallery) e));
         else if(e instanceof RSlider) layout.addView(els.getSlider((RSlider) e));
-        else if(e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e));
+        else if(e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e, false));
         else if(e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
         else Log.d("RBS", "Couldn't resolve metric with name: "+e.getTitle());
     }
@@ -146,7 +148,17 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
                 init = true;
             }
         }
-        if(!init) TeamViewer.team.setLastEdit(System.currentTimeMillis());
+        if(!init) {
+            TeamViewer.team.setLastEdit(System.currentTimeMillis());
+
+            // Add local device to edit history list
+            if(event.isCloudEnabled()) {
+                LinkedHashMap<String, Long> edits = TeamViewer.team.getTabs().get(position).getEdits();
+                if(edits == null) TeamViewer.team.getTabs().get(position).setEdits(new LinkedHashMap<String, Long>());
+                TeamViewer.team.getTabs().get(position).getEdits().put("me", System.currentTimeMillis());
+            }
+
+        }
         // save the team
         new IO(getActivity()).saveTeam(event.getID(), TeamViewer.team);
     }

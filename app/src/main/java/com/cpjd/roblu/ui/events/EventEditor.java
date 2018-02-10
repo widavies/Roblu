@@ -223,7 +223,7 @@ public class EventEditor extends AppCompatActivity {
          * the custom form editor, their data will be saved because this activity keeps track of it)
          */
         if(resultCode == Constants.CANCELLED) {
-            if(data.getExtras().getSerializable("form") != null) tempFormHolder = (RForm) data.getExtras().getSerializable("form");
+            if(data != null && data.getExtras() != null && data.getExtras().getSerializable("form") != null) tempFormHolder = (RForm) data.getExtras().getSerializable("form");
         }
         /*
          * User tapped confirm on the custom form editor, so let's create an event with form they created
@@ -236,7 +236,6 @@ public class EventEditor extends AppCompatActivity {
              * Create the event!
              */
             createEvent(tempFormHolder);
-
         }
         /*
          * User tapped a predefined form, so let's create an event with the specified predefined form

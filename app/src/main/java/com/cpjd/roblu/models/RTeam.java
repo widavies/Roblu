@@ -146,8 +146,8 @@ public class RTeam implements Serializable, Comparable<RTeam> {
         // Check for null or missing Pit & Predictions tabs
         if(this.tabs == null || this.tabs.size() == 0) {
             this.tabs = new ArrayList<>();
-            addTab(new RTab("Pit", Utils.duplicateRMetricArray(form.getPit()) , false, false, 0));
-            addTab(new RTab("Predictions", Utils.duplicateRMetricArray(form.getMatch()) , false, false, 0));
+            addTab(new RTab(number, "Pit", Utils.duplicateRMetricArray(form.getPit()) , false, false, 0));
+            addTab(new RTab(number, "Predictions", Utils.duplicateRMetricArray(form.getMatch()) , false, false, 0));
             // Check to make sure the team name and number have been inserted into the form
             for(RMetric m : this.getTabs().get(0).getMetrics()) {
                 if(m.getID() == 0) ((RTextfield)m).setText(name); // team name

@@ -69,9 +69,9 @@ import java.util.Map;
  */
 public class PredefinedFormSelector extends AppCompatActivity implements OnItemClickListener {
 
-	private final String items[] = { "FRC 2016", "FRC 2017"};
+	private String items[];
 
-	private final String sub_items[] = { "Ramparts, walls, moat, cheval de frise, etc." , "Gears, hopper, load station, shots, etc."};
+	private String sub_items[];
 
 	private ArrayList<RForm> forms;
 
@@ -89,49 +89,67 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
         if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("Predefined forms");
+            getSupportActionBar().setSubtitle("You can still edit predefined forms later");
         }
-        // Bind predefined forms to the list
-		ListView sharingView = findViewById(R.id.listView1);
-		List<Map<String, String>> data = new ArrayList<>();
-		for (int i = 0; i < items.length; i++) {
-			Map<String, String> datum = new HashMap<>(2);
-			datum.put("item", items[i]);
-			datum.put("description", sub_items[i]);
-			data.add(datum);
-		}
-		SimpleAdapter adapter = new SimpleAdapter(this, data, android.R.layout.simple_list_item_2, new String[] { "item", "description" },
-				new int[] { android.R.id.text1, android.R.id.text2 });
-		sharingView.setAdapter(adapter);
-		sharingView.setOnItemClickListener(this);
 
 		/*
 		 * Load and process predefined forms
 		 */
 		try {
-            int firstYear = 2016; // stores the first specified year
-            int numFiles = getAssets().list("predefinedForms").length;
-            forms = new ArrayList<>();
-            for(int i = firstYear; i < firstYear + numFiles; i++) {
-                forms.add(processForm(i));
+		    forms = new ArrayList<>();
+		    String[] files = getAssets().list("predefinedForms");
+		    items = new String[files.length];
+		    sub_items = new String[files.length];
+		    for(int i = 0; i < files.length; i++) {
+		        forms.add(processForm(i, files[i]));
             }
+
         } catch(IOException e) {
 		    Log.d("RBS", "Unable to process predefined forms.");
         }
+
+        // Bind predefined forms to the list
+        ListView sharingView = findViewById(R.id.listView1);
+        List<Map<String, String>> data = new ArrayList<>();
+        for (int i = 0; i < items.length; i++) {
+            Map<String, String> datum = new HashMap<>(2);
+            datum.put("item", items[i]);
+            datum.put("description", sub_items[i]);
+            data.add(datum);
+        }
+        SimpleAdapter adapter = new SimpleAdapter(this, data, android.R.layout.simple_list_item_2, new String[] { "item", "description" },
+                new int[] { android.R.id.text1, android.R.id.text2 });
+        sharingView.setAdapter(adapter);
+        sharingView.setOnItemClickListener(this);
+
 
         // Sync UI with user settings
         new UIHandler(this, toolbar).update();
 	}
 
-	private RForm processForm(int year) {
+    /**
+     * Converst the form into an RForm reference
+     * @param name the file name
+     * @return an RForm instance
+     */
+	private RForm processForm(int index, String name) {
 	    RForm form = new RForm(null, null);
         ArrayList<RMetric> metrics = new ArrayList<>();
 	    try {
             AssetManager am = getAssets();
-            InputStream is = am.open("predefinedForms"+ File.separator+year +".txt");
+            InputStream is = am.open("predefinedForms"+ File.separator+name);
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String line;
             int ID = 0;
             while((line = br.readLine()) != null) {
+                if(line.startsWith("Title")) {
+                    items[index] = line.split(":")[1];
+                    continue;
+                } else if(line.startsWith("Description")) {
+                    sub_items[index] = line.split(":")[1];
+                    continue;
+                }
+
                 switch(line) {
                     case "PIT":
                         continue;

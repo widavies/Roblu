@@ -23,6 +23,7 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.sync.cloud.EventDepacker;
 import com.cpjd.roblu.sync.cloud.Service;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.tba.TBAEventSelector;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
@@ -140,20 +141,30 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
          * User selected Roblu Cloud event import
          */
         else if(position == 1) {
-            d = new ProgressDialog(EventCreateMethodPicker.this);
-            d.setTitle("Get ready!");
-            d.setMessage("Roblu is importing an event from Roblu Cloud...");
-            d.setCancelable(false);
-            d.show();
+            /*
+             * First, check if an active cloud event already exists and warn the user
+             * that they will be disabling that
+             */
+            if(doesActiveEventExist()) {
+               new FastDialogBuilder()
+                       .setTitle("Warning")
+                       .setMessage("It looks like an active cloud event already exists on your device. Importing a new event from Roblu Cloud will disable the local" +
+                               " event from cloud syncing. Do you want to proceed?")
+                       .setPositiveButtonText("Yes")
+                       .setNegativeButtonText("No")
+                       .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                           @Override
+                           public void accepted() {
+                               importRobluCloudEvent();
+                           }
 
-            // Stop the background service so it won't interfere
-            IntentFilter serviceFilter = new IntentFilter();
-            serviceFilter.addAction(Constants.SERVICE_ID);
-            Intent serviceIntent = new Intent(this, Service.class);
-            stopService(serviceIntent);
-            EventDepacker dp = new EventDepacker(new IO(getApplicationContext()));
-            dp.setListener(this);
-            dp.execute();
+                           @Override
+                           public void denied() {}
+
+                           @Override
+                           public void neutral() {}
+                       }).build(EventCreateMethodPicker.this);
+            } else importRobluCloudEvent();
         }
         /*
          * User selected import from backup file
@@ -174,6 +185,27 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
                 Utils.showSnackbar(findViewById(R.id.activity_create_event_picker), getApplicationContext(), "No file manager found", true, rui.getPrimaryColor());
             }
         }
+    }
+
+    /**
+     * Imports an event from Roblu Cloud, given one exists
+     */
+    private void importRobluCloudEvent() {
+        d = new ProgressDialog(EventCreateMethodPicker.this);
+        d.setTitle("Get ready!");
+        d.setMessage("Roblu is importing an event from Roblu Cloud...");
+        d.setCancelable(false);
+        d.show();
+
+
+        // Stop the background service so it won't interfere
+        IntentFilter serviceFilter = new IntentFilter();
+        serviceFilter.addAction(Constants.SERVICE_ID);
+        Intent serviceIntent = new Intent(this, Service.class);
+        stopService(serviceIntent);
+        EventDepacker dp = new EventDepacker(new IO(getApplicationContext()));
+        dp.setListener(this);
+        dp.execute();
     }
 
     /**
@@ -274,4 +306,20 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
             }
         });
     }
+
+
+    /**
+     * Returns true if an active event is being synced with the cloud
+     * @return true an active event was found
+     */
+    private boolean doesActiveEventExist() {
+        REvent[] events = new IO(getApplicationContext()).loadEvents();
+        if(events != null && events.length > 0) {
+            for(REvent event : events) {
+                if(event.isCloudEnabled()) return true;
+            }
+            return false;
+        } else return false;
+    }
+
 }

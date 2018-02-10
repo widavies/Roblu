@@ -1,0 +1,30 @@
+Title:FRC 2018
+Description:Courtesy Team 972, Iron Claw
+PIT
+DEFAULTS
+boolean,Switch,false
+boolean,Scale,false
+slider,Robot Height (ft),0,6,0
+textfield,Drivetrain,
+textfield,Block Manipulator,
+textfield,Climber,
+checkbox,Auto Routine,Baseline:Switch:Scale:Both:Either side
+slider,Time to get and deliver block,0,60,0
+slider,Climb Time,0,30,0
+boolean,Vision,false
+gallery,Picture
+MATCH
+chooser,Start Position,Left:Center:Right,0
+boolean,Auto Baseline,false
+counter,Auto Switch Blocks,1,0
+counter,Auto Scale Blocks,1,0
+boolean,Correct Auto Side,false
+stopwatch,Auto Time,0
+counter,Teleop Switch Blocks,1,0
+counter,Teleop Scale Blocks,1,0
+counter,Teleop Opponent Switch Blocks,1,0
+counter,Delivered to Exchange,1,0
+counter,Blocks From Human Player,1,0
+counter,Blocks from Power Cube Zone,1,0
+counter,Blocks from Platform Zone,1,0
+stopwatch,Climb Time,0
