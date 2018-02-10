@@ -109,8 +109,8 @@ public class Service extends android.app.Service {
             cloudSettings.setPurgeRequested(false);
             Log.d("RBS-Service", "Event successfully purged from Roblu Cloud.");
             io.saveCloudSettings(cloudSettings);
+            Notify.notifyNoAction(getApplicationContext(), "Event purged", "Active event successfully removed from Roblu Cloud.");
         }
-
 
         if(activeEvent == null) return;
         RForm form = io.loadForm(activeEvent.getID());
@@ -255,9 +255,7 @@ public class Service extends android.app.Service {
                 io.saveCloudSettings(cloudSettings);
                 // Notify the user
                 Utils.requestUIRefresh(getApplicationContext());
-                Notify.notify(getApplicationContext(), "Scouting data received", "Merged " + checkout.getTeam() + "'s scouting data over network sync.");
-                // Next, if the user is editing the checkout that was just edited, force close the TeamViewer TODO
-                // If the user is viewing the team's list, refresh it TODO
+                Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
             }
         } catch(Exception e) {
             Log.d("RBS-Service", "An error occurred while checking for completed checkouts. "+e.getMessage());

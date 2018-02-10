@@ -101,6 +101,7 @@ public class RTab implements Serializable, Comparable<RTab> {
         this.redAlliance = redAlliance;
         this.won = won;
         this.time = time;
+        this.alliancePosition = -1; // default to not found
 
         // Process MatchType
         String matchName = "team# "+teamNumber+" "+title.toLowerCase().trim();
@@ -114,10 +115,15 @@ public class RTab implements Serializable, Comparable<RTab> {
 
     @Override
     public int compareTo(@NonNull RTab tab) {
-        if(this.matchType == tab.getMatchType())
-            if(this.matchOrder == tab.getMatchOrder()) return ((this.subMatchOrder + teamOrder) - (tab.getSubMatchOrder() + tab.getTeamOrder()));
-            else return ((this.matchOrder + teamOrder) - (tab.getMatchOrder() + tab.getTeamOrder()));
-        else return ((this.matchType.getMatchTypeOrder() + teamOrder) - (tab.getMatchType().getMatchTypeOrder() + tab.getTeamOrder()));
+        // Matches are different in some way
+        if(this.matchType == tab.getMatchType()) {
+            // Matches are exactly identical, sort by team number then
+            if(this.matchOrder == tab.getMatchOrder() && this.subMatchOrder == tab.getSubMatchOrder()) return (this.getTeamOrder() - tab.getTeamOrder());
+
+            if(this.matchOrder == tab.getMatchOrder()) return ((this.subMatchOrder) - (tab.getSubMatchOrder()));
+            else return ((this.matchOrder) - (tab.getMatchOrder()));
+        }
+        else return ((this.matchType.getMatchTypeOrder()) - (tab.getMatchType().getMatchTypeOrder()));
     }
 
     @Override

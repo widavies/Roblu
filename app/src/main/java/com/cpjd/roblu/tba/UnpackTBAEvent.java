@@ -103,7 +103,7 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
                     // add the match to the team, make sure to multiple the Event model's matches times by 1000 (seconds to milliseconds, Roblu works with milliseconds!)
                     RTab tab = new RTab(t.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000);
                     // set the match position, if possible
-                    tab.setAlliancePosition(event.matches[j].getTeamPosition(t.getNumber()));
+                    tab.setAlliancePosition(event.matches[j].getTeamPosition(t.getNumber()) + 1);
                     t.addTab(tab);
                 }
             }

@@ -182,6 +182,42 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
         for(RTeam team : teams) team.setFilter(filter);
 
         /*
+         * RANDOMIZE SCOUTING DATA
+         */
+       /* Random r = new Random();
+        for(RTeam team : teams) {
+            team.verify(ioWeakReference.get().loadForm(eventID));
+            team.setLastEdit(System.currentTimeMillis());
+            for(RTab tab : team.getTabs()) {
+                for(RMetric metric : tab.getMetrics()) {
+                    metric.setModified(true);
+
+                    if(metric instanceof RCounter) {
+                        ((RCounter) metric).setValue(r.nextInt(100));
+                    } else if(metric instanceof RSlider) {
+                        ((RSlider) metric).setValue(r.nextInt(100));
+                    } else if(metric instanceof RChooser) {
+                        ((RChooser) metric).setSelectedIndex(r.nextInt(2));
+                    } else if(metric instanceof RCheckbox) {
+                        LinkedHashMap<String, Boolean> values = ((RCheckbox) metric).getValues();
+                        for(Object o : values.keySet()) {
+                            values.put(o.toString(), r.nextInt(2) == 1);
+                        }
+                    } else if(metric instanceof RBoolean) {
+                        ((RBoolean) metric).setValue(r.nextInt(1) == 1);
+                    } else if(metric instanceof RStopwatch) {
+                        ((RStopwatch) metric).setTime(Utils.round(r.nextDouble() * 10, 2));
+                        ((RStopwatch) metric).setTimes(new ArrayList<Double>());
+                        if(r.nextInt(5) > 3) {
+                            ((RStopwatch) metric).getTimes().add(Utils.round(r.nextDouble() * 10, 2));
+                        }
+                    }
+                }
+            }
+            ioWeakReference.get().saveTeam(eventID, team);
+        }*/
+
+        /*
          * If filter is ANYTHING but SORT_TYPE.SEARCH or SORT_TYPE.CUSTOM_SORT, just run a standard sort.
          * And actually, that also means that we're done with this method, return the teams!
          */
