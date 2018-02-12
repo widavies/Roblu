@@ -19,6 +19,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RDivider;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
@@ -173,6 +174,10 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                         metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])));
                         ID++;
                         break;
+                    case "divider":
+                        metrics.add(new RDivider(ID, tokens[1]));
+                        ID++;
+                        break;
                     case "chooser":
                         metrics.add(new RChooser(ID, tokens[1], tokens[2].split(":"), Integer.parseInt(tokens[3])));
                         ID++;
@@ -228,7 +233,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
 
     @Override
     public void onBackPressed() {
-        setResult(Constants.PREDEFINED_FORM_SELECTED);
+        setResult(Constants.CANCELLED);
         finish();
     }
 

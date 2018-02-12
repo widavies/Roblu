@@ -1,0 +1,33 @@
+Title:FRC 2018
+Description:Courtesy Team 1557, Steampunk
+PIT
+DEFAULTS
+checkbox,What can the Robot do?,Cubes in Scale:Cubes in Switch:Cubes in Exchange:Cubes from Floor:Cubes from Portal
+text,Average speed of robot (m/s),
+chooser,Where is your preferred starting position?,Left:Center:Right,1
+text,What kind of drivetrain does the robot have?,
+text,What mechanism do you use for climbing?,
+boolean,Can your robot assist others in climbing?,false
+checkbox,How?,Aircraft Carrier:Bar on Robot:Other
+text,What is your robot's biggest weakness?,
+MATCH
+divider,Auto
+checkbox,Starting Position,Left:Center:Right
+boolean,Cross Auto Line,false
+counter,Power Cubes - Switch,1,0
+counter,Power Cubes - Scale,1,0
+boolean,Successful?,false
+gallery,End position
+divider,Teleop
+counter,Power Cubes - Exchange,1,0
+counter,Power Cubes - Close Switch,1,0
+counter,Power Cubes - Scale,1,0
+counter,Power Cubes - Far Switch,1,0
+checkbox,Cube Intake,Floor:Portal:Exchange:false
+divider,Endgame
+chooser,Endgame,None:Parking and picking up 1:Parking and picking up 2:Climbing:Climbing with 1:Climbing with 2:Climbing on another Robot,1
+stopwatch,Climb time,0
+divider,Comments
+textfield,Auto comments,
+textfield,Teleop comments,
+

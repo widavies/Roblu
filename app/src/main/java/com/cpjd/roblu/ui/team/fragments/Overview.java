@@ -57,7 +57,8 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
 
         Bundle bundle = this.getArguments();
         layout = view.findViewById(R.id.overview_layout);
-        RTeam team = new IO(getActivity()).loadTeam(bundle.getInt("eventID"), TeamViewer.team.getID());
+        REvent event = (REvent) getArguments().getSerializable("event");
+        RTeam team = new IO(getActivity()).loadTeam(event.getID(), TeamViewer.team.getID());
         rMetricToUI = new RMetricToUI(getActivity(), new IO(getActivity()).loadSettings().getRui(), true);
 
         /*
@@ -140,7 +141,6 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
          */
 
         if(!team.hasTBAInfo()) {
-            REvent event = new IO(view.getContext()).loadEvent(bundle.getInt("eventID"));
             if(event.getKey() != null && event.getKey().length() >= 4) new TBATeamInfoTask(view.getContext(), team.getNumber(), event.getKey().substring(0, 4),  this);
         } else {
             // TBA info card
@@ -156,28 +156,19 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
          * Find the image with the most entropy, and add
          * it as the "featured" image
          */
-        int highestEntropyGalleryIndex = 0;
-        int highestEntropyIndex = 0;
-        double highestEntropy = 0;
-        for(int j = 0; j < galleries.size(); j++) {
+        galleryLoop: for(int j = 0; j < galleries.size(); j++) {
             if(galleries.get(j).getImages() != null && galleries.get(j).getImages().size() > 0) {
                 for(int i = 0; i < galleries.get(j).getImages().size(); i++) {
-                    double entropy = getEntropy(galleries.get(j).getImages().get(i));
-                    if(entropy > highestEntropy) {
-                        highestEntropyGalleryIndex = j;
-                        highestEntropyIndex = i;
-                        highestEntropy = entropy;
+                    try {
+                        layout.addView(rMetricToUI.getImageView(
+                                "Featured image",  BitmapFactory.decodeByteArray(galleries.get(j).getImages().get(i),
+                                        0,  galleries.get(j).getImages().get(i).length)));
+                        break galleryLoop;
+                    } catch(Exception e) {
+                        Log.d("RBS", "Failed to load featured image: "+e.getMessage());
                     }
                 }
             }
-        }
-
-        try {
-            layout.addView(rMetricToUI.getImageView(
-                    "Featured image from Quals 18",  BitmapFactory.decodeByteArray(galleries.get(highestEntropyGalleryIndex).getImages().get(highestEntropyIndex),
-                    0,  galleries.get(highestEntropyGalleryIndex).getImages().get(highestEntropyIndex).length)));
-        } catch(Exception e) {
-            Log.d("RBS", "Failed to load featured image: "+e.getMessage());
         }
 
         /*
@@ -234,45 +225,6 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
         int num = 0;
         for(int i = 2; i < tabs.size(); i++) for(RMetric metric : tabs.get(i).getMetrics()) if(metric.getID() == ID && metric.isModified()) num++;
         return num;
-    }
-
-    /**
-     * Gets the entropy of text. Entropy of text is essentially measured by taking
-     * the summation of the log2 of each character's occurrence over the number of
-     * characters in the text
-     * ranges from zero to log2 of X, with X unique characters.
-     * @return The entropy value
-     */
-    private double getEntropy(byte[] bytes) {
-        if(true) return 1;
-
-        ArrayList<Byte> letters = new ArrayList<>();
-        ArrayList<Integer> occurrence = new ArrayList<>();
-
-        double totalCharacters = 0;
-        for(int i = 0; i < bytes.length; i++) {
-            byte b = bytes[i];
-
-            int index = letters.indexOf(b);
-
-            if(index < 0) {
-                letters.add(b);
-                occurrence.add(1);
-            } else {
-                occurrence.set(index, occurrence.get(index) + 1);
-            }
-
-            totalCharacters++;
-        }
-
-        double entropy = 0;
-        for(int i = 0; i < occurrence.size(); i++) {
-            double p = occurrence.get(i) / totalCharacters;
-            entropy += (p * log2(p));
-        }
-        entropy = -entropy;
-
-        return entropy;
     }
 
     /**

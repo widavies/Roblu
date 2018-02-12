@@ -33,5 +33,4 @@ public class RCloudSettings implements Serializable {
      * If true, keep sending the /checkouts/purge request to the server
      */
     private boolean purgeRequested;
-
 }

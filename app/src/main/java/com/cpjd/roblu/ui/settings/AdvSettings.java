@@ -219,6 +219,11 @@ public class AdvSettings extends AppCompatActivity {
                 return true;
             }
             else if(preference.getKey().equals("purge")) { // user tapped "purge" event
+                if(settings.getCode() == null || settings.getCode().equals("")) {
+                    Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), "You must enter a team code to purge events.", true, 0);
+                    return true;
+                }
+
                 new FastDialogBuilder()
                         .setTitle("Are you sure?!?")
                         .setMessage("This will delete ALL scouting data on ALL devices (except locally). You cannot undo this.")

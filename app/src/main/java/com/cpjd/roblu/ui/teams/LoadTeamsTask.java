@@ -1,11 +1,6 @@
 package com.cpjd.roblu.ui.teams;
 
-import android.os.AsyncTask;
-import android.support.v7.app.ActionBar;
-import android.support.v7.widget.RecyclerView;
 import android.util.Log;
-import android.view.View;
-import android.widget.ProgressBar;
 
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
@@ -36,7 +31,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
+public class LoadTeamsTask extends Thread {
 
     /**
      * The int ID of the event whose teams need to be loaded
@@ -66,7 +61,7 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
     private String customSortToken;
 
     public interface LoadTeamsTaskListener {
-        void teamsListLoaded(ArrayList<RTeam> teams);
+        void teamsListLoaded(ArrayList<RTeam> teams, boolean hideZeroRelevanceTeams);
     }
 
     /**
@@ -82,23 +77,6 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
     private WeakReference<IO> ioWeakReference;
 
     /**
-     * The teams array will be sent to this adapter when this task is finished
-     */
-    private WeakReference<TeamsRecyclerAdapter> teamsRecyclerAdapterWeakReference;
-    /**
-     * Reference to the progress bar so it can be made invisible again after this task finishes
-     */
-    private WeakReference<ProgressBar> progressBarWeakReference;
-    /**
-     * Reference to the recycler view so it can be made visible again after this task finishes
-     */
-    private WeakReference<RecyclerView> recyclerViewWeakReference;
-    /**
-     * Reference to the actionbar so it's subtitle can be updated after this task finishes
-     */
-    private WeakReference<ActionBar> actionBarWeakReference;
-
-    /**
      * Instantiates a LoadTeamsTask.
      *
      * After that, just call setTaskParameters() and .execute() to perform an operation.
@@ -107,13 +85,9 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
      * @param io IO object so that this class can interact with the file system
      *
      */
-    LoadTeamsTask(IO io, TeamsRecyclerAdapter adapter, LoadTeamsTaskListener listener, ProgressBar progressBar, RecyclerView recyclerView, ActionBar actionBar) {
+    LoadTeamsTask(IO io, LoadTeamsTaskListener listener) {
         this.ioWeakReference = new WeakReference<>(io);
         this.listener = listener;
-        this.teamsRecyclerAdapterWeakReference = new WeakReference<>(adapter);
-        this.progressBarWeakReference = new WeakReference<>(progressBar);
-        this.recyclerViewWeakReference = new WeakReference<>(recyclerView);
-        this.actionBarWeakReference = new WeakReference<>(actionBar);
         this.query = "";
     }
 
@@ -142,14 +116,16 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
     /**
      * Performs loading, sorting, searching, etc.
      *
-     * @param params no parameters are accepted here
-     * @return will return the array that should be attached to TeamsView.teams
      */
-    protected Boolean doInBackground(Void... params) {
+    @Override
+    public void run() {
         /*
          * Verify that the event actually exists
          */
-        if(ioWeakReference.get() == null || !ioWeakReference.get().doesEventExist(eventID)) return false;
+        if(ioWeakReference.get() == null || !ioWeakReference.get().doesEventExist(eventID)) {
+            quit();
+            return;
+        }
 
         /*
          * Next, take care of "reload", if reload is true, teams must be reloaded from the file system
@@ -160,19 +136,24 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
             if(local == null || local.length == 0) {
                 Log.d("RBS", "LoadTeamsTask found no teams locally stored.");
                 teams = null;
-                return false;
+                listener.teamsListLoaded(null, false);
+                quit();
+                return;
             }
             // teams were found locally, so attach them to the teams array
             teams = new ArrayList<>(Arrays.asList(local));
-            listener.teamsListLoaded(teams);
             Log.d("RBS", "LoadTeamsTask loaded "+teams.size()+" teams");
         }
 
-        /*
-         * This check is necessary because the above method is conditional,
-         * again, if the teams array is empty
-         */
-        if(teams == null || teams.size() == 0) return false;
+        // Sometimes a team will be null if a lot of things are happening and LoadTeamsTask is trying to run,
+        // usually, this is fine because LoadTeamsTasks will be called again whenever the "lots of things happen" (background
+        // threads) finish.
+        for(RTeam team : teams) {
+            if(team == null) {
+                quit();
+                return;
+            }
+        }
 
         /*
          * Next, each RTeam contains a variable named filter, it's a sort of "helper" variable.
@@ -180,42 +161,6 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
          * the team will let the team now how it's to behave when compareTo() is called in it
          */
         for(RTeam team : teams) team.setFilter(filter);
-
-        /*
-         * RANDOMIZE SCOUTING DATA
-         */
-       /* Random r = new Random();
-        for(RTeam team : teams) {
-            team.verify(ioWeakReference.get().loadForm(eventID));
-            team.setLastEdit(System.currentTimeMillis());
-            for(RTab tab : team.getTabs()) {
-                for(RMetric metric : tab.getMetrics()) {
-                    metric.setModified(true);
-
-                    if(metric instanceof RCounter) {
-                        ((RCounter) metric).setValue(r.nextInt(100));
-                    } else if(metric instanceof RSlider) {
-                        ((RSlider) metric).setValue(r.nextInt(100));
-                    } else if(metric instanceof RChooser) {
-                        ((RChooser) metric).setSelectedIndex(r.nextInt(2));
-                    } else if(metric instanceof RCheckbox) {
-                        LinkedHashMap<String, Boolean> values = ((RCheckbox) metric).getValues();
-                        for(Object o : values.keySet()) {
-                            values.put(o.toString(), r.nextInt(2) == 1);
-                        }
-                    } else if(metric instanceof RBoolean) {
-                        ((RBoolean) metric).setValue(r.nextInt(1) == 1);
-                    } else if(metric instanceof RStopwatch) {
-                        ((RStopwatch) metric).setTime(Utils.round(r.nextDouble() * 10, 2));
-                        ((RStopwatch) metric).setTimes(new ArrayList<Double>());
-                        if(r.nextInt(5) > 3) {
-                            ((RStopwatch) metric).getTimes().add(Utils.round(r.nextDouble() * 10, 2));
-                        }
-                    }
-                }
-            }
-            ioWeakReference.get().saveTeam(eventID, team);
-        }*/
 
         /*
          * If filter is ANYTHING but SORT_TYPE.SEARCH or SORT_TYPE.CUSTOM_SORT, just run a standard sort.
@@ -227,7 +172,8 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
             try {
                 Collections.sort(teams);
                 if(filter == TeamsView.SORT_TYPE.LAST_EDIT) Collections.reverse(teams);
-                return false;
+                listener.teamsListLoaded(this.teams, false);
+                quit();
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
@@ -249,7 +195,8 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
             try {
                 Collections.sort(this.teams);
                 Collections.reverse(this.teams);
-                return true;
+                listener.teamsListLoaded(this.teams, true);
+                quit();
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
@@ -313,12 +260,12 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
                 Collections.sort(teams);
                 // don't reverse array if sorting by "In matches" since in matches uses numerical sub sort
                 if(!(methodID == TeamMetricProcessor.PROCESS_METHOD.OTHER && metricID == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH)) Collections.reverse(teams);
-                return shouldHideZeroRelevance;
+                listener.teamsListLoaded(this.teams, shouldHideZeroRelevance);
+                quit();
             } catch(Exception e) {
                 Log.d("RBS", "A problem occurred while attempting to sort teams with SORT_TYPE = " + filter);
             }
         }
-        return false;
     }
 
     /**
@@ -369,20 +316,8 @@ public class LoadTeamsTask extends AsyncTask<Void, Void, Boolean> {
         team.setCustomRelevance(team.getCustomRelevance() + relevance);
     }
 
-    @Override
-    protected void onPostExecute(Boolean shouldHideZeroRelevance) {
-        progressBarWeakReference.get().setVisibility(View.INVISIBLE);
-        recyclerViewWeakReference.get().setVisibility(View.VISIBLE);
-        teamsRecyclerAdapterWeakReference.get().setTeams(teams, shouldHideZeroRelevance);
-
-        int numTeams = 0;
-        if(teams != null) numTeams = teams.size();
-
-        StringBuilder subtitle = new StringBuilder(String.valueOf(numTeams));
-        subtitle.append(" Team");
-        if(numTeams != 1) subtitle.append("s");
-        if(actionBarWeakReference.get() != null) actionBarWeakReference.get().setSubtitle(subtitle.toString());
+    void quit() {
+        interrupt();
     }
-
 }
 

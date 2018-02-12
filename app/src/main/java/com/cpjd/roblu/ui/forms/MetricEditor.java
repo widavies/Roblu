@@ -29,6 +29,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RDivider;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
@@ -71,7 +72,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
     /**
      * All the different metric types that the user can select from
      */
-    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery"};
+    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider"};
     /**
      * The user's color preferences, so the metrics can be synced with the user's preferences
      */
@@ -313,6 +314,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(metric instanceof RStopwatch) toolbar.addView(rMetricToUI.getStopwatch((RStopwatch) metric, true));
         else if(metric instanceof RTextfield) toolbar.addView(rMetricToUI.getTextfield((RTextfield) metric));
         else if(metric instanceof RGallery) toolbar.addView(rMetricToUI.getGallery(true, 0, 0, ((RGallery)metric)));
+        else if(metric instanceof RDivider) toolbar.addView(rMetricToUI.getDivider((RDivider)metric));
     }
 
     /**
@@ -391,6 +393,8 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
             metric = new RTextfield(0, "Text field", "");
         } else if(stringOfSelected.equals(METRIC_TYPES[7])) {
             metric = new RGallery(0, "Gallery");
+        } else if(stringOfSelected.equalsIgnoreCase(METRIC_TYPES[8])) {
+            metric = new RDivider(0, "Divider");
         }
         metric.setModified(true);
         addMetricPreviewToToolbar();

@@ -59,6 +59,8 @@ public abstract class Constants {
 
     public static final int EVENT_SETTINGS_REQUEST = getNum();
 
+    public static final int MY_MATCHES_EXITED = getNum();
+
     // Drawer identifier codes
     public static final int CREATE_EVENT = getNum();
     public static final int SCOUT = getNum();

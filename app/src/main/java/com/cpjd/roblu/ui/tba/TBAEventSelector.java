@@ -135,6 +135,10 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
                 onlyShowMyEvents = parent.getItemAtPosition(position).toString().equals("My events");
                 rv.setVisibility(View.INVISIBLE);
                 bar.setVisibility(View.VISIBLE);
+
+                if(tbaEventAdapter.getEvents() != null) tbaEventAdapter.getEvents().clear();
+                tbaEventAdapter.notifyDataSetChanged();
+
                 TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);
                 task.execute();
             }
@@ -163,6 +167,8 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
                 selectedYear = Integer.parseInt(adapterView.getItemAtPosition(i).toString());
                 rv.setVisibility(View.INVISIBLE);
                 bar.setVisibility(View.VISIBLE);
+                if(tbaEventAdapter.getEvents() != null) tbaEventAdapter.getEvents().clear();
+                tbaEventAdapter.notifyDataSetChanged();
                 TBALoadEventsTask task = new TBALoadEventsTask(bar, rv, tbaEventAdapter, TBAEventSelector.this, teamNumber, selectedYear, onlyShowMyEvents);
                 task.execute();
             }

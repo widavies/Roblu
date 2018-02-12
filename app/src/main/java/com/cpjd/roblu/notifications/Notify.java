@@ -33,6 +33,7 @@ public class Notify {
         Intent intent = new Intent(context, TeamViewer.class);
         intent.putExtra("eventID", eventID);
         intent.putExtra("teamID", checkout.getTeam().getID());
+        intent.putExtra("match", checkout.getTeam().getTabs().get(0).getTitle());
         notify(context, "Scouting data received from "+checkout.getNameTag(),
                 checkout.getTeam().getName()+" #"+checkout.getTeam().getNumber()+"\n"+checkout.getTeam().getTabs().get(0).getTitle()+" was merged at "+ Utils.convertTime(checkout.getTime())+"\nTap to view scouting data", intent);
     }
@@ -40,10 +41,10 @@ public class Notify {
     private static void notify(Context activity, String title, String content, Intent action) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "roblu-master").setSmallIcon(R.drawable.launcher)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-                .setContentTitle(title);
+                .setContentTitle(title).setContentText(content);
 
         PendingIntent pending = PendingIntent.getActivity(activity, 0, action, PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(pending);
+        builder.setAutoCancel(true).setContentIntent(pending);
 
         NotificationManager notifyMgr = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
         if(notifyMgr != null) notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());

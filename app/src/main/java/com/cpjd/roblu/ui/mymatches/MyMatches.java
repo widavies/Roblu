@@ -157,7 +157,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
-            setResult(Constants.CANCELLED);
+            setResult(Constants.MY_MATCHES_EXITED);
             finish();
             return true;
         }
@@ -167,7 +167,7 @@ public class MyMatches extends AppCompatActivity implements CheckoutsViewAdapter
 
     @Override
     public void onBackPressed() {
-        setResult(Constants.CANCELLED);
+        setResult(Constants.MY_MATCHES_EXITED);
         finish();
     }
 

@@ -38,7 +38,7 @@
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Purge cloud event"
             android:key="purge"
-            android:summary="Purge event will reset the server. ALL scouting data will be removed. You should purge events after you're done to save stop all devices from syncing and save data."/>
+            android:summary="This will reset the server. ALL scouting data will be removed. You should purge events after you're done to save stop all devices from syncing needlessly."/>
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Website"
             android:key="cloud_support"

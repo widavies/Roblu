@@ -7,16 +7,20 @@ import android.os.AsyncTask;
 
 import com.cpjd.models.Event;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RCheckout;
+import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.utils.Constants;
+import com.cpjd.roblu.utils.HandoffStatus;
 import com.cpjd.roblu.utils.Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Random;
 
 /**
  * UnpackTBAEvent takes the data within an Event model (teams, matches, wins, etc.) and converts
@@ -103,7 +107,7 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
                     // add the match to the team, make sure to multiple the Event model's matches times by 1000 (seconds to milliseconds, Roblu works with milliseconds!)
                     RTab tab = new RTab(t.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000);
                     // set the match position, if possible
-                    tab.setAlliancePosition(event.matches[j].getTeamPosition(t.getNumber()) + 1);
+                    tab.setAlliancePosition(event.matches[j].getTeamPosition(t.getNumber()));
                     t.addTab(tab);
                 }
             }
@@ -114,6 +118,8 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
             if(!merge) {
                 io.saveTeam(eventID, t);
             } else {
+                REvent localEvent = io.loadEvent(eventID);
+
                 /*
                  * User wants to merge with an event, we need to do a team merge.
                  * This involves two things:
@@ -137,6 +143,25 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
                         for(RTab tab : t.getTabs()) {
                             if(!doesExist(localRef, tab.getTitle())) {
                                 localRef.addTab(tab);
+                                // If these event is cloud synced, a new checkout needs to be packaged
+                                if(localEvent.isCloudEnabled()) {
+                                    RTeam newTeam = new RTeam(localRef.getName(), localRef.getNumber(), localRef.getID());
+                                    newTeam.addTab(tab);
+                                    RCheckout checkout = new RCheckout(newTeam);
+                                    /*
+                                     * It would require a lot more code to check all devices and be sure that a new ID is
+                                     * valid, so generate a random one. The chances of an error occurring are so low, this is acceptable (somewhat)
+                                     */
+                                    checkout.setID(new Random().nextInt(Integer.MAX_VALUE - 50_000) + 20_000);
+                                    checkout.setStatus(HandoffStatus.AVAILABLE);
+                                    io.savePendingObject(checkout);
+                                }
+
+                            }
+
+                            // Update the match wins
+                            for(RTab tab1 : localRef.getTabs()) {
+                                if(tab1.getTitle().equalsIgnoreCase(tab.getTitle())) tab1.setWon(tab.isWon());
                             }
                         }
                         Collections.sort(localRef.getTabs());

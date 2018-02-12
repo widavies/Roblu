@@ -9,11 +9,16 @@ import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.PagerAdapter;
 
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
+import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.ui.team.TeamViewer;
+import com.cpjd.roblu.utils.HandoffStatus;
 import com.cpjd.roblu.utils.Utils;
+
+import java.util.Random;
 
 /**
  * Handles the tabs for an RTab model
@@ -133,9 +138,24 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
      * @return the position of the sorted, created match
      */
     public int createMatch(String name, boolean isRed) {
-        int position = TeamViewer.team.addTab(new RTab(TeamViewer.team.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, false, 0));
+        RTab tab = new RTab(TeamViewer.team.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, false, 0);
+        int position = TeamViewer.team.addTab(tab);
         TeamViewer.team.setLastEdit(System.currentTimeMillis());
         new IO(context).saveTeam(event.getID(), TeamViewer.team);
+
+        // If these event is cloud synced, a new checkout needs to be packaged
+        if(event.isCloudEnabled()) {
+            RTeam newTeam = new RTeam(TeamViewer.team.getName(), TeamViewer.team.getNumber(), TeamViewer.team.getID());
+            newTeam.addTab(tab);
+            RCheckout checkout = new RCheckout(newTeam);
+            /*
+             * It would require a lot more code to check all devices and be sure that a new ID is
+             * valid, so generate a random one. The chances of an error occurring are so low, this is acceptable (somewhat)
+             */
+            checkout.setID(new Random().nextInt(Integer.MAX_VALUE - 50_000) + 20_000);
+            checkout.setStatus(HandoffStatus.AVAILABLE);
+            new IO(context).savePendingObject(checkout);
+        }
 
         Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);

@@ -46,6 +46,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RDivider;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
@@ -674,7 +675,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             @Override
             public void onClick(View v) {
                 if(demo) return;
-
+                layout.removeView(observed);
                 // Add the current time on the stopwatch to the view
                 double t = Double.parseDouble(timer.getText().toString().replace("s", ""));
                 ArrayList<Double> times = stopwatch.getTimes();
@@ -858,6 +859,30 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
     }
 
     /**
+     * Gets the Divider UI card from an RTextfield reference
+     * @param divider reference to be set to the UI
+     * @return a UI CardView
+     */
+    public CardView getDivider(final RDivider divider) {
+        RelativeLayout layout = new RelativeLayout(activity);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        TextView et = new TextView(activity);
+        et.setGravity(Gravity.CENTER);
+        et.setText(divider.getTitle());
+        et.setEnabled(editable);
+        et.setTextColor(rui.getText());
+        et.setTextSize(28f);
+        et.setInputType(InputType.TYPE_CLASS_TEXT);
+        et.setHighlightColor(rui.getAccent());
+        et.setSingleLine(false);
+        et.setFocusableInTouchMode(true);
+        et.setLayoutParams(params);
+        layout.addView(et);
+        return getCard(layout);
+    }
+
+    /**
      * Gets the Gallery UI card from an RGallery reference
      * @param gallery RGallery reference to be set to the UI
      * @return a UI CardView
@@ -993,7 +1018,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         StringBuilder editHistory = new StringBuilder();
         for(Object o : edits.entrySet()) {
             Map.Entry pair = (Map.Entry) o;
-            editHistory.append(pair.getKey()).append(" on ").append(Utils.convertTime((Long)pair.getValue()));
+            editHistory.append(pair.getKey()).append(" on ").append(Utils.convertTime((Long)pair.getValue())).append("\n");
         }
         et.setText(editHistory.toString());
         et.setSingleLine(false);

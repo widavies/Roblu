@@ -182,7 +182,7 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             Request.OUTPUT_RAW_RESPONSES = true;
             CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
             Log.d("RBS", "Initializing init packer upload...");
-            boolean success = ccr.init(settings.getTeamNumber(), eventName, serializedForm, serializedUI, serializedCheckouts);
+            boolean success = ccr.init(settings.getTeamNumber(), eventName, serializedForm, serializedUI, serializedCheckouts, event.getKey());
 
             /*
              * Disable all other events with cloud syncing enabled
@@ -196,12 +196,13 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
                 cloudSettings.setLastCheckoutSync(System.currentTimeMillis());
                 io.saveCloudSettings(cloudSettings);
                 io.saveSettings(settings);
-            }
+            } else listener.statusUpdate("An error occurred. Event was not uploaded.");
 
             return success;
 
         } catch(Exception e) {
             Log.d("RBS", "An error occurred in InitPacker: "+e.getMessage());
+            listener.statusUpdate("An error occurred. Event was not uploaded.");
             return false;
         }
     }

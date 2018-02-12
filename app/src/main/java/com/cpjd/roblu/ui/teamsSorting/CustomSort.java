@@ -10,6 +10,7 @@ import android.view.MenuItem;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.metrics.RDivider;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 
@@ -44,8 +45,16 @@ public class CustomSort extends AppCompatActivity implements ViewPager.OnPageCha
         RForm form = new IO(getApplicationContext()).loadForm(getIntent().getIntExtra("eventID", 0));
 
         for(int i = 0; i < form.getPit().size(); i++) {
-            if(form.getPit().get(i).getID() == 0 || form.getPit().get(i).getID() == 1) {
+            if(form.getPit().get(i).getID() == 0 || form.getPit().get(i).getID() == 1 || form.getPit().get(i) instanceof RDivider) {
                 form.getPit().remove(i);
+                i--;
+            }
+        }
+
+        // Remove dividers - they are useless for sorting
+        for(int i = 0; i < form.getMatch().size(); i++) {
+            if(form.getMatch().get(i) instanceof RDivider) {
+                form.getMatch().remove(i);
                 i--;
             }
         }

@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -100,11 +101,27 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         int teamID = getIntent().getIntExtra("teamID", 0);
         event = new IO(getApplicationContext()).loadEvent(getIntent().getIntExtra("eventID", 0));
         team = new IO(getApplicationContext()).loadTeam(event.getID(), teamID);
+
+        Log.d("RBS", "Loaded event with ID: "+event.getID());
+
         /*
          Flag that determines if any of this team information should be editable. Team information
          should be read only if it's loaded from the "checkouts" list
          */
         editable = getIntent().getBooleanExtra("editable", true);
+
+        /*
+         * Optional parameter for choosing a page to go to
+         */
+        String requestedMatch = getIntent().getStringExtra("match");
+        if(requestedMatch != null) {
+            for(int i = 0; i < team.getTabs().size(); i++) {
+                if(team.getTabs().get(i).getTitle().equalsIgnoreCase(requestedMatch)) {
+                    team.setPage(i + 1);
+                    break;
+                }
+            }
+        }
 
         /*
          * What's the RForm reference for? It's used for verifying that a local checkout's form is matched with the Roblu Master form.
@@ -148,6 +165,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
          */
         serviceFilter = new IntentFilter();
         serviceFilter.addAction(Constants.SERVICE_ID);
+
+
     }
 
     /**
@@ -461,6 +480,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         if(getIntent().getBooleanExtra("readOnly", false)) {
             menu.findItem(R.id.match_settings).setVisible(false);
             menu.findItem(R.id.add_match).setVisible(false);
+            menu.findItem(R.id.add_match).setEnabled(false);
+            menu.findItem(R.id.match_settings).setEnabled(false);
         }
         return true;
     }

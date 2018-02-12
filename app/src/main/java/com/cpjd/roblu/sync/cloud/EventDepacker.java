@@ -101,6 +101,8 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
 
         // Get a new event ID
         REvent event = new REvent(io.getNewEventID(), team.getActiveEventName());
+        event.setKey(team.getTbaKey());
+        event.setID(io.getNewEventID());
         event.setCloudEnabled(true);
         io.saveEvent(event);
 

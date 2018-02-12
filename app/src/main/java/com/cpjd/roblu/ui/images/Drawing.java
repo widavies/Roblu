@@ -78,7 +78,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         this.canvas = this.findViewById(R.id.canvas);
         this.canvas.setBaseColor(rui.getBackground());
         if(bitmap != null) this.canvas.drawBitmap(bitmap);
-        this.canvas.setPaintStrokeWidth(3F);
+        this.canvas.setPaintStrokeWidth(7F);
     }
 
     @Override

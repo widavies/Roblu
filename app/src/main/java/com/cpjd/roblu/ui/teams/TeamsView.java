@@ -178,6 +178,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
      */
     private Bluetooth bluetooth;
 
+    private LoadTeamsTask loadTeamsTask;
+
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -302,6 +304,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
         /*
          * Display update messages
+         *
          */
         if (settings.getUpdateLevel() != Constants.VERSION) {
             settings.setUpdateLevel(Constants.VERSION);
@@ -460,7 +463,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private void executeLoadTeamsTask(int filter, boolean reload) {
         if(eventDrawerManager.getEvent() == null) return;
 
-        LoadTeamsTask loadTeamsTask = new LoadTeamsTask(new IO(getApplicationContext()), adapter, this, bar, rv, getSupportActionBar());
+        if(loadTeamsTask != null) {
+            loadTeamsTask.quit();
+        }
+
+        loadTeamsTask = new LoadTeamsTask(new IO(getApplicationContext()), this);
         loadTeamsTask.setTaskParameters(eventDrawerManager.getEvent().getID(), filter, lastQuery, lastCustomSortToken);
         if(!reload) loadTeamsTask.setTeams(teams);
         // Flag UI to look like it's loading something
@@ -468,7 +475,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         bar.setVisibility(View.VISIBLE);
         bar.getIndeterminateDrawable().setColorFilter(settings.getRui().getAccent(), PorterDuff.Mode.MULTIPLY);
         // Start the actual loading
-        loadTeamsTask.execute();
+        loadTeamsTask.start();
     }
 
     /**
@@ -503,7 +510,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             eventDrawerManager.loadEventsToDrawer();
             eventDrawerManager.selectEvent(d != null ? d.getInt("eventID") : 0);
         }
-        else if(resultCode == Constants.MAILBOX_EXITED) { // The user exited the mailbox, they may have merged an item, so reload from disk
+        else if(resultCode == Constants.MY_MATCHES_EXITED) {
             executeLoadTeamsTask(lastFilter, true);
         }
         else if(resultCode == Constants.CUSTOM_SORT_CANCELLED) { // user exited custom sort, don't make the button in the filter dialog still display custom sort
@@ -541,15 +548,32 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
            // new UIHandler(this, toolbar).update();
             //eventDrawerManager = new EventDrawerManager(this, toolbar, this);
         }
-        if(eventDrawerManager.getEvent() != null && eventDrawerManager.getEvent().isCloudEnabled()) executeLoadTeamsTask(lastFilter, true);
     }
     /**
      * Called when a new teams list is successfully loaded,
      * these teams should immediately stored
      */
     @Override
-    public void teamsListLoaded(ArrayList<RTeam> teams) {
+    public void teamsListLoaded(final ArrayList<RTeam> teams, final boolean hideZeroRelevanceTeams) {
         this.teams = teams;
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                bar.setVisibility(View.INVISIBLE);
+                rv.setVisibility(View.VISIBLE);
+                adapter.setTeams(teams, hideZeroRelevanceTeams);
+
+                int numTeams = 0;
+                if(teams != null) numTeams = teams.size();
+
+                StringBuilder subtitle = new StringBuilder(String.valueOf(numTeams));
+                subtitle.append(" Team");
+                if(numTeams != 1) subtitle.append("s");
+                if(getSupportActionBar() != null) getSupportActionBar().setSubtitle(subtitle.toString());
+            }
+        });
+
     }
 
     @Override
@@ -607,7 +631,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         RTeam team = adapter.getTeams().get(rv.getChildLayoutPosition(v));
         Intent startView = new Intent(this, TeamViewer.class);
         startView.putExtra("teamID", team.getID());
-        startView.putExtra("event", eventDrawerManager.getEvent());
+        startView.putExtra("eventID", eventDrawerManager.getEvent().getID());
         startView.putExtra("editable", true);
         startActivityForResult(startView, Constants.GENERAL);
     }
@@ -625,16 +649,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         executeLoadTeamsTask(lastFilter, true);
     }
 
-    private static boolean firstLaunch = true;
-
     @Override
     public void onResume() {
         super.onResume();
         registerReceiver(uiRefreshRequestReceiver, serviceFilter);
-        if(!firstLaunch && eventDrawerManager.getEvent() != null && eventDrawerManager.getEvent().isCloudEnabled()) {
-            executeLoadTeamsTask(lastFilter, true);
-            firstLaunch = false;
-        }
+
+        lastFilter = settings.getLastFilter();
+        if(lastFilter == SORT_TYPE.CUSTOM_SORT || lastFilter == SORT_TYPE.SEARCH) lastFilter = SORT_TYPE.NUMERICAL; // custom sort or search can't be loaded at startup because lastQuery and lastCustomSortFilter aren't saved
+        executeLoadTeamsTask(lastFilter, true);
     }
 
     @Override

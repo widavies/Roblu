@@ -299,7 +299,7 @@ public class IO {
     public void saveTeam(int eventID, RTeam team) {
         File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+ File.separator+eventID+ File.separator+"teams"+File.separator+team.getID()+".ser");
         if(!file.getParentFile().exists()) {
-            if(file.getParentFile().mkdir()) Log.d("RBS", "Team directory successfully created for event with ID: "+team.getID());
+            if(file.getParentFile().mkdir()) Log.d("RBS", "Team directory successfully created for event with ID: "+eventID);
         }
         serializeObject(team, new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"teams"+File.separator+team.getID()+".ser"));
     }

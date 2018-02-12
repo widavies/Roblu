@@ -1,0 +1,29 @@
+Title:FRC 2018
+Description:Courtesy Team 298
+PIT
+DEFAULTS
+checkbox,What can the Robot do?,Cubes in Scale:Cubes in Switch:Cubes in Exchange:Cubes from Floor:Cubes from Portal
+text,Average speed of robot (m/s),
+chooser,Where is your preferred starting position?,Left:Center:Right,1
+text,What kind of drivetrain does the robot have?,
+text,What mechanism do you use for climbing?,
+boolean,Can your robot assist others in climbing?,false
+checkbox,How?,Aircraft Carrier:Bar on Robot:Other
+text,What is your robot's biggest weakness?,
+MATCH
+divider,Auto
+boolean,Auto Initiated,false
+boolean,Cross auto line?,false
+counter,Cubes in switch,1,0
+counter,Cubes in scale,1,0
+boolean,Alliance auto quest?,false
+text,Auto Notes,
+divider,Tele-op
+boolean,Tele-op Initiated?,false
+counter,Cubes in Switch,1,0
+counter,Cubes in Scale,1,0
+counter,Cubes in Exchange,1,0
+boolean,Did robot climb?,false
+stopwatch,Climb Time,0
+checkbox,Power Ups Used,Boost 1:Boost 2:Boost 3:Force 1:Force 2:Force 3:Levitate
+text,Tele-op Notes,

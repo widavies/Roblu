@@ -20,7 +20,6 @@ public class RStopwatch extends RMetric {
      * Changing this versionUID will render this class incompatible with older versions.
      */
     public static final long serialVersionUID = 1L;
-
     /**
      * This will store the time that is currently displayed on the stopwatch,
      * when the user taps the lap button, it will be added to the "times" array
@@ -58,6 +57,7 @@ public class RStopwatch extends RMetric {
     @Override
     public RMetric clone() {
         RStopwatch stopwatch = new RStopwatch(ID, title, time);
+        stopwatch.setTimes(times);
         stopwatch.setRequired(required);
         return stopwatch;
     }

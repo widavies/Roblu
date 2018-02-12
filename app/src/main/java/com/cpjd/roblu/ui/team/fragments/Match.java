@@ -19,6 +19,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RDivider;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
@@ -65,9 +66,11 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
      */
     private boolean editable;
 
+    private View view;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.match_tab, container, false);
+        view = inflater.inflate(R.layout.match_tab, container, false);
 
         layout = view.findViewById(R.id.match_layout);
 
@@ -119,6 +122,7 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
         else if(e instanceof RSlider) layout.addView(els.getSlider((RSlider) e));
         else if(e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e, false));
         else if(e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
+        else if(e instanceof RDivider) layout.addView(els.getDivider((RDivider)e));
         else Log.d("RBS", "Couldn't resolve metric with name: "+e.getTitle());
     }
 
@@ -160,7 +164,7 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
 
         }
         // save the team
-        new IO(getActivity()).saveTeam(event.getID(), TeamViewer.team);
+        new IO(view.getContext()).saveTeam(event.getID(), TeamViewer.team);
     }
     public int getPosition() {
         if(!editable) return position;

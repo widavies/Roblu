@@ -360,7 +360,7 @@ public class EventSettings extends AppCompatActivity {
              * User clicked on "Export to .csv"
              */
             else if (preference.getKey().equals("export_csv")) {
-                ProgressDialog d = ProgressDialog.show(getActivity(), "Freeze!", "Roblu is generating an spreadsheet file...", true);
+                ProgressDialog d = ProgressDialog.show(getActivity(), "Freeze!", "Roblu is generating a spreadsheet file...", true);
                 d.setCancelable(false);
                 d.show();
 
