@@ -25,6 +25,7 @@ import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
+import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.roughike.bottombar.BottomBar;
@@ -201,7 +202,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         if(getIntent().getBooleanExtra("master", false)) inflater.inflate(R.menu.master_edit_form, menu);
-        else inflater.inflate(R.menu.add_element, menu);
+        else inflater.inflate(R.menu.form_viewer, menu);
         new UIHandler(this, menu).updateMenu();
         return true;
     }
@@ -235,6 +236,16 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
             finish();
             return true;
         }
+        else if(item.getItemId() == R.id.preview) {
+            new IO(getApplicationContext()).createPreview(form);
+            Intent intent = new Intent(this, TeamViewer.class);
+            intent.putExtra("teamID", -1);
+            intent.putExtra("eventID", -1);
+            intent.putExtra("editable", false);
+            startActivity(intent);
+        }
+
+
         if(item.getItemId() == R.id.import_from_event) {
             if(!Utils.launchEventPicker(this, this)) {
                 Utils.showSnackbar(findViewById(R.id.edit_form_layout), getApplicationContext(), "No events found.", true, 0);

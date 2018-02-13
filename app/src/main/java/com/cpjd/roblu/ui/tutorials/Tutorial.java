@@ -54,10 +54,8 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
         tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "KoylfzTBvKM"));
         tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "LpWvnavebNw"));
         tutorials.add(new RTutorial("Scouting", "Learn how to scout with the RTeam model, sort, organize, search", "5ktHjyQq4XY"));
-        tutorials.add(new RTutorial("Roblu Cloud Setup", "Learn how to register an account and setup Roblu Cloud for your team", "zEFSt9HhxOw"));
-        tutorials.add(new RTutorial("Roblu Cloud", "Learn how to use Roblu cloud to sync events between teammates, admin controls", "2QcXZoyctyw"));
+        tutorials.add(new RTutorial("Roblu Cloud", "Learn how to use Roblu cloud to sync events between teammates, admin controls", "UqAVql6eps4"));
         tutorials.add(new RTutorial("Bluetooth [Coming soon]", "Learn how to use setup Roblu's Bluetooth server for syncing events", ""));
-        tutorials.add(new RTutorial("Analytics [Coming soon]", "Edit, organize, view, machine learning", ""));
         tutorials.add(new RTutorial("MEGA-TUTORIAL [Coming soon]", "Feeling ambitious? Learn about everything in one video.", ""));
         tutorials.add(new RTutorial("Roblu Devlogs", "For those interested in watching the development process", ""));
 

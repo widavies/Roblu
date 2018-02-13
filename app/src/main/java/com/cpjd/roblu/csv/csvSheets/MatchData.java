@@ -5,6 +5,7 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RStopwatch;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -122,6 +123,21 @@ public class MatchData extends CSVSheet {
                             }
 
                             if(teamMetric.isModified()) {
+                                /*
+                                 * Stopwatch is a special case, check for that first
+                                 */
+                                if(teamMetric instanceof RStopwatch) {
+                                    StringBuilder data = new StringBuilder("(");
+                                    if(((RStopwatch) teamMetric).getTimes() != null) {
+
+                                        for(int l = 0; l < ((RStopwatch) teamMetric).getTimes().size(); l++) {
+                                            if(l != ((RStopwatch) teamMetric).getTimes().size() - 1) data.append("s, ");
+                                            else data.append("s)");
+                                        }
+                                        createCell(row, 1 + (matches.length * i) + j, data.toString());
+                                    }
+                                }
+
                                 createCell(row, 1 + (matches.length * i) + j, teamMetric.toString());
                             } else createCell(row, 1 + (matches.length * i) + j, ""); // Still add a cell so the formatting applies
                             break;

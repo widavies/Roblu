@@ -158,7 +158,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
          */
         galleryLoop: for(int j = 0; j < galleries.size(); j++) {
             if(galleries.get(j).getImages() != null && galleries.get(j).getImages().size() > 0) {
-                for(int i = 0; i < galleries.get(j).getImages().size(); i++) {
+                for(int i = galleries.get(j).getImages().size() - 1; i >= 0; i--) {
                     try {
                         layout.addView(rMetricToUI.getImageView(
                                 "Featured image",  BitmapFactory.decodeByteArray(galleries.get(j).getImages().get(i),
@@ -227,12 +227,4 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
         return num;
     }
 
-    /**
-     * Performs the log base 2 operation since Java doesn't have a native log2 function
-     * @param value The value to be operated on
-     * @return The log base 2 of the value
-     */
-    private double log2(double value) {
-        return Math.log(value) / Math.log(2);
-    }
 }

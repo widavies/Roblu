@@ -357,6 +357,14 @@ public class Utils {
         context.sendBroadcast(broadcast);
     }
 
+    public static void requestTeamViewerRefresh(Context context, String teamName) {
+        Intent broadcast = new Intent();
+        broadcast.putExtra("teamViewerOnly", true);
+        broadcast.putExtra("teamName", teamName);
+        broadcast.setAction(Constants.SERVICE_ID);
+        context.sendBroadcast(broadcast);
+    }
+
     /**
      * Updates the server health string in the event drawer
      * @param context a context reference

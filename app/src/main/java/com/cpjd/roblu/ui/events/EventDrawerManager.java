@@ -284,11 +284,16 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         /*
          * Load events
          */
+
+        // Delete the preview event, if necessary
+        new IO(activity).deleteEvent(-1);
+
         REvent[] loaded = new IO(activity).loadEvents();
         if(loaded == null) {
             if(((AppCompatActivity)activity).getSupportActionBar() != null) ((AppCompatActivity)activity).getSupportActionBar().setSubtitle("No events");
             return;
         }
+
         // Set loaded events to the managed array-list
         events = new ArrayList<>(Arrays.asList(loaded));
 

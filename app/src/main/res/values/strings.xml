@@ -70,11 +70,12 @@
     <string name="agreement">By using Roblu, you agree to the Privacy Policy and Terms of Use located at https://www.roblu.net/privacy</string>
     <string name="agree">Agree</string>
     <string name="permissions">Permissions</string>
-    <string name="requires_permissions">Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next.</string>
+    <string name="requires_permissions">Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next.
+        You may wonder why coarse location is required, this is required for Bluetooth device scanning. Roblu does not store or process your location.</string>
     <string name="ready_to_use">Roblu is ready to use</string>
-    <string name="head_of_team">Head of the scouting division of your team? Coach? Learn how to use Roblu with these official tutorials.</string>
+    <string name="head_of_team">Head of the scouting division of your team? Coach? Learn how to use Roblu with these official tutorials:</string>
     <string name="view_youtube_tutorials">View YouTube tutorials</string>
-    <string name="welcome">Welcome to Roblu V3. Not all features are complete yet, but look for them in coming updates. For now, explore the new version.</string>
+    <string name="welcome">Welcome to Roblu V4.</string>
     <string name="done">Done</string>
 
     <!-- Menus -->

@@ -18,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -102,8 +101,6 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         event = new IO(getApplicationContext()).loadEvent(getIntent().getIntExtra("eventID", 0));
         team = new IO(getApplicationContext()).loadTeam(event.getID(), teamID);
 
-        Log.d("RBS", "Loaded event with ID: "+event.getID());
-
         /*
          Flag that determines if any of this team information should be editable. Team information
          should be read only if it's loaded from the "checkouts" list
@@ -133,7 +130,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         else { // verify the form
             team.verify(form);
             if(editable) new IO(this).saveTeam(event.getID(), team);
-            else Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Read only mode is enabled when resolving conflicts", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
+            //else Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Read only mode is enabled", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
         }
 
         /*
@@ -314,7 +311,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
      * "Open on TBA"
      * "Delete match"
      */
-    private void showPopup(){
+    private void showPopup() {
         View menuItemView = findViewById(R.id.match_settings);
         final PopupMenu popup = new PopupMenu(TeamViewer.this, menuItemView);
         MenuInflater inflate = popup.getMenuInflater();
@@ -341,6 +338,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     return true;
                 }
                 if(item.getItemId() == R.id.delete_match) {
+                    if(!editable) return true;
+
                     if(pager.getCurrentItem() == 0) Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Overview can't be deleted", true, 0);
                     else if(pager.getCurrentItem() == 1) Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "PIT can't be deleted", true, 0);
                     else if(pager.getCurrentItem() == 2) Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Predictions can't be deleted", true, 0);
@@ -356,6 +355,8 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                     return true;
                 }
                 if(item.getItemId() == R.id.won) {
+                    if(!editable) return true;
+
                     if(pager.getCurrentItem() == 0) Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Overview can't be marked as won", true, 0);
                     else if(pager.getCurrentItem() == 1) Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "PIT can't be marked as won", true, 0);
                     else if(pager.getCurrentItem() == 2) Utils.showSnackbar(findViewById(R.id.teams_viewer_layout), getApplicationContext(), "Predictions can't be marked as won", true, 0);
@@ -386,6 +387,11 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
      * Opens the manual match creator
      */
     private void showMatchCreator() {
+        if(!editable) {
+            Toast.makeText(getApplicationContext(), "Can't create match in read only mode.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         final Dialog d = new Dialog(this);
         d.setTitle("Create match");
         d.setContentView(R.layout.match_create_dialog);
@@ -457,12 +463,11 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     private BroadcastReceiver uiRefreshRequestReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getStringExtra("serverHealth") != null) {
+            if(!intent.getBooleanExtra("teamViewerOnly", false)) {
                 return;
             }
-
-
-            launchParent();
+            // Force close UI if the team we are viewing was just updated.
+            if(intent.getStringExtra("teamName") != null && intent.getStringExtra("teamName").equalsIgnoreCase(TeamViewer.team.getName())) launchParent();
         }
     };
 

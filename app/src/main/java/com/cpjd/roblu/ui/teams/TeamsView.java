@@ -341,6 +341,11 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 return;
             }
 
+            // Return if the update was only for the team viewer
+            if(intent.getBooleanExtra("teamViewerOnly", false)) {
+                return;
+            }
+
             executeLoadTeamsTask(lastFilter, true);
             // Make sure data is persistent
             settings = new IO(getApplicationContext()).loadSettings();

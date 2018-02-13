@@ -51,7 +51,7 @@ import java.io.ObjectOutputStream;
 public class IO {
 
     private Context context;
-    public static final String PREFIX = "v14";
+    public static final String PREFIX = "v15";
 
     public IO(Context context) {
         this.context = context;
@@ -105,6 +105,21 @@ public class IO {
             return true;
         }
         return false;
+    }
+
+    /*
+     * Preview event methods
+     *
+     * Simplifies preview code by just creating and temporary event for viewing a form
+     */
+    public void createPreview(RForm form) {
+        REvent event = new REvent(-1, "Preview event");
+        RTeam team = new RTeam("Previewing form", 0, -1);
+        team.setPage(-1);
+        team.verify(form);
+        saveEvent(event);
+        saveTeam(event.getID(), team);
+        saveForm(event.getID(), form);
     }
 
     /*

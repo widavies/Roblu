@@ -273,9 +273,14 @@ public class Service extends android.app.Service {
                 cloudSettings.setLastCheckoutSync(System.currentTimeMillis());
                 io.saveCloudSettings(cloudSettings);
                 Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
-                // Notify the user
-                Utils.requestUIRefresh(getApplicationContext());
+
+                // Notify the TeamViewer in case Roblu Master is viewing the data that was just modified
+                Utils.requestTeamViewerRefresh(getApplicationContext(), team.getName());
             }
+
+            // Refresh the UI
+            if(checkouts != null && checkouts.length > 0) Utils.requestUIRefresh(getApplicationContext());
+
         } catch(Exception e) {
             Log.d("RBS-Service", "An error occurred while checking for completed checkouts. "+e.getMessage());
         }
