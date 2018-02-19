@@ -1,0 +1,23 @@
+Title:FRC 2018
+Description:Courtesy Team 2826, Wave Robotics
+PIT
+DEFAULTS
+textfield,What kind of wheels do they have?,
+textfield,Wheel diameter?,
+textfield,Ground clearance?,
+textfield,How much does the robot weigh?,
+textfield,Center of gravity where?,
+gallery,Robot pictures.
+MATCH
+checkbox,Auto,No Auto:Auto But Didn't Work:Base-Line Cross
+counter,# of blocks placed on switch during auto?,1,0
+counter,# of blocks placed on scale during auto?,1,0
+counter,# of blocks in exchange during tele-op?,1,0
+counter,# of blocks on switch during tele-op?,1,0
+counter,# of blocks on scale during tele-op?,1,0
+counter,# of blocks on opposing switch during tele-op?,1,0
+checkbox,Where is the robot acquiring the cubes?,Field:Portal
+checkbox,Last 30 Sec,Did Nothing:Lifted itself:Lifted 1 other robot:Lifted 2 other robots:Drove onto another:Climbed another:Parked:Continued to work on platforms:Captured scale:Captured switch
+boolean,Did the robot break/lose comms?,false
+
+

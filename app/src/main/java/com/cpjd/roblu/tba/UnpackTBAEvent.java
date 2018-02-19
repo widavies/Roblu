@@ -22,6 +22,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
 
+import lombok.Setter;
+
 /**
  * UnpackTBAEvent takes the data within an Event model (teams, matches, wins, etc.) and converts
  * it into the Roblu format. This task will save a whole bunch of RTeams to the file system,
@@ -42,6 +44,9 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
 
     private WeakReference<Activity> activityWeakReference;
     private WeakReference<ProgressDialog> progressDialogWeakReference;
+
+    @Setter
+    private boolean randomize;
 
     public UnpackTBAEvent(Event e, int eventID, boolean merge, Activity activity, ProgressDialog d) {
         this.eventID = eventID;
@@ -116,6 +121,8 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
              * This is where the merge decision comes into play
              */
             if(!merge) {
+                if(randomize) Utils.randomizeEvent(teams);
+
                 io.saveTeam(eventID, t);
             } else {
                 REvent localEvent = io.loadEvent(eventID);

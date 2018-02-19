@@ -50,14 +50,13 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.sync.bluetooth.BTDeviceSetup;
+import com.cpjd.roblu.sync.bluetooth.Bluetooth;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.mikepenz.aboutlibraries.Libs;
 import com.mikepenz.aboutlibraries.LibsBuilder;
-
-import me.aflak.bluetooth.Bluetooth;
 
 /**
  *
@@ -145,9 +144,6 @@ public class AdvSettings extends AppCompatActivity {
                 getActivity().finish();
                 return;
             }
-
-            // setup Bluetooth
-            bluetooth = new Bluetooth(getActivity());
 
             // Load the preferences specified in xml into the system, we only have to modify a couple of things manually
             addPreferencesFromResource(R.xml.preferences);
@@ -459,13 +455,11 @@ public class AdvSettings extends AppCompatActivity {
         @Override
         public void onStart() {
             super.onStart();
-            bluetooth.onStart();
         }
 
         @Override
         public void onStop() {
             super.onStop();
-            bluetooth.onStop();
         }
 
         // Listens to the custom snack bar, displays a link to Roblu Cloud purchase

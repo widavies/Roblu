@@ -31,7 +31,13 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCheckbox;
+import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RSlider;
+import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
 
@@ -42,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static android.content.Context.ACTIVITY_SERVICE;
@@ -384,8 +391,9 @@ public class Utils {
      */
     public static boolean isMyServiceRunning(Context context) {
         ActivityManager manager = (ActivityManager) context.getSystemService(ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if ("com.cpjd.roblu.sync.cloud.sync.Service".equals(service.service.getClassName())) {
+        for(ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            String localService = "com.cpjd.roblu.sync.cloud.Service";
+            if(localService.equals(service.service.getClassName())) {
                 return true;
             }
         }
@@ -463,4 +471,66 @@ public class Utils {
         ((Activity) context).getWindowManager().getDefaultDisplay().getSize(size);
         return size.x;
     }
+
+    /**
+     * This code will randomize an event with random metric data for the purposes of show casing an app
+     * or testing
+     */
+    public static void randomizeEvent(ArrayList<RTeam> teams) {
+        Random r = new Random();
+
+        if(teams != null && teams.size() > 0)
+        for(RTeam team : teams) {
+            team.setLastEdit(System.currentTimeMillis());
+
+            for(RTab tab : team.getTabs()) {
+                for(RMetric metric : tab.getMetrics()) {
+                    metric.setModified(true);
+
+                    if(metric instanceof RSlider) {
+                        ((RSlider) metric).setMax(100);
+                        ((RSlider) metric).setValue(r.nextInt(100));
+                    }
+                    else if(metric instanceof RCounter) {
+                        ((RCounter) metric).setValue(r.nextDouble() * 100);
+                    }
+                    else if(metric instanceof RStopwatch) {
+                        ((RStopwatch) metric).setTime(r.nextDouble() * 10);
+                        ((RStopwatch) metric).setTimes(new ArrayList<Double>());
+                        for(int i = 0; i < r.nextInt(5); i++) {
+                            ((RStopwatch) metric).getTimes().add(Utils.round(r.nextDouble() * 8.2, 2));
+                        }
+                    }
+                    else if(metric instanceof RBoolean) {
+                        ((RBoolean) metric).setValue(r.nextDouble() <= 0.5);
+                    }
+                    else if(metric instanceof RCheckbox) {
+                        for(Object o : ((RCheckbox) metric).getValues().keySet()) {
+                            ((RCheckbox) metric).getValues().put(o.toString(), r.nextDouble() <= 0.50);
+                        }
+                    }
+                    else if(metric instanceof RChooser) {
+                        ((RChooser) metric).setSelectedIndex(r.nextInt(((RChooser) metric).getValues().length - 1));
+                    }
+                    else if(metric instanceof RTextfield) {
+                        if(!((RTextfield) metric).isOneLine()) ((RTextfield) metric).setText("RTextfield has been randomized to: "+getSaltString());
+                    }
+                }
+            }
+        }
+    }
+
+    private static String getSaltString() {
+        String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+        StringBuilder salt = new StringBuilder();
+        Random rnd = new Random();
+        while (salt.length() < 200) { // length of the random string.
+            int index = (int) (rnd.nextFloat() * SALTCHARS.length());
+            salt.append(SALTCHARS.charAt(index));
+        }
+        String saltStr = salt.toString();
+        return saltStr;
+
+    }
 }
+

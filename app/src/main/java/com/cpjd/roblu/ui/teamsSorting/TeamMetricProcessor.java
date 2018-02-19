@@ -272,6 +272,10 @@ public class TeamMetricProcessor {
                      * Now, add the overview statistics to the team if the metric has overview statistics
                      * available
                     */
+                    max = Utils.round(max, 2);
+                    min = Utils.round(min, 2);
+                    average = Utils.round(average, 2);
+
                     StringBuilder overview = new StringBuilder();
                     if(metric instanceof RBoolean) overview.append("Boolean: ").append(metric.getTitle()).append(" is true in ").append(occurrences).append(" / ").append(team.getTabs().size() - 2).append(" matches");
                     else if(metric instanceof RCounter) overview.append("Counter: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
@@ -358,7 +362,7 @@ public class TeamMetricProcessor {
      */
     private String friendlyCounter(RCounter metric) {
         if(!metric.isModified()) return "N.O.";
-        else return String.valueOf(metric.getValue());
+        else return String.valueOf(Utils.round(metric.getValue(), 2));
     }
 
     /**
@@ -378,7 +382,7 @@ public class TeamMetricProcessor {
      */
     private String friendlyStopwatch(RStopwatch metric) {
         if(!metric.isModified()) return "N.O.";
-        else return String.valueOf(metric.getTime() + "s");
+        else return String.valueOf(Utils.round(metric.getTime(),1) + "s");
     }
 
     /**

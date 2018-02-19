@@ -18,7 +18,6 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.sync.bluetooth.BTServer;
 import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.settings.AdvSettings;
@@ -41,7 +40,6 @@ import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.aflak.bluetooth.Bluetooth;
 
 /**
  * Helps reduce the amount of code in TeamsView by managing the event drawer and its contents
@@ -85,9 +83,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      */
     private EventSelectListener listener;
 
-    @Setter
-    private Bluetooth bluetooth;
-
     /**
      * Instantiates an EventDrawerManager that will handle loading and receiving actions from the REvent ui drawer
      * @param activity the TeamsView activity reference
@@ -117,7 +112,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             create.mutate();
             create.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
-        if(bluetooth != null) {
+        if(bluetoothIcon != null) {
             bluetoothIcon.mutate();
             bluetoothIcon.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_IN);
         }
@@ -215,8 +210,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 ProgressDialog dialog = ProgressDialog.show(activity, "Listening for incoming connections...", "Waiting for a device to connect.", false);
                 dialog.setCancelable(false);
                 dialog.show();
-                BTServer server = new BTServer(activity, bluetooth);
-                server.start();
             }
         }
         else if(identifier == Constants.EVENT_SETTINGS) {
@@ -258,6 +251,9 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         for(REvent e : events) {
             if(e.getID() == ID) {
                 event = e;
+
+                //Utils.randomizeEvent(activity, event.getID());
+
                 // Update the action bar title, it will get updated again when the teams are loaded by the LoadTeamsTask AsyncTask
                 if(((AppCompatActivity)activity).getSupportActionBar() != null) {
                     ((AppCompatActivity)activity).getSupportActionBar().setTitle(event.getName());

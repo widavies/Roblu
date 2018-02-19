@@ -1,5 +1,5 @@
 Title:FRC 2018
-Description:Courtesy Team 1557, Steampunk
+Description:Courtesy Team 1577, Steampunk
 PIT
 DEFAULTS
 checkbox,What can the Robot do?,Cubes in Scale:Cubes in Switch:Cubes in Exchange:Cubes from Floor:Cubes from Portal
@@ -25,7 +25,7 @@ counter,Power Cubes - Scale,1,0
 counter,Power Cubes - Far Switch,1,0
 checkbox,Cube Intake,Floor:Portal:Exchange:false
 divider,Endgame
-chooser,Endgame,None:Parking and picking up 1:Parking and picking up 2:Climbing:Climbing with 1:Climbing with 2:Climbing on another Robot,1
+chooser,Endgame,None:Parking and picking up 1:Parking and picking up 2:Parking without picking up Robot:Climbing:Climbing with 1:Climbing with 2:Climbing on another Robot,1
 stopwatch,Climb time,0
 divider,Comments
 textfield,Auto comments,

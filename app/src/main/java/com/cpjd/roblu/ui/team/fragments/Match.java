@@ -82,7 +82,9 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
 
         if(!editable) position++;
 
-        els = new RMetricToUI(getActivity(), new IO(getActivity()).loadSettings().getRui(), editable);
+        // This is used for generating the metric cards, note the "event.getID() == -1", this flags it as editable if previewing,
+        // instead of editable being true, because editable is used as a flag for several other UI things
+        els = new RMetricToUI(getActivity(), new IO(getActivity()).loadSettings().getRui(), editable || event.getID() == -1);
         els.setListener(this);
 
         load();

@@ -22,6 +22,7 @@ import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.helper.ItemTouchHelper;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,8 +50,6 @@ import com.cpjd.roblu.utils.Utils;
 import com.miguelcatalan.materialsearchview.MaterialSearchView;
 
 import java.util.ArrayList;
-
-import me.aflak.bluetooth.Bluetooth;
 
 /**
  * TeamsView is the launcher activity.
@@ -168,17 +167,9 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     private ProgressBar bar;
     // End UI and other
 
-    /**
-     * Bluetooth server connections are handled in
-     * @see EventDrawerManager
-     * @see com.cpjd.roblu.sync.bluetooth.BTServer
-     *
-     * But this class handles the Bluetooth hardware adapter, this
-     * class is a 3rd party Bluetooth library.
-     */
-    private Bluetooth bluetooth;
-
     private LoadTeamsTask loadTeamsTask;
+
+    private boolean ignoreOnResumeOnce;
 
     @Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -297,6 +288,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         // Check to see if the background service is running, if it isn't, start it
         serviceFilter = new IntentFilter();
         serviceFilter.addAction(Constants.SERVICE_ID);
+        Log.d("RBS", "Is service running: "+Utils.isMyServiceRunning(getApplicationContext()));
+
         if(!Utils.isMyServiceRunning(getApplicationContext())) {
             Intent serviceIntent = new Intent(this, Service.class);
             startService(serviceIntent);
@@ -495,6 +488,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             lastCustomSortToken = data.getStringExtra("sortToken");
             lastFilter = SORT_TYPE.CUSTOM_SORT;
             executeLoadTeamsTask(lastFilter, false);
+            ignoreOnResumeOnce = true;
         }
         else if(Constants.MASTER_FORM == requestCode && resultCode == Constants.FORM_CONFIRMED) { // the user edited the master form, retrieve it and save it
             Bundle b = data.getExtras();
@@ -536,19 +530,22 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             adapter.reAdd(temp);
             if(lastQuery != null && !lastQuery.equals("")) executeLoadTeamsTask(SORT_TYPE.SEARCH, false);
             else executeLoadTeamsTask(lastFilter, false);
+
+            ignoreOnResumeOnce = true;
         }
         else if(resultCode == Constants.EVENT_SETTINGS_CHANGED) { // user edited the event
-            REvent temp = (REvent) data.getSerializableExtra("event");
-            if(eventDrawerManager.getEvent() != null && temp.getID() == eventDrawerManager.getEvent().getID()) {
-                if(getSupportActionBar() != null) getSupportActionBar().setTitle(temp.getName());
-                eventDrawerManager.setEvent(temp);
-            }
+            int eventID = data.getIntExtra("eventID", 0);
             eventDrawerManager.loadEventsToDrawer();
+            eventDrawerManager.selectEvent(eventID);
+            if(getSupportActionBar() != null) getSupportActionBar().setSubtitle(eventDrawerManager.getEvent().getName());
             executeLoadTeamsTask(lastFilter,true);
         }
         else if(resultCode == Constants.SETTINGS_CHANGED) { // user changed application settings (refresh UI to make sure it matches a possible RUI change)
             // reload settings
             settings = new IO(getApplicationContext()).loadSettings();
+
+            eventDrawerManager.loadEventsToDrawer();
+            if(eventDrawerManager.getEvent() != null) eventDrawerManager.selectEvent(eventDrawerManager.getEvent().getID());
 
            // new UIHandler(this, toolbar).update();
             //eventDrawerManager = new EventDrawerManager(this, toolbar, this);
@@ -659,6 +656,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         super.onResume();
         registerReceiver(uiRefreshRequestReceiver, serviceFilter);
 
+        if(ignoreOnResumeOnce) {
+            ignoreOnResumeOnce = false;
+            return;
+        }
         lastFilter = settings.getLastFilter();
         if(lastFilter == SORT_TYPE.CUSTOM_SORT || lastFilter == SORT_TYPE.SEARCH) lastFilter = SORT_TYPE.NUMERICAL; // custom sort or search can't be loaded at startup because lastQuery and lastCustomSortFilter aren't saved
         executeLoadTeamsTask(lastFilter, true);
@@ -673,14 +674,10 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     @Override
     public void onStop() {
         super.onStop();
-        bluetooth.onStop();
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        bluetooth = new Bluetooth(this);
-        bluetooth.onStart();
-        eventDrawerManager.setBluetooth(bluetooth);
     }
 }

@@ -245,19 +245,13 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
                           s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
                           s.generateSheet(sheets.get(s.getSheetName()), event, form, teams, matches1);
                           for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
-                      //} catch(Exception e) {
+                     // } catch(Exception e) {
                      //     listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
-                     //     Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
-                      //}
+                      //    Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
+                     // }
                   }
 
-                  threadCompleted();
-
-                  try {
-                      join();
-                  } catch(InterruptedException e) {
-                      Log.d("RBS", "Failed to stop a CSV sheet thread.");
-                  }
+                  threadCompleted(s.getSheetName());
               }
             }.start();
         }
@@ -270,7 +264,9 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
         progressDialogWeakReference.get().dismiss();
     }
 
-    private void threadCompleted() {
+    private void threadCompleted(String name) {
+        Log.d("RBS", "A CSV Thread completed: "+name);
+
         threadsComplete++;
         if(threadsComplete == enabledSheets) {
             File file = new IO(contextWeakReference.get()).getNewCSVExportFile();

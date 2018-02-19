@@ -1,11 +1,6 @@
 package com.cpjd.roblu.sync.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.util.Log;
-
-import me.aflak.bluetooth.Bluetooth;
-import me.aflak.bluetooth.CommunicationCallback;
 
 /**
  * This class will send the local Bluetooth MAC address to another Bluetooth device so the device doesn't
@@ -49,36 +44,6 @@ public class BTDeviceSetup {
          */
         final String macAddress = BluetoothAdapter.getDefaultAdapter().getAddress();
 
-        bluetooth.setCommunicationCallback(new CommunicationCallback() {
-            @Override
-            public void onConnect(BluetoothDevice device) {
-                Log.d("RBS", "Received connection request from "+device.getName()+", returning BT MAC address...");
-
-                bluetooth.connectToAddress(device.getAddress());
-                bluetooth.send(macAddress);
-                listener.success();
-            }
-
-            @Override
-            public void onDisconnect(BluetoothDevice device, String message) {
-
-            }
-
-            @Override
-            public void onMessage(String message) {
-
-            }
-
-            @Override
-            public void onError(String message) {
-                listener.error("An error occurred: "+message);
-            }
-
-            @Override
-            public void onConnectError(BluetoothDevice device, String message) {
-                listener.error("Unable to connect to Bluetooth device "+device.getName()+". Error message: "+message);
-            }
-        });
     }
 
 

@@ -25,6 +25,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -110,7 +111,7 @@ public class EventSettings extends AppCompatActivity {
         int id = item.getItemId();
         if (id == android.R.id.home) {
             Intent intent = new Intent();
-            intent.putExtra("event", event);
+            intent.putExtra("eventID", event.getID());
             setResult(Constants.EVENT_SETTINGS_CHANGED, intent);
             finish();
             return true;
@@ -121,7 +122,7 @@ public class EventSettings extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         Intent intent = new Intent();
-        intent.putExtra("event", event);
+        intent.putExtra("eventID", event.getID());
         setResult(Constants.EVENT_SETTINGS_CHANGED, intent);
         finish();
     }
@@ -503,12 +504,7 @@ public class EventSettings extends AppCompatActivity {
 
         @Override
         public void csvFileGenerated(File file) {
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    Toast.makeText(getActivity(), "CSV file successfully generated. Opening device share dialog... This might take a few seconds.", Toast.LENGTH_LONG).show();
-                }
-            });
+            Log.d("RBS", "CSV file successfully generated.");
             Intent intent = new Intent();
             intent.setAction(Intent.ACTION_SEND);
             Uri uri = FileProvider.getUriForFile(getActivity(), BuildConfig.APPLICATION_ID, file);

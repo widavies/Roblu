@@ -32,8 +32,6 @@ public class MatchData extends CSVSheet {
     @Override
     public void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, RMatch[] matches) {
 
-        if(matches == null || matches.length == 0) return;
-
         /*
          * Create the first two rows of the match data sheet:
          * -Metric titles

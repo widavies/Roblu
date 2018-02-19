@@ -22,7 +22,7 @@
         android:allowBackup="true"
         android:icon="@drawable/launcher"
         android:theme="@style/AppTheme">
-        <service android:name=".sync.cloud.Service"
+        <service android:name="com.cpjd.roblu.sync.cloud.Service"
             android:enabled="true"
             android:exported="false"/>
         <receiver android:name=".utils.BootBroadcastReceiver" >

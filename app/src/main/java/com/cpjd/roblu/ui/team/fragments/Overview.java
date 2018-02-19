@@ -21,6 +21,7 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RDivider;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RTextfield;
@@ -121,6 +122,10 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
             // Require at least two values for line charts
             if((team.getTabs().get(1).getMetrics().get(i) instanceof RBoolean && values.size() < 1) || values.size() <= 1) continue;
 
+            // Return for incompatible metrics
+            if(team.getTabs().get(1).getMetrics().get(i) instanceof RDivider || team.getTabs().get(1).getMetrics().get(i) instanceof RGallery
+                    || team.getTabs().get(1).getMetrics().get(i) instanceof RTextfield) continue;
+
             /*
              * If the metric was boolean, chooser, or checkbox, all the values need to be
              * converted to percentages
@@ -156,7 +161,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
          * Find the image with the most entropy, and add
          * it as the "featured" image
          */
-        galleryLoop: for(int j = 0; j < galleries.size(); j++) {
+        galleryLoop: for(int j = galleries.size() - 1; j >= 0; j--) {
             if(galleries.get(j).getImages() != null && galleries.get(j).getImages().size() > 0) {
                 for(int i = galleries.get(j).getImages().size() - 1; i >= 0; i--) {
                     try {

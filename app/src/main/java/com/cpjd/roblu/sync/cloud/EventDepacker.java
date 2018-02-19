@@ -5,6 +5,7 @@ import android.os.StrictMode;
 import android.util.Log;
 
 import com.cpjd.http.Request;
+import com.cpjd.models.CloudCheckout;
 import com.cpjd.models.CloudTeam;
 import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.requests.CloudTeamRequest;
@@ -95,7 +96,7 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
          * Download everything
          */
         CloudTeam team = ctr.getTeam(-1);
-        String[] pulledCheckouts = ccr.pullCheckouts(0);
+        CloudCheckout[] pulledCheckouts = ccr.pullCheckouts(0);
 
         Log.d("RBS", "Pulled "+pulledCheckouts.length+" checkouts");
 
@@ -127,7 +128,7 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
          */
         ArrayList<RCheckout> checkouts = new ArrayList<>();
         try {
-            for(String s : pulledCheckouts) checkouts.add(mapper.readValue(s, RCheckout.class));
+            for(CloudCheckout s : pulledCheckouts) checkouts.add(mapper.readValue(s.getContent(), RCheckout.class));
         } catch(IOException e) {
             Log.d("RBS", "Failed to de-package checkouts.");
             listener.errorOccurred("Failed to import Roblu Cloud event.");

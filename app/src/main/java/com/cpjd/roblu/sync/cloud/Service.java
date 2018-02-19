@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.cpjd.http.Request;
+import com.cpjd.models.CloudCheckout;
 import com.cpjd.models.CloudTeam;
 import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.requests.CloudTeamRequest;
@@ -27,9 +28,11 @@ import com.cpjd.roblu.utils.Utils;
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -51,6 +54,9 @@ public class Service extends android.app.Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+
+        Log.d("RBS", "Starting RBS service...");
+
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -58,7 +64,7 @@ public class Service extends android.app.Service {
                 loop();
             }
         };
-        timer.schedule(timerTask, 0, 10000);
+        timer.schedule(timerTask, 0, 8000);
         return START_STICKY;
     }
 
@@ -168,8 +174,10 @@ public class Service extends android.app.Service {
             try {
                 CloudTeam t = teamRequest.getTeam(cloudSettings.getLastTeamSync());
                 form = mapper.readValue(t.getForm(), RForm.class);
+                form.setUploadRequired(false);
                 io.saveForm(activeEvent.getID(), form);
                 cloudSettings.setLastTeamSync(System.currentTimeMillis());
+                io.saveCloudSettings(cloudSettings);
                 Log.d("RBS-Service", "Successfully downloaded a form");
             } catch(Exception e) {
                 Log.d("RBS-Service", "Failed to download an RForm from the server.");
@@ -185,12 +193,26 @@ public class Service extends android.app.Service {
          */
         try {
             Log.d("RBS-Service", "Checking for completed checkouts...");
-            String[] checkouts = checkoutRequest.pullCompletedCheckouts(cloudSettings.getLastCheckoutSync());
+            long maxTimestamp = 0;
+            CloudCheckout[] checkouts = checkoutRequest.pullCompletedCheckouts(cloudSettings.getLastCheckoutSync());
             Log.d("RBS-Service", "Pulled: "+checkouts.length);
 
-            for(String s : checkouts) {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS", Locale.getDefault());
+
+            for(CloudCheckout s : checkouts) {
+                // Handle the timestamp
+                long time = 0;
+                try {
+                    sdf.parse(s.getTime().replace("T", " ").replace("Z", " "));
+                } catch(Exception e) {
+                    time = 0;
+                }
+                if(time > maxTimestamp) {
+                    maxTimestamp = time;
+                }
+
                 // Deserialize the checkout
-                RCheckout checkout = mapper.readValue(s, RCheckout.class);
+                RCheckout checkout = mapper.readValue(s.getContent(), RCheckout.class);
 
                 // Make sure to verify the checkout's team
                 checkout.getTeam().verify(form);
@@ -214,6 +236,8 @@ public class Service extends android.app.Service {
                 }
                 // Data already exists, so do a 'smart' merge
                 else {
+                    team.verify(form);
+
                     for(RTab downloadedTab : checkout.getTeam().getTabs()) {
                         boolean matchLocated = false;
                         for(RTab localTab : team.getTabs()) {
@@ -263,19 +287,33 @@ public class Service extends android.app.Service {
                             Collections.sort(team.getTabs());
                         }
                     }
-                    /*
-                     * Reset the last edit tag, if applicable
-                     */
-                    if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
-                    io.saveTeam(activeEvent.getID(), team);
+
                 }
 
-                cloudSettings.setLastCheckoutSync(System.currentTimeMillis());
-                io.saveCloudSettings(cloudSettings);
-                Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
+                /*
+                 * Reset the last edit tag, if applicable
+                 */
+                boolean shouldNotify = false;
+                if(checkout.getTeam().getLastEdit() != team.getLastEdit()) shouldNotify = true;
+
+                if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
+                io.saveTeam(activeEvent.getID(), team);
+
+                Log.d("RBS-Service", "Merged team: "+checkout.getTeam().getName());
+
+                /*
+                 * The way the server is designed, occasionally a checkout will get pulled twice.
+                 * If the RTeam time stamp differs from the current, just ignore the notification.
+                 */
+                if(shouldNotify) Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
 
                 // Notify the TeamViewer in case Roblu Master is viewing the data that was just modified
                 Utils.requestTeamViewerRefresh(getApplicationContext(), team.getName());
+            }
+
+            if(checkouts != null && checkouts.length > 0) {
+                cloudSettings.setLastCheckoutSync(maxTimestamp);
+                io.saveCloudSettings(cloudSettings);
             }
 
             // Refresh the UI

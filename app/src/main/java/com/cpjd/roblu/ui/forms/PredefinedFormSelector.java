@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
@@ -14,6 +16,7 @@ import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
@@ -26,7 +29,9 @@ import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.UIHandler;
+import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.utils.Constants;
+import com.cpjd.roblu.utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -38,6 +43,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 /**
  * Allows the user to selected a predefined form that they want to use.
@@ -76,6 +82,11 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
 
 	private ArrayList<RForm> forms;
 
+    /**
+     * If true, any selected form will be launched into preview mode
+     */
+	private static boolean previewModeEnabled;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -89,7 +100,7 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setTitle("Predefined forms");
+            getSupportActionBar().setTitle("Template forms");
             getSupportActionBar().setSubtitle("You can still edit predefined forms later");
         }
 
@@ -168,7 +179,12 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
                 /*
                  * Process file
                  */
-                String[] tokens = line.split(",");
+                String regex = "(?<!\\\\)" + Pattern.quote(",");
+                String[] tokens = line.split(regex);
+                for(int i = 0; i < tokens.length; i++) {
+                    tokens[i] = tokens[i].replaceAll("\\\\,", ",");
+                }
+
                 switch(tokens[0]) {
                     case "counter":
                         metrics.add(new RCounter(ID, tokens[1], Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3])));
@@ -222,10 +238,15 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == android.R.id.home) {
+        if(item.getItemId() == android.R.id.home) {
             setResult(Constants.CANCELLED);
             finish();
             return true;
+        }
+        if(item.getItemId() == R.id.preview) {
+            previewModeEnabled = !previewModeEnabled;
+            if(previewModeEnabled) Utils.showSnackbar(findViewById(R.id.activity_predefined_layout), getApplicationContext(), "Preview mode enabled", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
+            else Utils.showSnackbar(findViewById(R.id.activity_predefined_layout), getApplicationContext(), "Preview mode disabled", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
         }
 
         return false;
@@ -237,10 +258,29 @@ public class PredefinedFormSelector extends AppCompatActivity implements OnItemC
         finish();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.predefined, menu);
+        new UIHandler(this, menu).updateMenu();
+        return true;
+    }
+
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         RForm form = forms.get(position);
         if(form == null) return;
+
+        if(previewModeEnabled) {
+            new IO(getApplicationContext()).createPreview(form);
+            Intent intent = new Intent(this, TeamViewer.class);
+            intent.putExtra("teamID", -1);
+            intent.putExtra("eventID", -1);
+            intent.putExtra("editable", false);
+            startActivity(intent);
+            return;
+        }
+
         Intent intent = new Intent();
         intent.putExtra("form", form);
         setResult(Constants.PREDEFINED_FORM_SELECTED, intent);

@@ -1,5 +1,6 @@
 package com.cpjd.roblu.notifications;
 
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -35,25 +36,26 @@ public class Notify {
         intent.putExtra("teamID", checkout.getTeam().getID());
         intent.putExtra("match", checkout.getTeam().getTabs().get(0).getTitle());
         notify(context, "Scouting data received from "+checkout.getNameTag(),
-                checkout.getTeam().getName()+" #"+checkout.getTeam().getNumber()+"\n"+checkout.getTeam().getTabs().get(0).getTitle()+" was merged at "+ Utils.convertTime(checkout.getTime())+"\nTap to view scouting data", intent);
+                checkout.getTeam().getName()+" #"+checkout.getTeam().getNumber()+"\n"+checkout.getTeam().getTabs().get(0).getTitle()+" was merged at "+ Utils.convertTime(checkout.getTime())+"\nTap to view scouting data", intent,
+                checkout.getID());
     }
 
-    private static void notify(Context activity, String title, String content, Intent action) {
+    private static void notify(Context activity, String title, String content, Intent action, int ID) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "roblu-master").setSmallIcon(R.drawable.launcher)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-                .setContentTitle(title).setContentText(content);
+                .setContentTitle(title).setContentText(content).setPriority(Notification.PRIORITY_HIGH);
 
         PendingIntent pending = PendingIntent.getActivity(activity, 0, action, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setAutoCancel(true).setContentIntent(pending);
 
         NotificationManager notifyMgr = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
-        if(notifyMgr != null) notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());
+        if(notifyMgr != null) notifyMgr.notify(ID, builder.build());
     }
 
     public static void notifyNoAction(Context activity, String title, String content) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "roblu-master").setSmallIcon(R.drawable.launcher)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-                .setContentTitle(title);
+                .setContentTitle(title).setPriority(Notification.PRIORITY_HIGH);
 
         NotificationManager notifyMgr = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
         if(notifyMgr != null) notifyMgr.notify((int) ((System.currentTimeMillis() / 1000L) % Integer.MAX_VALUE), builder.build());

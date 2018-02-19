@@ -72,7 +72,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
     /**
      * All the different metric types that the user can select from
      */
-    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider"};
+    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider", "Field"};
     /**
      * The user's color preferences, so the metrics can be synced with the user's preferences
      */
@@ -315,6 +315,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(metric instanceof RTextfield) toolbar.addView(rMetricToUI.getTextfield((RTextfield) metric));
         else if(metric instanceof RGallery) toolbar.addView(rMetricToUI.getGallery(true, 0, 0, ((RGallery)metric)));
         else if(metric instanceof RDivider) toolbar.addView(rMetricToUI.getDivider((RDivider)metric));
+        //else if(metric instanceof RFieldDiagram) toolbar.addView(rm);
     }
 
     /**

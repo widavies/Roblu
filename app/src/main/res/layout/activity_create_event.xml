@@ -52,6 +52,17 @@
             android:layout_height="wrap_content"
             android:drawSelectorOnTop="true"
             android:entries="@array/form_types"/>
+
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/form_type"
+            android:visibility="invisible"
+            android:layout_alignParentStart="true"
+            android:padding="20dp"
+            android:text="Randomize scouting data (for testing purposes)  "/>
+
     </RelativeLayout>
 
 </ScrollView>

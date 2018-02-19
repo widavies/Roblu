@@ -425,8 +425,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         }
 
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        spinner.setLayoutParams(params);
 
         // Observed field
         final TextView observed = new TextView(activity);
@@ -463,17 +461,18 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         title.setTextColor(rui.getText());
         title.setText(chooser.getTitle());
         title.setTextSize(20);
-        title.setMaxWidth(width);
         title.setId(Utils.generateViewId());
         title.setPadding(Utils.DPToPX(activity, 10), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
 
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        //params.addRule(RelativeLayout.RIGHT_OF, title.getId());
         params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
+        params.addRule(RelativeLayout.BELOW, title.getId());
         spinner.setLayoutParams(params);
 
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
+        params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         title.setLayoutParams(params);
 
@@ -566,13 +565,12 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
      * @return a UI CardView
      */
     public CardView getStopwatch(final RStopwatch stopwatch, final boolean demo) {
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         final TextView title = new TextView(activity);
         title.setTextColor(rui.getText());
         title.setText(stopwatch.getTitle());
         title.setTextSize(20);
-        title.setMaxWidth((int)(width * 0.8));
         title.setId(Utils.generateViewId());
         title.setPadding(Utils.DPToPX(activity, 8), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
         title.setLayoutParams(params);
@@ -674,7 +672,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         lapButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(demo) return;
+                if(demo || !editable) return;
                 layout.removeView(observed);
                 // Add the current time on the stopwatch to the view
                 double t = Double.parseDouble(timer.getText().toString().replace("s", ""));

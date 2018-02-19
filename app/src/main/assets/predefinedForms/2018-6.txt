@@ -1,0 +1,37 @@
+Title:FRC 2018, "For cycle obsessed teams"
+Description:Courtesy Team 930, Mukwonago BEARs
+PIT
+DEFAULTS
+gallery,Robot pictures.
+MATCH
+textfield,Team Number,
+textfield,Match Number,
+boolean,Autoline Crossed,false
+counter,Auto Switch Cubes,1,0
+counter,Auto Scale Cubes,1,0
+stopwatch,Autonomous Doing-Nothing Time,0
+counter,Teleop Cubes Alliance Switch,1,0
+stopwatch,Alliance Switch Cycle Time Sample 1 (From contact with Cube\, to scoring position),0
+stopwatch,Alliance Switch Cycle Time Sample 2 (From contact with Cube\, to scoring position),0
+stopwatch,Alliance Switch Cycle Time Sample 3 (From contact with Cube\, to scoring position),0
+counter,Teleop Cubes Scale,1,0
+stopwatch,Scale Cycle Time Sample 1(From contact with Cube\, to scoring position),0
+stopwatch,Scale Cycle Time Sample 2(From contact with Cube\, to scoring position),0
+stopwatch,Scale Cycle Time Sample 3(From contact with Cube\, to scoring position),0
+counter,Teleop Cubes Opponent Switch,1,0
+stopwatch,Opponent Switch Cycle Time Sample 1 (From contact with Cube\, to scoring position),0
+stopwatch,Opponent Switch Cycle Time Sample 2 (From contact with Cube\, to scoring position),0
+stopwatch,Opponent Switch Cycle Time Sample 3 (From contact with Cube\, to scoring position),0
+counter,Teleop Cubes Exchange,1,0
+stopwatch,Exchange Cycle Time Sample 1 (From contact with Cube\, to scoring position),0
+stopwatch,Exchange Cycle Time Sample 2 (From contact with Cube\, to scoring position),0
+stopwatch,Exchange Cycle Time Sample 3 (From contact with Cube\, to scoring position),0
+chooser,Endgame state,Not Parked/Climbing:Parked:Climbing,0
+stopwatch,Time to Perform Endgame Function,0
+textfield,Comments
+
+
+
+
+
+

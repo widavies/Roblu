@@ -9,9 +9,11 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import com.cpjd.models.Event;
@@ -116,6 +118,7 @@ public class EventEditor extends AppCompatActivity {
                  */
                 Event event = (Event) getIntent().getSerializableExtra("tbaEvent");
                 eventName.setText(event.name);
+                findViewById(R.id.switch1).setVisibility(View.VISIBLE);
             }
         } else {
             RelativeLayout layout = findViewById(R.id.create_layout);
@@ -257,6 +260,7 @@ public class EventEditor extends AppCompatActivity {
     private void createEvent(RForm form) {
         IO io = new IO(getApplicationContext());
         REvent event = new REvent(io.getNewEventID(), eventName.getText().toString());
+
         io.saveEvent(event); // we call this twice because the /event/ dir is required for the form to save
         io.saveForm(event.getID(), form);
 
@@ -268,7 +272,9 @@ public class EventEditor extends AppCompatActivity {
             d.setCancelable(false);
             event.setKey(((Event)getIntent().getSerializableExtra("tbaEvent")).key);
             io.saveEvent(event);
-            new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), false, this, d).execute();
+            UnpackTBAEvent unpackTBAEvent = new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), false, this, d);
+            if(((Switch)findViewById(R.id.switch1)).isChecked()) unpackTBAEvent.setRandomize(true);
+            unpackTBAEvent.execute();
         }
 
         /*

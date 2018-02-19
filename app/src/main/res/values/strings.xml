@@ -8,7 +8,7 @@
 
     <string-array name="form_types">
         <item>Create custom form</item>
-        <item>Import predefined form</item>
+        <item>Use a template form</item>
         <item>Use master form</item>
         <item>No form (create form later)</item>
     </string-array>
