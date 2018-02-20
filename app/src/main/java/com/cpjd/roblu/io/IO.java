@@ -51,7 +51,7 @@ import java.io.ObjectOutputStream;
 public class IO {
 
     private Context context;
-    public static final String PREFIX = "v15";
+    public static final String PREFIX = "v16";
 
     public IO(Context context) {
         this.context = context;
@@ -403,7 +403,7 @@ public class IO {
      * @return File reference to a temporary file location that can later be saved to an external location
      */
     public File saveBackup(RBackup backup) {
-        File file = new File(context.getCacheDir(), PREFIX+File.separator+"backups"+ File.separator+"tempBackupExport.roblubackup");
+        File file = new File(context.getCacheDir(), PREFIX+File.separator+"backups"+ File.separator+"event.roblubackup");
         if(file.mkdirs()) Log.d("RBS", "Successfully created backup parent dirs");
         if(file.exists()) delete(file);
         serializeObject(backup, file);

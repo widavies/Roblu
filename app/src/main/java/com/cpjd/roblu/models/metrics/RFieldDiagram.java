@@ -48,4 +48,9 @@ public class RFieldDiagram extends RMetric {
     public RMetric clone() {
         return new RFieldDiagram(ID, this.pictureID, drawings);
     }
+
+    @Override
+    public String toString() {
+        return "";
+    }
 }

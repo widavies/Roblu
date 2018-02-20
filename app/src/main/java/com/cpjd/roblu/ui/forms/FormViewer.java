@@ -52,6 +52,7 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
      * The form that's being edited
      */
     private RForm form;
+
     /**
      * If true, FormViewer should display an "Are you sure?" dialog before exiting the view
      */
@@ -81,8 +82,8 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
 		 * Load dependencies
 		 */
         /*
-      Stores the user's UI preferences
-     */
+         Stores the user's UI preferences
+        */
         RUI rui = new IO(getApplicationContext()).loadSettings().getRui();
 
 		/*
@@ -344,6 +345,8 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
         metricEditHolder = metric;
         Intent intent = new Intent(this, MetricEditor.class);
         intent.putExtra("metric", metric);
+        intent.putExtra("form", form);
+        intent.putExtra("tab", currentTab);
         startActivityForResult(intent, Constants.EDIT_METRIC_REQUEST);
     }
 
@@ -354,6 +357,8 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
     @Override
     public void onClick(View view) {
         Intent intent = new Intent(this, MetricEditor.class);
+        intent.putExtra("form", form);
+        intent.putExtra("tab", currentTab);
         startActivityForResult(intent, Constants.NEW_METRIC_REQUEST);
     }
 

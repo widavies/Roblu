@@ -92,6 +92,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
 
             this.canvas.setBaseColor(rui.getBackground());
             this.canvas.setPaintStrokeWidth(7F);
+            canvas.setPaintStrokeColor(Color.YELLOW);
         } else {
             // Load image
             Bitmap b = BitmapFactory.decodeByteArray(ImageGalleryActivity.IMAGES.get(position), 0, ImageGalleryActivity.IMAGES.get(position).length);

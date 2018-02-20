@@ -32,7 +32,8 @@ import lombok.NonNull;
         @JsonSubTypes.Type(value = RStopwatch.class, name = "RStopwatch"),
         @JsonSubTypes.Type(value = RTextfield.class, name = "RTextfield"),
         @JsonSubTypes.Type(value = RDivider.class, name = "RDivider"),
-        @JsonSubTypes.Type(value = RFieldDiagram.class, name = "RFieldDiagram")
+        @JsonSubTypes.Type(value = RFieldDiagram.class, name = "RFieldDiagram"),
+        @JsonSubTypes.Type(value = RCalculation.class, name = "RCalculation")
 })
 public abstract class RMetric implements Serializable {
     /**

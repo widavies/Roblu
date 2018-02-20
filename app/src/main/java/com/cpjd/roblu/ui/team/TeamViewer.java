@@ -252,7 +252,6 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
 
             for(RMetric metric : TeamViewer.team.getTabs().get(position).getMetrics()) {
                 if(metric.getID() == ID) {
-                    Log.d("RBS", "Updating metric!");
                     metric.setModified(true);
                     ((RFieldDiagram)metric).setDrawings(drawings);
                     break;

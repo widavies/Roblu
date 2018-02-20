@@ -631,7 +631,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if(eventDrawerManager.getBluetooth() != null) {
+        if(eventDrawerManager != null && eventDrawerManager.getBluetooth() != null) {
             eventDrawerManager.getBluetooth().onDestroy();
         }
 

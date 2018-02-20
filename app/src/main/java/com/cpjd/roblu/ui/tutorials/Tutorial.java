@@ -50,6 +50,7 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
 
         // List of tutorials
         tutorials = new ArrayList<>();
+        tutorials.add(new RTutorial("Text based", "View the Roblu text based tutorial", "https://docs.google.com/document/d/1DqpgKPdtfZDUc7Zu3MqdJHL59aB-ht8H1ZwllYlzMuc/edit?usp=sharing"));
         tutorials.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc.", "9j6ysvJJyQg"));
         tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "KoylfzTBvKM"));
         tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "LpWvnavebNw"));
@@ -121,6 +122,11 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
             String url = "https://www.youtube.com/playlist?list=PLjv2hkWcHVGZAlplguiS4rR_45-KLS28a";
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
+            startActivity(i);
+        }
+        else if(position == 0) {
+            Intent i = new Intent(Intent.ACTION_VIEW);
+            i.setData(Uri.parse(tutorials.get(position).getYoutubeID()));
             startActivity(i);
         }
         else {

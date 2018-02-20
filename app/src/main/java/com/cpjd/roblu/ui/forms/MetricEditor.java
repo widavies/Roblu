@@ -1,5 +1,6 @@
 package com.cpjd.roblu.ui.forms;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
@@ -11,12 +12,14 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -24,8 +27,10 @@ import android.widget.TextView;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCalculation;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
@@ -40,6 +45,7 @@ import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 /**
@@ -73,11 +79,22 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
     /**
      * All the different metric types that the user can select from
      */
-    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider", "Field"};
+    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider", "Field", "Calculation"};
     /**
      * The user's color preferences, so the metrics can be synced with the user's preferences
      */
     private RUI rui;
+
+    /**
+     * Required for the calculation metric
+     */
+    private RForm form;
+
+    /**
+     * Required for the calculation metric
+     * 0 = pit, 1 = match
+     */
+    private int tab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +105,9 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
          * Load dependencies
          */
         rui = new IO(getApplicationContext()).loadSettings().getRui();
+
+        if(getIntent().getSerializableExtra("form") != null) form = (RForm) getIntent().getSerializableExtra("form");
+        tab = getIntent().getIntExtra("tab", 0);
 
         /*
          * Setup UI
@@ -198,6 +218,62 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         } else if(metric instanceof RSlider) {
             layout.addView(getConfigField("Minimum", layout, 1));
             layout.addView(getConfigField("Maximum", layout, 2));
+        } else if(metric instanceof RCalculation) {
+            final TextInputLayout til = getConfigField("Calculation", layout, 1);
+            layout.addView(til);
+            // Also add a button for inputting metric names
+            Button b = new Button(getApplicationContext());
+            b.setText("Add metric");
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, til.getId());
+            b.setLayoutParams(params);
+            layout.addView(b);
+            b.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    final Dialog d = new Dialog(MetricEditor.this);
+                    d.setTitle("Pick metric:");
+                    d.setContentView(R.layout.metric_chooser);
+                    final Spinner spinner = d.findViewById(R.id.type);
+                    String[] values;
+                    final ArrayList<RMetric> metrics;
+                    if(tab == 0) metrics = form.getPit();
+                    else metrics = form.getMatch();
+                    // Remove all but counters, stopwatches, and sliders
+                    for(int i = 0; i < metrics.size(); i++) {
+                        if(!(metrics.get(i) instanceof RCounter) && !(metrics.get(i) instanceof RStopwatch && !(metrics.get(i) instanceof RSlider))) {
+                            metrics.remove(i);
+                            i--;
+                        }
+                    }
+
+                    values = new String[metrics.size()];
+                    for(int i = 0; i < metrics.size(); i++) {
+                        values[i] = metrics.get(i).getTitle();
+                    }
+                    ArrayAdapter<String> adp = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, values);
+                    adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinner.setAdapter(adp);
+
+                    Button button = d.findViewById(R.id.button7);
+                    button.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            try {
+                                RMetric m = new ArrayList<>(metrics).get(spinner.getSelectedItemPosition());
+                                til.getEditText().setText(til.getEditText().getText().toString()+" "+m.getTitle());
+                            } catch(Exception e) {
+                                Log.d("RBS", "Failed to select metric");
+                            } finally {
+                                d.dismiss();
+                            }
+
+                        }
+                    });
+                    if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(getApplicationContext()).loadSettings().getRui().getAnimation();
+                    d.show();
+                }
+            });
         }
 
         this.layout.addView(getCardView(layout));
@@ -233,6 +309,9 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(name.equalsIgnoreCase("increment")) {
             nameInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
             if(metric instanceof RCounter) nameInput.setText(String.valueOf(((RCounter)metric).getIncrement()));
+        }
+        else if(name.equalsIgnoreCase("calculation")) {
+            if(metric instanceof RCalculation) nameInput.setText(((RCalculation) metric).getCalculation());
         }
         else if(name.startsWith("Comma separated list")) {
             if(metric instanceof RCheckbox) {
@@ -277,6 +356,8 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
                         String[] tokens = charSequence.toString().split(",");
                         ((RChooser)metric).setValues(tokens);
                     }
+                } else if(name.equalsIgnoreCase("calculation")) {
+                    ((RCalculation)metric).setCalculation(charSequence.toString());
                 }
 
                 addMetricPreviewToToolbar();
@@ -317,6 +398,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(metric instanceof RGallery) toolbar.addView(rMetricToUI.getGallery(true, 0, 0, ((RGallery)metric)));
         else if(metric instanceof RDivider) toolbar.addView(rMetricToUI.getDivider((RDivider)metric));
         else if(metric instanceof RFieldDiagram) toolbar.addView(rMetricToUI.getFieldDiagram(-1, (RFieldDiagram)metric));
+        else if(metric instanceof RCalculation) toolbar.addView(rMetricToUI.getCalculationMetric(null, ((RCalculation)metric)));
     }
 
     /**
@@ -399,7 +481,10 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
             metric = new RDivider(0, "Divider");
         } else if(stringOfSelected.equals(METRIC_TYPES[9])) {
             metric = new RFieldDiagram(0, R.drawable.field2018, null);
+        } else if(stringOfSelected.equals(METRIC_TYPES[10])) {
+            metric = new RCalculation(0, "Custom calculation");
         }
+
         metric.setModified(true);
         addMetricPreviewToToolbar();
         buildConfigLayout();

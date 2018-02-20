@@ -9,7 +9,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.util.Log;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -243,11 +242,9 @@ public class Bluetooth {
      */
     public void send(final String header,final String message) {
         try {
-            Log.d("RBS", "Responding..."+(out == null));
             String toSend = header+":"+message+"\n";
             if(out != null) out.write(toSend.getBytes());
         } catch(IOException e) {
-            Log.d("RBS", "Fail4ed", e);
             activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -319,8 +316,6 @@ public class Bluetooth {
                         BufferedReader br = new BufferedReader(new InputStreamReader(in));
                         String msg;
                         while((msg = br.readLine()) != null) {
-                            Log.d("RBS", "Received message"+msg);
-
                             final String header = msg.split(":")[0];
                             final String content = msg.substring(header.length() + 1);
 
@@ -334,7 +329,6 @@ public class Bluetooth {
                             }
                         });
                     }
-
 
                     try {
                         serverSocket.close();
@@ -415,23 +409,10 @@ public class Bluetooth {
 
             boolean success = true;
 
-            try {
-                in = socket.getInputStream();
-            } catch(IOException e) {
-                Log.d("RSBS", "Failed to obtain input stream", e);
-                success = false;
-                activity.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if(listener != null) listener.errorOccurred("Bluetooth: Failed to obtain input stream from Bluetooth socket.");
-                    }
-                });
-            }
 
             try {
                 out = socket.getOutputStream();
             } catch(IOException e) {
-                Log.d("RSBS", "Failed to get out put stream", e);
                 success = false;
                 activity.runOnUiThread(new Runnable() {
                     @Override
@@ -448,6 +429,18 @@ public class Bluetooth {
                         if(listener != null) listener.deviceConnected(mmDevice);
                     }
                 });
+
+            try {
+                in = socket.getInputStream();
+            } catch(IOException e) {
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if(listener != null) listener.errorOccurred("Bluetooth: Failed to obtain input stream from Bluetooth socket.");
+                    }
+                });
+            }
+
         }
 
         // Closes the client socket and causes the thread to finish.
