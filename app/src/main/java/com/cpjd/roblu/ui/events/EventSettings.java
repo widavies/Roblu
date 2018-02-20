@@ -168,6 +168,9 @@ public class EventSettings extends AppCompatActivity {
             findPreference("delete_teams").setOnPreferenceClickListener(this);
             findPreference("delete_event").setOnPreferenceClickListener(this);
             findPreference("tba_sync").setOnPreferenceClickListener(this);
+            RUICheckPreference bt = (RUICheckPreference) findPreference("bt_sync");
+            bt.setChecked(event.isBluetoothEnabled());
+            bt.setOnPreferenceChangeListener(this);
 
             /*
              * Obtain explicit preference references where an attribute of the preference
@@ -425,6 +428,18 @@ public class EventSettings extends AppCompatActivity {
                     new IO(getActivity()).saveEvent(event);
                     new IO(getActivity()).clearCheckouts();
                 }
+            }
+            /*
+             * User clicked the "Sync with Bluetooth" option
+             */
+            else if(preference.getKey().equals("bt_sync")) {
+                REvent[] events = new IO(getActivity()).loadEvents();
+                for(REvent ev : events) {
+                    ev.setBluetoothEnabled(((Boolean)o && ev.getID() == event.getID()));
+                    new IO(getActivity()).saveEvent(ev);
+                }
+                event.setBluetoothEnabled((Boolean)o);
+                ((CheckBoxPreference)preference).setChecked(((Boolean)o));
             }
             return true;
         }

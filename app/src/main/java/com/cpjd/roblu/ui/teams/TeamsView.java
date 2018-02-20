@@ -629,6 +629,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     }
 
     @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if(eventDrawerManager.getBluetooth() != null) {
+            eventDrawerManager.getBluetooth().onDestroy();
+        }
+
+    }
+    @Override
     public void teamSelected(View v) {
         RTeam team = adapter.getTeams().get(rv.getChildLayoutPosition(v));
         Intent startView = new Intent(this, TeamViewer.class);

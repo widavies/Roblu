@@ -18,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -38,8 +39,11 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RFieldDiagram;
+import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
+import com.cpjd.roblu.ui.images.Drawing;
 import com.cpjd.roblu.ui.team.fragments.TeamTabAdapter;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
@@ -238,6 +242,24 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Constants.GALLERY_EXIT) {
             team = new IO(getApplicationContext()).loadTeam(event.getID(), team.getID());
+            tabAdapter.notifyDataSetChanged();
+        }
+        else if(resultCode == Constants.FIELD_DIAGRAM_EDITED) {
+            int position = data.getIntExtra("position", 0);
+            int ID = data.getIntExtra("ID", 0);
+            byte[] drawings = Drawing.DRAWINGS;
+            Drawing.DRAWINGS = null;
+
+            for(RMetric metric : TeamViewer.team.getTabs().get(position).getMetrics()) {
+                if(metric.getID() == ID) {
+                    Log.d("RBS", "Updating metric!");
+                    metric.setModified(true);
+                    ((RFieldDiagram)metric).setDrawings(drawings);
+                    break;
+                }
+            }
+            TeamViewer.team.setLastEdit(System.currentTimeMillis());
+            new IO(getApplicationContext()).saveTeam(event.getID(), TeamViewer.team);
             tabAdapter.notifyDataSetChanged();
         }
     }

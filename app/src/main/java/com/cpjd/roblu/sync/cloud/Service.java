@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -198,12 +199,13 @@ public class Service extends android.app.Service {
             Log.d("RBS-Service", "Pulled: "+checkouts.length);
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS", Locale.getDefault());
+            sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // server runs on UTC
 
             for(CloudCheckout s : checkouts) {
                 // Handle the timestamp
-                long time = 0;
+                long time;
                 try {
-                    sdf.parse(s.getTime().replace("T", " ").replace("Z", " "));
+                    time = sdf.parse(s.getTime().replace("T", " ").replace("Z", " ")).getTime();
                 } catch(Exception e) {
                     time = 0;
                 }
@@ -290,22 +292,12 @@ public class Service extends android.app.Service {
 
                 }
 
-                /*
-                 * Reset the last edit tag, if applicable
-                 */
-                boolean shouldNotify = false;
-                if(checkout.getTeam().getLastEdit() != team.getLastEdit()) shouldNotify = true;
-
                 if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
                 io.saveTeam(activeEvent.getID(), team);
 
                 Log.d("RBS-Service", "Merged team: "+checkout.getTeam().getName());
 
-                /*
-                 * The way the server is designed, occasionally a checkout will get pulled twice.
-                 * If the RTeam time stamp differs from the current, just ignore the notification.
-                 */
-                if(shouldNotify) Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
+                Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
 
                 // Notify the TeamViewer in case Roblu Master is viewing the data that was just modified
                 Utils.requestTeamViewerRefresh(getApplicationContext(), team.getName());
@@ -314,10 +306,8 @@ public class Service extends android.app.Service {
             if(checkouts != null && checkouts.length > 0) {
                 cloudSettings.setLastCheckoutSync(maxTimestamp);
                 io.saveCloudSettings(cloudSettings);
+                Utils.requestUIRefresh(getApplicationContext());
             }
-
-            // Refresh the UI
-            if(checkouts != null && checkouts.length > 0) Utils.requestUIRefresh(getApplicationContext());
 
         } catch(Exception e) {
             Log.d("RBS-Service", "An error occurred while checking for completed checkouts. "+e.getMessage());
@@ -346,5 +336,4 @@ public class Service extends android.app.Service {
         io.saveCloudSettings(cloudSettings);
         Log.d("RBS-Service", "Sleeping Roblu background service for 10 seconds...");
     }
-
 }

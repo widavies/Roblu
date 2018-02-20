@@ -26,6 +26,11 @@
             android:title="Sync event with Roblu Cloud"
             android:key="sync"
             android:summary="Enable or disable Roblu Cloud support for this event" />
+        <com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference
+            android:defaultValue="true"
+            android:title="Bluetooth sync"
+            android:key="bt_sync"
+            android:summary="Sets this event as the target Bluetooth event, all Bluetooth syncs will be directed into this event." />
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:defaultValue="true"
             android:key="tba_sync"

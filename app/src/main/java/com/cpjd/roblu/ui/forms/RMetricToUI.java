@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.RectF;
@@ -47,12 +48,14 @@ import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RDivider;
+import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
+import com.cpjd.roblu.ui.images.Drawing;
 import com.cpjd.roblu.ui.images.FullScreenImageGalleryActivity;
 import com.cpjd.roblu.ui.images.FullScreenImageGalleryAdapter;
 import com.cpjd.roblu.ui.images.ImageGalleryActivity;
@@ -556,6 +559,53 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setLayoutParams(oParams);
         if(!checkbox.isModified()) layout.addView(observed);
 
+        return getCard(layout);
+    }
+
+    public CardView getFieldDiagram(final int position, final RFieldDiagram fieldDiagram) {
+        RelativeLayout layout = new RelativeLayout(activity);
+        TextView textView = new TextView(activity);
+        textView.setText(fieldDiagram.getTitle());
+        textView.setPadding(textView.getPaddingLeft(), textView.getPaddingTop(), textView.getPaddingRight(), Utils.DPToPX(activity, 10));;
+        textView.setTextColor(rui.getText());
+        textView.setId(Utils.generateViewId());
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        params.addRule(RelativeLayout.BELOW, textView.getId());
+        layout.addView(textView);
+        ImageView imageView = new ImageView(activity);
+        imageView.setAdjustViewBounds(true);
+
+        // Get field diagram
+        final Bitmap field = BitmapFactory.decodeResource(activity.getResources(), fieldDiagram.getPictureID());
+
+        // Get drawings
+        if(fieldDiagram.getDrawings() != null) {
+            Bitmap drawings = BitmapFactory.decodeByteArray(fieldDiagram.getDrawings(), 0, fieldDiagram.getDrawings().length);
+            Bitmap mutableBitmap = field.copy(Bitmap.Config.ARGB_8888, true);
+            Canvas c = new Canvas(mutableBitmap);
+            Paint p = new Paint(Paint.FILTER_BITMAP_FLAG);
+            c.drawBitmap(drawings, 0, 0, p);
+            imageView.setImageBitmap(mutableBitmap);
+            Log.d("RBS", "Loading......");
+        } else imageView.setImageBitmap(field);
+
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(position == -1) return;
+
+                Intent intent = new Intent(activity, Drawing.class);
+                intent.putExtra("fieldDrawings", fieldDiagram.getDrawings());
+                intent.putExtra("fieldDiagramID", fieldDiagram.getPictureID());
+                intent.putExtra("fieldDiagram", true);
+                intent.putExtra("position", position);
+                intent.putExtra("ID", fieldDiagram.getID());
+                activity.startActivityForResult(intent, Constants.GENERAL);
+            }
+        });
+        imageView.setLayoutParams(params);
+        imageView.setScaleType(ImageView.ScaleType.FIT_XY);
+        layout.addView(imageView);
         return getCard(layout);
     }
 

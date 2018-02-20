@@ -49,7 +49,6 @@ import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.sync.bluetooth.BTDeviceSetup;
 import com.cpjd.roblu.sync.bluetooth.Bluetooth;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
@@ -166,6 +165,8 @@ public class AdvSettings extends AppCompatActivity {
 
             toggleJoinTeam(!(settings.getCode() != null && !settings.getCode().equals("")));
 
+            bluetooth = new Bluetooth(getActivity());
+
         }
 
         // This updates the UI depending on whether the user has entered a team code or not
@@ -189,23 +190,18 @@ public class AdvSettings extends AppCompatActivity {
                 return true;
             }
             else if(preference.getKey().equals("bt_devices")) { // user tapped on Bluetooth device setup button
-
-                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "Listening for devices", "Your device is visible to nearby devices. Roblu is listening for Bluetooth devices...", false);
+                final ProgressDialog dialog = ProgressDialog.show(getActivity(), "Listening for devices", "Your device is visible to nearby devices. Roblu's Bluetooth MAC address is available to scouters", false);
                 dialog.setCancelable(true);
                 dialog.setCanceledOnTouchOutside(true);
-                dialog.show();
-                new BTDeviceSetup(bluetooth, new BTDeviceSetup.BTDeviceSetupListener() {
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
-                    public void success() {
-                        dialog.dismiss();
-                    }
-
-                    @Override
-                    public void error(String message) {
-                        Utils.showSnackbar(getActivity().findViewById(R.id.advsettings), getActivity(), message, true, 0);
-                        dialog.dismiss();
+                    public void onCancel(DialogInterface dialog) {
+                        bluetooth.disable();
                     }
                 });
+                dialog.show();
+                bluetooth.enable();
+                bluetooth.enableDiscoverability();
                 return true;
             }
             else if(preference.getKey().equals("display_code")) { // user tapped display team code
@@ -455,6 +451,12 @@ public class AdvSettings extends AppCompatActivity {
         @Override
         public void onStart() {
             super.onStart();
+        }
+
+        @Override
+        public void onDestroy() {
+            super.onDestroy();
+            bluetooth.onDestroy();
         }
 
         @Override

@@ -2,6 +2,7 @@ package com.cpjd.roblu.ui.events;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
@@ -12,12 +13,15 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.CompoundButton;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.sync.bluetooth.BTServer;
+import com.cpjd.roblu.sync.bluetooth.Bluetooth;
 import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.settings.AdvSettings;
@@ -25,6 +29,7 @@ import com.cpjd.roblu.ui.tutorials.Tutorial;
 import com.cpjd.roblu.utils.Constants;
 import com.mikepenz.materialdrawer.Drawer;
 import com.mikepenz.materialdrawer.DrawerBuilder;
+import com.mikepenz.materialdrawer.interfaces.OnCheckedChangeListener;
 import com.mikepenz.materialdrawer.model.AbstractDrawerItem;
 import com.mikepenz.materialdrawer.model.ExpandableDrawerItem;
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
@@ -74,6 +79,12 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      */
     private RUI rui;
 
+    /**
+     * This allows access to the Bluetooth functions of this device
+     */
+    @Getter
+    private Bluetooth bluetooth;
+
     public interface EventSelectListener {
         void eventSelected(REvent event);
     }
@@ -89,17 +100,18 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
      * @param toolbar the TeamsView toolbar (the UI drawer will insert a hamburger button)
      * @param listener an EventSelectListener that will be called when the TeamsView activity should reload the teams list
      */
-    public EventDrawerManager(Activity activity, Toolbar toolbar, EventSelectListener listener) {
+    public EventDrawerManager(final Activity activity, Toolbar toolbar, EventSelectListener listener) {
         this.activity = activity;
         this.listener = listener;
 
         // Load dependencies objects
         rui = new IO(activity).loadSettings().getRui();
+        bluetooth = new Bluetooth(activity);
 
         /*
          * Load the various drawable icons for the drawers
          */
-        Drawable create, masterForm, tutorials, settings, cloud, wifi, bluetoothIcon;
+        final Drawable create, masterForm, tutorials, settings, cloud, wifi, bluetoothIcon;
         bluetoothIcon = ContextCompat.getDrawable(activity, R.drawable.bluetooth);
         create = ContextCompat.getDrawable(activity, R.drawable.create);
         wifi = ContextCompat.getDrawable(activity, R.drawable.wifi);
@@ -144,7 +156,28 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.EDIT_MASTER_FORM).withName("Edit master form").withIcon(masterForm));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.TUTORIALS).withName("Tutorials").withIcon(tutorials));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SERVER_HEALTH).withName("Server status: ").withIcon(wifi).withSelectable(false));
-        items.add(new SwitchDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.BLUETOOTH_SERVER).withName("Bluetooth server").withIcon(bluetoothIcon).withSelectable(false));
+        items.add(new SwitchDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.BLUETOOTH_SERVER).withName("Bluetooth server").withIcon(bluetoothIcon).withSelectable(false)
+        .withOnCheckedChangeListener(new OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(final IDrawerItem drawerItem, CompoundButton buttonView, boolean isChecked) {
+                if(drawerItem.getIdentifier() == Constants.BLUETOOTH_SERVER) {
+                    if(((SwitchDrawerItem)drawerItem).isChecked()) {
+                        ProgressDialog dialog = ProgressDialog.show(activity, "Listening for incoming connections...", "Waiting for a device to connect...", false);
+                        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                            @Override
+                            public void onCancel(DialogInterface dialog) {
+                                ((SwitchDrawerItem)drawerItem).withChecked(false);
+                                eventDrawer.getAdapter().notifyItemChanged(eventDrawer.getPosition(drawerItem));
+                                bluetooth.disable();
+                            }
+                        });
+                        dialog.setCancelable(true);
+                        dialog.show();
+                        new BTServer(dialog, bluetooth).start();
+                    }
+                }
+            }
+        }));
         items.add(new SecondaryDrawerItem().withTextColor(rui.getText()).withIdentifier(Constants.SETTINGS).withName("Settings").withIcon(settings));
 
         /*
@@ -204,13 +237,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         else if(identifier == Constants.TUTORIALS) {
             activity.startActivity(new Intent(activity, Tutorial.class));
             eventDrawer.setSelectionAtPosition(-1);
-        }
-        else if(identifier == Constants.BLUETOOTH_SERVER) {
-            if(((SwitchDrawerItem)drawerItem).isChecked()) {
-                ProgressDialog dialog = ProgressDialog.show(activity, "Listening for incoming connections...", "Waiting for a device to connect.", false);
-                dialog.setCancelable(false);
-                dialog.show();
-            }
         }
         else if(identifier == Constants.EVENT_SETTINGS) {
             for(int i = 0; i < events.size(); i++) {

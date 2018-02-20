@@ -19,16 +19,24 @@ public class RFieldDiagram extends RMetric {
      */
     public static final long serialVersionUID = 1L;
 
-    private byte[] diagram;
+    private int pictureID;
+
+    /**
+     * To save memory, this metric will store the field diagram separately from the drawings, the drawings
+     * will be overlayed onto the field diagrams
+     */
+    private byte[] drawings;
+
     /**
      * The empty constructor is required for de-serialization
      */
     @SuppressWarnings("unused")
     public RFieldDiagram() {}
 
-    public RFieldDiagram(int ID, byte[] diagram) {
+    public RFieldDiagram(int ID, int pictureID, byte[] drawings) {
         super(ID, "Field diagram");
-        this.diagram = diagram;
+        this.pictureID = pictureID;
+        this.drawings = drawings;
     }
 
     @Override
@@ -38,6 +46,6 @@ public class RFieldDiagram extends RMetric {
 
     @Override
     public RMetric clone() {
-        return new RFieldDiagram(ID, this.diagram);
+        return new RFieldDiagram(ID, this.pictureID, drawings);
     }
 }

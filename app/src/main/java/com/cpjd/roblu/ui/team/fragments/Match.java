@@ -20,6 +20,7 @@ import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RDivider;
+import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
@@ -125,6 +126,7 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
         else if(e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e, false));
         else if(e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
         else if(e instanceof RDivider) layout.addView(els.getDivider((RDivider)e));
+        else if(e instanceof RFieldDiagram) layout.addView(els.getFieldDiagram(position, (RFieldDiagram)e));
         else Log.d("RBS", "Couldn't resolve metric with name: "+e.getTitle());
     }
 

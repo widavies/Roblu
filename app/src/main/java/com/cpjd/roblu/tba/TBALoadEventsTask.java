@@ -44,7 +44,7 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
      */
     private int teamNumber;
     /**
-     * The year (e.g. "2018") to get events from
+     * The year (e.g. "field2018") to get events from
      */
     private int year;
     /**

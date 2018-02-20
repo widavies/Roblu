@@ -3,6 +3,8 @@ package com.cpjd.roblu.ui.images;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -50,6 +52,8 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
     private int color;
     private int position;
 
+    public static byte[] DRAWINGS;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,13 +76,31 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         int temp = 0;
         if(content != null) temp = content.getHeight();
 
-        // Load image
-        Bitmap b = BitmapFactory.decodeByteArray(ImageGalleryActivity.IMAGES.get(position), 0, ImageGalleryActivity.IMAGES.get(position).length);
-        Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
-        this.canvas = this.findViewById(R.id.canvas);
-        this.canvas.setBaseColor(rui.getBackground());
-        if(bitmap != null) this.canvas.drawBitmap(bitmap);
-        this.canvas.setPaintStrokeWidth(7F);
+        if(getIntent().getBooleanExtra("fieldDiagram", false)) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            this.canvas = this.findViewById(R.id.canvas);
+
+            // Load image
+            if(getIntent().getByteArrayExtra("fieldDrawings") != null) {
+                Bitmap b = BitmapFactory.decodeByteArray(getIntent().getByteArrayExtra("fieldDrawings"), 0, getIntent().getByteArrayExtra("fieldDrawings").length);
+                Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
+                if(bitmap != null) this.canvas.drawBitmap(bitmap);
+            }
+
+            LinearLayout layout = findViewById(R.id.drawing_layout);
+            layout.setBackgroundResource(getIntent().getIntExtra("fieldDiagramID", R.drawable.field2018));
+
+            this.canvas.setBaseColor(rui.getBackground());
+            this.canvas.setPaintStrokeWidth(7F);
+        } else {
+            // Load image
+            Bitmap b = BitmapFactory.decodeByteArray(ImageGalleryActivity.IMAGES.get(position), 0, ImageGalleryActivity.IMAGES.get(position).length);
+            Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
+            this.canvas = this.findViewById(R.id.canvas);
+            this.canvas.setBaseColor(rui.getBackground());
+            if(bitmap != null) this.canvas.drawBitmap(bitmap);
+            this.canvas.setPaintStrokeWidth(7F);
+        }
     }
 
     @Override
@@ -104,15 +126,25 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
             // save bitmap back to file system
             Bitmap bitmap = canvas.getBitmap();
 
-            // convert to byte array
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-            byte[] array = stream.toByteArray();
+            if(getIntent().getBooleanExtra("fieldDiagram", false)) {
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                DRAWINGS = stream.toByteArray();
+                Intent result = new Intent();
+                result.putExtras(getIntent().getExtras());
+                setResult(Constants.FIELD_DIAGRAM_EDITED, result);
+                finish();
+            } else {
+                ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                byte[] array = stream.toByteArray();
 
-            // set the image back to the image gallery
-            ImageGalleryActivity.IMAGES.set(position, array);
-            setResult(Constants.IMAGE_EDITED);
-            finish();
+                // set the image back to the image gallery
+                ImageGalleryActivity.IMAGES.set(position, array);
+                setResult(Constants.IMAGE_EDITED);
+                finish();
+            }
+
             return true;
         }
 

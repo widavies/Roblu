@@ -45,6 +45,11 @@ public class REvent implements Serializable, Comparable<REvent> {
      */
     private boolean cloudEnabled;
 
+    /**
+     * True if Bluetooth syncs should be directed to this event
+     */
+    private boolean bluetoothEnabled;
+
     public REvent(int ID, String name) {
         this.ID = ID;
         this.name = name;
