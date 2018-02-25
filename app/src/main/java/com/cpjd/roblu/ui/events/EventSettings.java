@@ -13,8 +13,6 @@ package com.cpjd.roblu.ui.events;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -22,19 +20,16 @@ import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
-import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.cpjd.http.Request;
 import com.cpjd.models.Event;
 import com.cpjd.requests.CloudTeamRequest;
-import com.cpjd.roblu.BuildConfig;
 import com.cpjd.roblu.R;
-import com.cpjd.roblu.csv.ExportCSVTask;
+import com.cpjd.roblu.csv.CSVActivity;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
@@ -127,7 +122,7 @@ public class EventSettings extends AppCompatActivity {
         finish();
     }
 
-    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener, ExportCSVTask.ExportCSVListener{
+    public static class SettingsFragment extends PreferenceFragment implements Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener {
 
         /**
          * Store an RUI reference here to give all dialogs below access to user color preferences
@@ -364,11 +359,14 @@ public class EventSettings extends AppCompatActivity {
              * User clicked on "Export to .csv"
              */
             else if (preference.getKey().equals("export_csv")) {
-                ProgressDialog d = ProgressDialog.show(getActivity(), "Freeze!", "Roblu is generating a spreadsheet file...", true);
+              /*  ProgressDialog d = ProgressDialog.show(getActivity(), "Freeze!", "Roblu is generating a spreadsheet file...", true);
                 d.setCancelable(false);
                 d.show();
 
-                new ExportCSVTask(getActivity(), this, d, event).execute();
+                new ExportCSVTask(getActivity(), this, d, event).execute();*/
+              Intent intent = new Intent(getActivity(), CSVActivity.class);
+              intent.putExtra("event", event);
+              startActivity(intent);
 
             }
             return true;
@@ -448,13 +446,15 @@ public class EventSettings extends AppCompatActivity {
          * Uploads the active event to the server
          */
         private void uploadEvent() {
-            ProgressDialog pd = ProgressDialog.show(getActivity(), "Fasten your seatbelt!", "Launching packets into Roblu Cloud orbit...", false);
+            final ProgressDialog pd = ProgressDialog.show(getActivity(), "Fasten your seatbelt!", "Launching packets into Roblu Cloud orbit...", false);
             pd.setCancelable(false);
             pd.show();
+
             InitPacker ip = new InitPacker(pd, cloud, new IO(getActivity()), event.getID());
             ip.setListener(new InitPacker.StatusListener() {
                 @Override
                 public void statusUpdate(String message) {
+                    pd.dismiss();
                     Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), message, false, rui.getPrimaryColor());
                 }
             });
@@ -511,26 +511,6 @@ public class EventSettings extends AppCompatActivity {
                 new IO(getActivity()).saveForm(event.getID(), form);
             }
         }
-
-        @Override
-        public void errorOccurred(String message) {
-            Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Error occurred while generating .CSV file: "+message, true, 0);
-        }
-
-        @Override
-        public void csvFileGenerated(File file) {
-            Log.d("RBS", "CSV file successfully generated.");
-            Intent intent = new Intent();
-            intent.setAction(Intent.ACTION_SEND);
-            Uri uri = FileProvider.getUriForFile(getActivity(), BuildConfig.APPLICATION_ID, file);
-            intent.setType("application/vnd.ms-excel");
-            intent.putExtra(Intent.EXTRA_STREAM, uri);
-            PackageManager pm = getActivity().getPackageManager();
-            if(intent.resolveActivity(pm) != null) {
-                getActivity().startActivity(Intent.createChooser(intent, "Export spreadsheet to..."));
-            }
-        }
-
 
         /**
          * BackupEvent backups up an REvent object into a internal file

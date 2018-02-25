@@ -212,12 +212,19 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
             bitmap.compress(Bitmap.CompressFormat.JPEG, 30, stream);
             byte[] array = stream.toByteArray();
 
-            Log.d("RBS", "Saving image to rTabIndex "+rTabIndex+" with gallery ID: "+galleryID);
+            int newID = new IO(getApplicationContext()).savePicture(eventID, array);
+
+            // Add the image to the current array
+            if(IMAGES == null) IMAGES = new ArrayList<>();
+            IMAGES.add(array);
 
             // save the ID to the gallery
             for(int i = 0; i < TeamViewer.team.getTabs().get(rTabIndex).getMetrics().size(); i++) {
                 if(TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i).getID() == galleryID) {
-                    ((RGallery)TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i)).addImage(array);
+                    if(((RGallery)TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i)).getPictureIDs() == null) {
+                        ((RGallery)TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i)).setPictureIDs(new ArrayList<Integer>());
+                    }
+                    ((RGallery)TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i)).getPictureIDs().add(newID);
                     break;
                 }
             }
@@ -239,15 +246,22 @@ public class ImageGalleryActivity extends AppCompatActivity implements ImageGall
          * User deleted an image
          */
         else if(resultCode == Constants.IMAGE_DELETED) {
+            // Remove the image from the gallery ID list
+            for(int i = 0; i < TeamViewer.team.getTabs().get(rTabIndex).getMetrics().size(); i++) {
+                if(TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i).getID() == galleryID) {
+                    int pictureID = ((RGallery)TeamViewer.team.getTabs().get(rTabIndex).getMetrics().get(i)).getPictureIDs().remove(data.getIntExtra("position", 0));
+                    // delete from file system
+                    new IO(getApplicationContext()).deletePicture(eventID, pictureID);
+                    break;
+                }
+            }
+
             IMAGES.remove(data.getIntExtra("position", 0));
             imageGalleryAdapter.notifyDataSetChanged();
-
-            // the gallery object reference actually gets removed automatically because IMAGES contains a reference to it
 
             TeamViewer.team.setLastEdit(System.currentTimeMillis());
 
             new IO(getApplicationContext()).saveTeam(eventID, TeamViewer.team);
-
         }
     }
 

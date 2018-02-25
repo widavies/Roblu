@@ -476,14 +476,11 @@ public class Utils {
      * This code will randomize an event with random metric data for the purposes of show casing an app
      * or testing
      */
-    public static void randomizeEvent(ArrayList<RTeam> teams) {
+    public static void randomizeTeamMetrics(ArrayList<RTab> tabs) {
         Random r = new Random();
 
-        if(teams != null && teams.size() > 0)
-        for(RTeam team : teams) {
-            team.setLastEdit(System.currentTimeMillis());
-
-            for(RTab tab : team.getTabs()) {
+        if(tabs != null) {
+            for(RTab tab : tabs) {
                 for(RMetric metric : tab.getMetrics()) {
                     metric.setModified(true);
 

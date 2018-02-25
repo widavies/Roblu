@@ -12,6 +12,18 @@
         <item>Use master form</item>
         <item>No form (create form later)</item>
     </string-array>
+
+    <string-array name="verbose_types">
+        <item>Only write observed metrics</item>
+        <item>Write not observed metrics, but only if the team is edited</item>
+        <item>Write all metrics, regardless of observed state</item>
+    </string-array>
+
+    <string-array name="file_types">
+        <item>Export as .xslx (Excel)</item>
+        <item>Export as .CSV</item>
+    </string-array>
+
     <!-- Element helper text -->
     <string name="yes">Yes</string>
     <string name="no">No</string>
@@ -70,8 +82,7 @@
     <string name="agreement">By using Roblu, you agree to the Privacy Policy and Terms of Use located at https://www.roblu.net/privacy</string>
     <string name="agree">Agree</string>
     <string name="permissions">Permissions</string>
-    <string name="requires_permissions">Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next.
-        You may wonder why coarse location is required, this is required for Bluetooth device scanning. Roblu does not store or process your location.</string>
+    <string name="requires_permissions">Roblu requires several permissions to work correctly. Please accept the dialog that appears after clicking next.</string>
     <string name="ready_to_use">Roblu is ready to use</string>
     <string name="head_of_team">Head of the scouting division of your team? Coach? Learn how to use Roblu with these official tutorials:</string>
     <string name="view_youtube_tutorials">View YouTube tutorials</string>

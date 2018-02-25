@@ -66,14 +66,17 @@ public class RStopwatch extends RMetric {
     public String toString() {
         return String.valueOf(time);
 
-        /*StringBuilder builder = new StringBuilder();
+    }
+
+    public String getLapsString() {
+        StringBuilder builder = new StringBuilder();
         builder.append("Current: ").append(time).append("s");
         if(times != null) {
             builder.append(" Laps: (");
             for(double d : times) builder.append(d).append("s, ");
             builder.replace(builder.toString().length() - 1, builder.toString().length() - 1, "");
             builder.append(")");
-        } TODO
-        return builder.toString();*/
+        }
+        return builder.toString();
     }
 }

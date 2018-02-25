@@ -1,0 +1,124 @@
+
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent">
+
+    <RelativeLayout
+        android:id="@+id/create_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:focusable="true"
+        android:focusableInTouchMode="true">
+        <android.support.v7.widget.Toolbar
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/primary"
+            android:minHeight="?actionBarSize">
+        </android.support.v7.widget.Toolbar>
+        <android.support.design.widget.TextInputLayout
+            android:id="@+id/name_wrapper"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/toolbar"
+            android:padding="5dp">
+            <android.support.v7.widget.AppCompatEditText
+                android:id="@+id/file_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:hint="File name"
+                android:text="ScoutingData"
+                android:nextFocusUp="@id/create_layout"
+                android:nextFocusLeft="@id/create_layout"/>
+        </android.support.design.widget.TextInputLayout>
+
+        <TextView
+            android:id="@+id/event_create_form_label"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/name_wrapper"
+            android:layout_height="wrap_content"
+            android:text="File type"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:padding="5dp"/>
+        <Spinner
+            android:id="@+id/file_type"
+            android:padding="5dp"
+            android:layout_below="@id/event_create_form_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/file_types"/>
+        <TextView
+            android:id="@+id/verbose_text"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/file_type"
+            android:layout_height="wrap_content"
+            android:text="Verboseness"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:padding="5dp"/>
+        <Spinner
+            android:id="@+id/verboseness"
+            android:padding="5dp"
+            android:layout_below="@id/verbose_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawSelectorOnTop="true"
+            android:entries="@array/verbose_types"/>
+
+        <TextView
+            android:id="@+id/sheets_to_generate"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/verboseness"
+            android:layout_height="wrap_content"
+            android:text="Sheets to generate"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:padding="5dp"/>
+
+        <CheckBox
+            android:id="@+id/match_data"
+            android:text="Match data"
+            android:checked="true"
+            android:layout_width="wrap_content"
+            android:layout_below="@id/sheets_to_generate"
+            android:layout_height="wrap_content"/>
+        <CheckBox
+            android:id="@+id/pit_data"
+            android:text="Pit data"
+            android:checked="true"
+            android:layout_below="@id/match_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <CheckBox
+            android:id="@+id/match_list"
+            android:text="Match list"
+            android:checked="true"
+            android:layout_below="@id/pit_data"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <CheckBox
+            android:id="@+id/match_lookup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/match_list"
+            android:text="Match lookup"/>
+
+        <CheckBox
+            android:id="@+id/our_matches"
+            android:layout_below="@id/match_lookup"
+            android:text="Our matches"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+        <TextView
+            android:id="@+id/info"
+            android:layout_below="@id/our_matches"
+            android:text="Note: It may take a little while for the share dialog to appear after the export completes. Thank you for your patience."
+            android:padding="15dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </RelativeLayout>
+</ScrollView>

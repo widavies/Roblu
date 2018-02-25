@@ -272,7 +272,6 @@
                     android:layout_centerHorizontal="true"
                     android:layout_centerVertical="true"
                     android:id="@+id/team_code_input"
-                    android:inputType="number"
                     android:layout_below="@id/team_code"/>
             </RelativeLayout>
 

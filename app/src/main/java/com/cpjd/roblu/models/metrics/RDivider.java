@@ -38,4 +38,9 @@ public class RDivider extends RMetric {
     public RMetric clone() {
         return new RDivider(ID, title);
     }
+
+    @Override
+    public String toString() {
+        return title;
+    }
 }

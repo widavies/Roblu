@@ -4,6 +4,9 @@
         android:id="@+id/pen"
         android:title="@string/pen"/>
     <item
+        android:id="@+id/eraser"
+        android:title="Eraser"/>
+    <item
         android:id="@+id/line"
         android:title="@string/line"/>
     <item

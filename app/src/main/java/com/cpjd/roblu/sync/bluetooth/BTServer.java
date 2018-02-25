@@ -88,8 +88,6 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
     public void messageReceived(String header, String message) {
         IO io = new IO(bluetooth.getActivity());
 
-        Log.d("RBS", "Message received: "+header+", "+message+"event "+(event == null));
-
         if(header.equals("isActive")) {
             bluetooth.send("ACTIVE", String.valueOf(event == null));
         }
@@ -216,6 +214,9 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 }
                 break;
             case "requestCheckouts":
+                // Get the timestamp
+                long time = Long.parseLong(message.split(":")[1]);
+
                 // Package all the checkouts locally
                 RTeam[] teams = io.loadTeams(event.getID());
                 RForm form = io.loadForm(event.getID());
@@ -244,7 +245,8 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                     RCheckout newCheckout = new RCheckout(temp);
                     newCheckout.setID(id);
                     newCheckout.setStatus(HandoffStatus.AVAILABLE);
-                    checkouts.add(newCheckout);
+
+                    if(newCheckout.getTeam().getLastEdit() >= time) checkouts.add(newCheckout);
                     id++;
                 }
                 // Package matches checkouts
@@ -261,7 +263,7 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                         RCheckout check = new RCheckout(temp);
                         check.setID(id);
                         check.setStatus(HandoffStatus.AVAILABLE);
-                        checkouts.add(check);
+                        if(check.getTeam().getLastEdit() >= time) checkouts.add(check);
                         id++;
                     }
                 }

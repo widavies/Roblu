@@ -84,6 +84,11 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
             for(int j = 1; j < team.getTabs().size(); j++) {
                 RMetric metric = team.getTabs().get(j).getMetrics().get(i);
 
+                if(metric instanceof RDivider) {
+                    layout.addView(new RMetricToUI(getActivity(), new IO(view.getContext()).loadSettings().getRui(), false).getDivider((RDivider)metric));
+                    continue;
+                }
+
                 if(metric instanceof RGallery) {
                     galleries.add((RGallery)metric);
                     continue;

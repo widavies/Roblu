@@ -18,7 +18,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -44,6 +43,7 @@ import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.images.Drawing;
+import com.cpjd.roblu.ui.images.ImageGalleryActivity;
 import com.cpjd.roblu.ui.team.fragments.TeamTabAdapter;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
@@ -243,6 +243,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
         if(resultCode == Constants.GALLERY_EXIT) {
             team = new IO(getApplicationContext()).loadTeam(event.getID(), team.getID());
             tabAdapter.notifyDataSetChanged();
+            ImageGalleryActivity.IMAGES = null;
         }
         else if(resultCode == Constants.FIELD_DIAGRAM_EDITED) {
             int position = data.getIntExtra("position", 0);

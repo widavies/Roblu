@@ -18,6 +18,8 @@ import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RGallery;
+import com.cpjd.roblu.models.metrics.RMetric;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -161,6 +163,26 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
         }
 
         Log.d("RBS", "Created "+teams.size()+" teams");
+
+        /*
+         * Unpack images
+         */
+        for(RCheckout checkout : checkouts) {
+            for(RTab tab : checkout.getTeam().getTabs()) {
+                for(RMetric metric : tab.getMetrics()) {
+                    if(metric instanceof RGallery) {
+                        for(int i = 0; ((RGallery) metric).getImages() != null && i < ((RGallery) metric).getImages().size(); i++) {
+                            int picID = io.savePicture(event.getID(), ((RGallery) metric).getImages().get(i));
+                            if(picID != -1) {
+                                ((RGallery) metric).setPictureIDs(new ArrayList<Integer>());
+                                ((RGallery) metric).getPictureIDs().add(picID);
+                            }
+                        }
+                        if(((RGallery) metric).getImages() != null) ((RGallery) metric).getImages().clear();
+                    }
+                }
+            }
+        }
 
         /*
          * Save teams

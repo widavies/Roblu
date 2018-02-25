@@ -241,7 +241,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
                     else metrics = form.getMatch();
                     // Remove all but counters, stopwatches, and sliders
                     for(int i = 0; i < metrics.size(); i++) {
-                        if(!(metrics.get(i) instanceof RCounter) && !(metrics.get(i) instanceof RStopwatch && !(metrics.get(i) instanceof RSlider))) {
+                        if(!(metrics.get(i) instanceof RCounter) && !(metrics.get(i) instanceof RStopwatch && !(metrics.get(i) instanceof RSlider)) && !(metrics.get(i) instanceof RCalculation)) {
                             metrics.remove(i);
                             i--;
                         }

@@ -1,7 +1,8 @@
 package com.cpjd.roblu.csv.csvSheets;
 
-import com.cpjd.roblu.csv.RMatch;
+import com.cpjd.roblu.csv.ExportCSVTask;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
@@ -22,6 +23,8 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.util.ArrayList;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -56,6 +59,10 @@ public abstract class CSVSheet {
     @Setter
     protected IO io;
 
+    @Getter
+    @Setter
+    private boolean enabled;
+
     /**
      * Workbook access will be automatically provided by ExportCSVTask,
      * it's also used by createCellStyle();
@@ -70,6 +77,9 @@ public abstract class CSVSheet {
     @Setter
     private XSSFCellStyle style;
 
+    @Setter
+    private int verboseness;
+
     private int currentRowNum = -1;
 
     /**
@@ -77,19 +87,13 @@ public abstract class CSVSheet {
      * @param sheet add your data to this sheet with its sub methods, look at Apache POI API documentation if you need help learning how to map stuff
      * @param teams access to all the scouting data
      */
-    public abstract void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, RMatch[] matches);
+    public abstract void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, ArrayList<RCheckout> checkouts);
 
     /**
      * Returns the name of this sheet
      * @return the String name of this sheet
      */
     public abstract String getSheetName();
-
-    /**
-     * Specifies whether this sheet should be generated and added to the spreadsheets file
-     * @return true to add this sheet to the .CSV file
-     */
-    public abstract boolean isEnabled();
 
     /**
      * Returns the uniform pixel width of the columns in the sheet
@@ -122,6 +126,17 @@ public abstract class CSVSheet {
         Row row = sheet.createRow(currentRowNum);
         row.setHeightInPoints(height);
         return row;
+    }
+
+    /**
+     * Determines whether a metric's value should be displayed according to the verboseness settings
+     * @param team the team the metric is contained in
+     * @param metric the metric that is being checked
+     * @return true if the metric's value should be written to the spreadsheet
+     */
+    boolean shouldWriteMetric(RTeam team, RMetric metric) {
+        return (verboseness == ExportCSVTask.VERBOSENESS.ALL_NOT_OBSERVED) || (verboseness == ExportCSVTask.VERBOSENESS.ONLY_OBSERVED && metric.isModified())
+                || (verboseness == ExportCSVTask.VERBOSENESS.NOT_OBSERVED_IF_EDITED && team.getLastEdit() > 0 || metric.isModified());
     }
 
     /**

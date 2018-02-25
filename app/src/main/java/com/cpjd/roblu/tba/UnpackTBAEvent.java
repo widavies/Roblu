@@ -121,7 +121,10 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
              * This is where the merge decision comes into play
              */
             if(!merge) {
-                if(randomize) Utils.randomizeEvent(teams);
+                if(randomize) {
+                    t.setLastEdit(System.currentTimeMillis());
+                    Utils.randomizeTeamMetrics(t.getTabs());
+                }
 
                 io.saveTeam(eventID, t);
             } else {

@@ -1,10 +1,11 @@
 package com.cpjd.roblu.csv.csvSheets;
 
-import com.cpjd.roblu.csv.RMatch;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RStopwatch;
 
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
@@ -12,6 +13,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+
+import java.util.ArrayList;
 
 /**
  * PitData generates an spreadsheet displaying PIT and Predictions data.
@@ -23,7 +26,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
  */
 public class PitData extends CSVSheet {
     @Override
-    public void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, RMatch[] matches) {
+    public void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, ArrayList<RCheckout> checkouts) {
         /*
          * Create some styles
          */
@@ -97,9 +100,11 @@ public class PitData extends CSVSheet {
                     }
                 }
 
-                if(teamMetric.isModified()) {
-                    createCell(row, 1 + i, teamMetric.toString());
-                } else createCell(row, 1 + i, ""); // Still add a cell so the formatting applies
+                if(shouldWriteMetric(team, teamMetric)) {
+                    if(teamMetric instanceof RStopwatch) createCell(row, 1 + i, ((RStopwatch) teamMetric).getLapsString());
+                    else createCell(row, 1 + i, teamMetric.toString());
+                }
+                else createCell(row, 1 + i, "");
             }
 
             // Add divider column
@@ -131,9 +136,11 @@ public class PitData extends CSVSheet {
                     continue;
                 }
 
-                if(teamMetric.isModified()) {
-                    createCell(row, 2 + i + form.getMatch().size(), teamMetric.toString());
-                } else createCell(row, 2 + i + form.getMatch().size(), ""); // Still add a cell so the formatting applies
+                if(shouldWriteMetric(team, teamMetric)) {
+                    if(teamMetric instanceof RStopwatch) createCell(row, 2 + i + form.getMatch().size(), ((RStopwatch) teamMetric).getLapsString());
+                    else createCell(row, 2 + i + form.getMatch().size(), teamMetric.toString());
+                }
+                else createCell(row, 2 + i + form.getMatch().size(), "");
             }
         }
 
@@ -141,12 +148,7 @@ public class PitData extends CSVSheet {
 
     @Override
     public String getSheetName() {
-        return "QualData";
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+        return "PitData";
     }
 
     @Override

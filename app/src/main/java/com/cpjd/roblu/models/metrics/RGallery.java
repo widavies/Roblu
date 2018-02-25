@@ -26,8 +26,17 @@ public class RGallery extends RMetric {
     public static final long serialVersionUID = 1L;
 
     /**
+     * This array stores the local ID of the pictures in this gallery, upon a
+     * a sync, local pictures should be loaded into the byte[] images array below. This should IMMEDIATELY be declared
+     * merged into local files, and then set to null.
+     */
+    private ArrayList<Integer> pictureIDs;
+
+    /**
      * An ArrayList is used here because it's a bit easier to manage.
-     * Each byte[] represents one image.
+     * Each byte[] represents one image. This array should only be populated when this gallery is
+     * being synced, otherwise, it needlessly uses up memory to keep multiple teams' images in memory when the
+     * gallery isn't being used. After a merge, this should be overwritten to null.
      */
     private ArrayList<byte[]> images;
 

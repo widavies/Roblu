@@ -1,6 +1,8 @@
 package com.cpjd.roblu.io;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.util.Log;
 
@@ -16,6 +18,7 @@ import com.cpjd.roblu.utils.Utils;
 
 import org.apache.poi.util.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -33,8 +36,10 @@ import java.io.ObjectOutputStream;
  * -/PREFIX/checkouts
  * -/PREFIX/pending
  * -/PREFIX/events[EVENT_ID]/form
+ * -/PREFIX/events/[EVENT_ID]/images
  * -/PREFIX/settings.ser
  * -/PREFIX/master_form.ser
+ * -/PREFIX/cloudSettings.ser
  *
  * Cache directory:
  * -/PREFIX/tempBackupImport.ser
@@ -42,7 +47,7 @@ import java.io.ObjectOutputStream;
  * -/PREFIX/tempImage.jpg
  *
  *
- * @version 4
+ * @version 5
  * @since 1.0.0
  * @author Will Davies
  *
@@ -449,8 +454,8 @@ public class IO {
      * Gets a temporary file for the CSV object that should be moved to external storage by the user
      * @return File reference to a temporary file location that can be saved to an external location
      */
-    public File getNewCSVExportFile() {
-        File f = new File(context.getCacheDir(), PREFIX+File.separator+"exports"+File.separator+"ScoutingData.xlsx");
+    public File getNewCSVExportFile(String name) {
+        File f = new File(context.getCacheDir(), PREFIX+File.separator+"exports"+File.separator+name);
         if(f.exists()) {
             if(!f.delete()) Log.d("RBS", "Failed to delete old cached csv export file.");
         }
@@ -600,6 +605,74 @@ public class IO {
     }
 
     // ********************UTILITY METHODS**************************
+
+    /*
+     * Pictures - This will allow pictures to be saved and loaded with much less of an effect on memory
+     */
+
+    /**
+     * Saves a pre-existing image to the file system with a new ID
+     * @param eventID the eventID to write the image to
+     * @param image the image to write
+     * @return the ID of the new image, -1 if an error occurred
+     */
+    public int savePicture(int eventID, byte[] image) {
+        try {
+            int ID = getNewPictureID(eventID);
+            File file = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator+ID+".jpg");
+            if(!file.getParentFile().exists()) if(file.getParentFile().mkdirs()) Log.d("RBS", "Successfully created /events/images directory.");
+            FileOutputStream fos = new FileOutputStream(file.getPath());
+            fos.write(image);
+            fos.close();
+            return ID;
+        } catch(Exception e) {
+            Log.d("RBS", "Failed to save existing picture.");
+            return -1;
+        }
+    }
+
+    /**
+     * Deletes a picture from the local disk. Keep in mind, this picture's ID should also be removed from the associated RGallery
+     * metric.
+     * @param eventID the eventID that contains the picture
+     * @param pictureID the ID of the picture to be deleted
+     */
+    public void deletePicture(int eventID, int pictureID) {
+        delete(new File(context.getFilesDir(), PREFIX+ File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator+pictureID+".jpg"));
+    }
+
+    /**
+     * Loads a picture from the local disk into memory. This byte[] array should be inserted into an RGallery before launching the image gallery viewer.
+     * @param eventID the eventID that contains the picture
+     * @param pictureID the pictureID that contains the picture
+     * @return a byte[] representing the picture
+     */
+    public byte[] loadPicture(int eventID, int pictureID) {
+        File image = new File(context.getFilesDir(), PREFIX+ File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator+pictureID+".jpg");
+        Bitmap bitmap = BitmapFactory.decodeFile(image.getPath());
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        return stream.toByteArray();
+    }
+
+    /**
+     * Gets a new available picture ID
+     * @param eventID the eventID that contains the picture
+     * @return the ID of a new picture.
+     */
+    private int getNewPictureID(int eventID) {
+        File f = new File(context.getFilesDir(), PREFIX+File.separator+"events"+eventID+File.separator+"images"+File.separator);
+        if(!f.exists()) if(f.mkdirs()) Log.d("RBS", "Successfully created /events/images directory.");
+        int maxID = 0;
+        File[] children = f.listFiles();
+        if(children == null || children.length == 0) return maxID;
+        for(File file : children) {
+            int newID = Integer.parseInt(file.getName().replaceAll(".jpg", ""));
+            if(newID > maxID) maxID = newID;
+        }
+        return maxID + 1;
+    }
+
     /**
      * Gets a temporary picture file for usage with the camera
      * @return returns file where the picture can be stored temporarily

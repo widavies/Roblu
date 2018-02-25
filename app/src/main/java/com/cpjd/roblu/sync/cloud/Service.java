@@ -116,6 +116,8 @@ public class Service extends android.app.Service {
          */
         if(cloudSettings.isPurgeRequested() && checkoutRequest.purge()) {
             cloudSettings.setPurgeRequested(false);
+            cloudSettings.setLastCheckoutSync(0);
+            cloudSettings.setLastTeamSync(0);
             Log.d("RBS-Service", "Event successfully purged from Roblu Cloud.");
             io.saveCloudSettings(cloudSettings);
             Notify.notifyNoAction(getApplicationContext(), "Event purged", "Active event successfully removed from Roblu Cloud.");
@@ -260,11 +262,19 @@ public class Service extends android.app.Service {
                                              * We have to deal with one special case scenario - the gallery.
                                              * The gallery should never be overrided, just added to
                                              */
-                                            if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery && ((RGallery)localMetric).getImages() != null && ((RGallery)downloadedMetric).getImages() != null) {
-                                                ((RGallery)localMetric).getImages().addAll(((RGallery)downloadedMetric).getImages());
+                                            if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery) {
+                                                if(((RGallery) localMetric).getPictureIDs() == null) ((RGallery) localMetric).setPictureIDs(new ArrayList<Integer>());
+                                                if(((RGallery) downloadedMetric).getImages() != null) {
+                                                    // Add images to the current gallery
+                                                    for(int i = 0; i < ((RGallery) downloadedMetric).getImages().size(); i++) {
+                                                        ((RGallery) localMetric).getPictureIDs().add(io.savePicture(activeEvent.getID(), ((RGallery) downloadedMetric).getImages().get(i)));
+                                                    }
+                                                }
+                                                // Don't forget to clear the pictures from memory after they've been merged
+                                                ((RGallery) downloadedMetric).setImages(null);
                                             }
                                             // If the local metric is already edited, keep whichever data is newest
-                                            if(localMetric.isModified()) {
+                                            else if(localMetric.isModified()) {
                                                 if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
                                                     int replaceIndex = localTab.getMetrics().indexOf(localMetric);
                                                     localTab.getMetrics().set(replaceIndex, downloadedMetric);
@@ -325,6 +335,19 @@ public class Service extends android.app.Service {
                 boolean wasSuccess = checkoutRequest.pushCheckouts(mapper.writeValueAsString(toUpload));
                 if(wasSuccess) {
                     for(RCheckout checkout : toUpload) {
+                        /*
+                         * Pack images
+                         */
+                        for(RTab tab : checkout.getTeam().getTabs()) {
+                            for(int i = 0; tab.getMetrics() != null && i < tab.getMetrics().size(); i++) {
+                                if(!(tab.getMetrics().get(i) instanceof RGallery)) continue;
+
+                                ((RGallery)tab.getMetrics().get(i)).setImages(new ArrayList<byte[]>());
+                                for(int j = 0; ((RGallery)tab.getMetrics().get(i)).getPictureIDs() != null && j < ((RGallery)tab.getMetrics().get(i)).getPictureIDs().size(); j++) {
+                                    ((RGallery)tab.getMetrics().get(i)).getImages().add(io.loadPicture(activeEvent.getID(), ((RGallery)tab.getMetrics().get(i)).getPictureIDs().get(j)));
+                                }
+                            }
+                        }
                         io.deletePendingCheckout(checkout.getID());
                     }
                 }

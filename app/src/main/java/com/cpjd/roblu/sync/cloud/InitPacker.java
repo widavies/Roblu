@@ -6,7 +6,6 @@ import android.os.StrictMode;
 import android.util.Log;
 
 import com.cpjd.http.Request;
-import com.cpjd.listeners.RawResponseListener;
 import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
@@ -14,7 +13,10 @@ import com.cpjd.roblu.models.RCloudSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RGallery;
+import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference;
 import com.cpjd.roblu.utils.HandoffStatus;
 
@@ -100,9 +102,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             return false;
         }
 
-        double inc = 0;
-        double totalProgress = teams.length * 3;
-
         /*
          * Verify everything
          */
@@ -113,8 +112,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             team.setImage(null);
             team.setTbaInfo(null);
             team.setWebsite(null);
-            inc++;
-            publishProgress((int)(inc / totalProgress * 100.0));
         }
 
         /*
@@ -132,8 +129,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             newCheckout.setStatus(HandoffStatus.AVAILABLE);
             checkouts.add(newCheckout);
             id++;
-            inc++;
-            publishProgress((int)(inc / totalProgress * 100.0));
         }
         // Package matches checkouts
 
@@ -141,8 +136,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
          * Next, add an assignment for every match, for every team
          */
         for(RTeam team : teams) {
-            inc++;
-            publishProgress((int)(inc / totalProgress * 100.0));
             if(team.getTabs() == null || team.getTabs().size() == 0) continue;
             for(int i = 2; i < team.getTabs().size(); i++) {
                 RTeam temp = team.clone();
@@ -162,6 +155,24 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         }
 
         /*
+         * Load images from local disk into each checkout, this will spike memory temporarily while uploading
+         */
+        for(RCheckout checkout : checkouts) {
+            for(RTab tab : checkout.getTeam().getTabs()) {
+                for(RMetric metric : tab.getMetrics()) {
+                    if(metric instanceof RGallery) {
+                        ((RGallery) metric).setImages(new ArrayList<byte[]>());
+                        if(((RGallery) metric).getPictureIDs() != null) {
+                            for(int ID : ((RGallery) metric).getPictureIDs()) {
+                                ((RGallery) metric).addImage(io.loadPicture(eventID, ID));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /*
          * Convert into JSON and upload
          */
         ObjectMapper mapper = new ObjectMapper();
@@ -172,14 +183,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             String serializedUI = mapper.writeValueAsString(settings.getRui());
             String eventName = event.getName();
             if(eventName == null) eventName = "";
-
-            r.setListener(new RawResponseListener() {
-                @Override
-                public void messageReceived(String s) {
-                    Log.d("RBS", "MSG: "+s);
-                }
-            });
-            Request.OUTPUT_RAW_RESPONSES = true;
             CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
             Log.d("RBS", "Initializing init packer upload...");
             boolean success = ccr.init(settings.getTeamNumber(), eventName, serializedForm, serializedUI, serializedCheckouts, event.getKey());
@@ -204,6 +207,19 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             Log.d("RBS", "An error occurred in InitPacker: "+e.getMessage());
             listener.statusUpdate("An error occurred. Event was not uploaded.");
             return false;
+        } finally {
+            /*
+             * Set all images to null to return memory to normal
+             */
+            for(RCheckout checkout : checkouts) {
+                for(RTab tab : checkout.getTeam().getTabs()) {
+                    for(RMetric metric : tab.getMetrics()) {
+                        if(metric instanceof RGallery) {
+                            ((RGallery) metric).setImages(null);
+                        }
+                    }
+                }
+            }
         }
     }
 

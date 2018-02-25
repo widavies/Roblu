@@ -23,7 +23,6 @@ import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.Gravity;
@@ -43,6 +42,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
+import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCalculation;
@@ -183,13 +183,20 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
 
         // Observed field
-
         observed.setTextColor(rui.getText());
         observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
         observed.setPadding(observed.getPaddingLeft(), Utils.DPToPX(activity, 15), observed.getPaddingRight(), observed.getPaddingBottom());
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
+        observed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                layout.removeView(observed);
+
+                listener.changeMade(bool);
+            }
+        });
 
         group.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
@@ -386,7 +393,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         final RelativeLayout layout = new RelativeLayout(activity);
 
         // Observed field
-        final Button observed = new Button(activity);
+        final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
         observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
@@ -467,7 +474,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.MATCH_PARENT);
 
         // Observed field
-        final Button observed = new Button(activity);
+        final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
         observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
@@ -554,7 +561,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         layout.addView(title);
 
         // Observed field
-        final Button observed = new Button(activity);
+        final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
         observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
@@ -742,8 +749,15 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setId(Utils.generateViewId());
         observed.setTag("N.O.");
         observed.setPadding(Utils.DPToPX(activity, 8), Utils.DPToPX(activity, 10), observed.getPaddingRight(), observed.getPaddingBottom());
-
         final RelativeLayout layout = new RelativeLayout(activity);
+        observed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                layout.removeView(observed);
+                listener.changeMade(stopwatch);
+            }
+        });
+
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 layout.removeView(observed);
@@ -1002,10 +1016,14 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             public void onClick(View v) {
                 if(demo) return;
 
-                if(gallery.getImages() != null) Log.d("RBS", "Gallery loaded "+gallery.getImages().size()+" image(s).");
-
-                // Don't forget to pass off the reference to the loaded images to the image gallery so the images don't have to be reloaded
-                ImageGalleryActivity.IMAGES = gallery.getImages();
+                /*
+                 * Load images from disk into memory
+                 */
+                IO io = new IO(activity);
+                ImageGalleryActivity.IMAGES = new ArrayList<>();
+                for(int i = 0; gallery.getPictureIDs() != null && i < gallery.getPictureIDs().size(); i++) {
+                    ImageGalleryActivity.IMAGES.add(io.loadPicture(eventID, gallery.getPictureIDs().get(i)));
+                }
 
                 ImageGalleryActivity.setImageThumbnailLoader(RMetricToUI.this);
                 FullScreenImageGalleryActivity.setFullScreenImageLoader(RMetricToUI.this);
@@ -1242,14 +1260,27 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         chart.setMinimumHeight(1000);
         chart.getDescription().setEnabled(false);
         List<Entry> entries = new ArrayList<>();
+
+        // Calculate average also
+        double sum = 0;
+
         int index = 0;
         for(Object o : data.keySet()) {
-            if(data.get(o.toString()) instanceof String) entries.add(new Entry(index, Float.parseFloat((String)data.get(o.toString()))));
-            else entries.add(new Entry(index, ((Double)data.get(o.toString())).floatValue()));
+            if(data.get(o.toString()) instanceof String) {
+                entries.add(new Entry(index, Float.parseFloat((String)data.get(o.toString()))));
+                sum += Float.parseFloat((String)data.get(o.toString()));
+            }
+            else {
+                entries.add(new Entry(index, ((Double)data.get(o.toString())).floatValue()));
+                sum += ((Double)data.get(o.toString())).floatValue();
+            }
             index++;
         }
 
-        LineDataSet set = new LineDataSet(entries, metricName);
+        // Calculate the average
+        String average = "\nAverage: "+(sum / (double)data.size());
+
+        LineDataSet set = new LineDataSet(entries, metricName+average);
         set.setValueTextSize(12f);
         set.setValueTextColor(rui.getText());
         LineData lineData = new LineData(set);

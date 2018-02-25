@@ -2,22 +2,32 @@ Title:FRC 2018
 Description:Courtesy Team 2826, Wave Robotics
 PIT
 DEFAULTS
-textfield,What kind of wheels do they have?,
-textfield,Wheel diameter?,
-textfield,Ground clearance?,
-textfield,How much does the robot weigh?,
-textfield,Center of gravity where?,
-gallery,Robot pictures.
+textfield,Wheel Type?,
+textfield,Wheel Diameter?,
+textfield,Ground Clearance?,
+textfield,Robot Weight?,
+textfield,Center of Gravity Position?,
+checkbox,Auto Functions,Cross Auto-line:Place Cube on Switch:Place Cube on Scale:Place Cube on Switch
+divider,Preferred Auto Start Positions
+chooser,First,Left:Center:Right,0
+chooser,Second,Left:Center:Right,0
+chooser,Third,Left:Center:Right,0
 MATCH
-checkbox,Auto,No Auto:Auto But Didn't Work:Base-Line Cross
-counter,# of blocks placed on switch during auto?,1,0
-counter,# of blocks placed on scale during auto?,1,0
-counter,# of blocks in exchange during tele-op?,1,0
-counter,# of blocks on switch during tele-op?,1,0
-counter,# of blocks on scale during tele-op?,1,0
-counter,# of blocks on opposing switch during tele-op?,1,0
-checkbox,Where is the robot acquiring the cubes?,Field:Portal
+divider,Auto
+boolean,Did it Cross the Auto-Line?,false
+counter,# of Cubes placed on switch?,1,0
+counter,# of Cubes placed on scale?,1,0
+divider,Tele-Op
+counter,# of cubes in exchange?,1,0
+counter,# of cubes on switch?,1,0
+counter,# of cubes on scale?,1,0
+counter,# of cubes on Opponent's Switch during tele-op?,1,0
+checkbox,Where is it acquiring cubes from?,Field:Portal
+divider,Last 30 Sec
 checkbox,Last 30 Sec,Did Nothing:Lifted itself:Lifted 1 other robot:Lifted 2 other robots:Drove onto another:Climbed another:Parked:Continued to work on platforms:Captured scale:Captured switch
-boolean,Did the robot break/lose comms?,false
+textfield,If Lifted by Another Please State That Team's #,
+divider,Additional Information,
+checkbox,Did anything abnormal happen?,Lose Communications:Break:Disabled by Other Robot
+textfield,Anything you want to add?,
 
 

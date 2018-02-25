@@ -77,6 +77,9 @@ public class RCalculation extends RMetric {
                 if(metric instanceof RCounter || metric instanceof RStopwatch || metric instanceof RSlider) {
                     equation = equation.replaceAll(metric.getTitle(), metric.toString());
                 }
+                else if(metric instanceof RCalculation) {
+                    equation = equation.replaceAll(metric.getTitle(), ((RCalculation) metric).getValue(metrics));
+                }
             }
 
             // Trim

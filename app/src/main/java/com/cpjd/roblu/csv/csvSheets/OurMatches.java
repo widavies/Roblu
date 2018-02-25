@@ -7,7 +7,7 @@ import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
 import com.cpjd.models.Event;
 import com.cpjd.models.Match;
-import com.cpjd.roblu.csv.RMatch;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
@@ -17,6 +17,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
+
+import java.util.ArrayList;
 
 /**
  * Our matches displays a list of matches the team is with the help of TheBlueAlliance.com
@@ -28,7 +30,7 @@ import org.apache.poi.xssf.usermodel.XSSFSheet;
 public class OurMatches extends CSVSheet {
 
     @Override
-    public void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, RMatch[] matches) {
+    public void generateSheet(XSSFSheet sheet, REvent event, RForm form, RTeam[] teams, ArrayList<RCheckout> checkouts) {
         if(event.getKey() == null || event.getKey().equalsIgnoreCase("") || io.loadSettings().getTeamNumber() == 0) return;
 
         int teamNumber = io.loadSettings().getTeamNumber();
@@ -84,11 +86,6 @@ public class OurMatches extends CSVSheet {
     @Override
     public String getSheetName() {
         return "OurMatches";
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
     }
 
     @Override

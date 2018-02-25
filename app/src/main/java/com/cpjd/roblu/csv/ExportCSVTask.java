@@ -1,21 +1,23 @@
 package com.cpjd.roblu.csv;
 
-import android.app.ProgressDialog;
 import android.content.Context;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.util.Log;
 
 import com.cpjd.roblu.csv.csvSheets.CSVSheet;
+import com.cpjd.roblu.csv.csvSheets.Lookup;
 import com.cpjd.roblu.csv.csvSheets.MatchData;
+import com.cpjd.roblu.csv.csvSheets.MatchList;
 import com.cpjd.roblu.csv.csvSheets.OurMatches;
 import com.cpjd.roblu.csv.csvSheets.PitData;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.ui.teams.TeamsView;
 
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -44,23 +46,20 @@ import java.util.LinkedHashMap;
  * @since 3.0.0
  * @author Will Davies
  */
-public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
+public class ExportCSVTask extends Thread {
 
     /**
      * Specify all the CSVSheets
-     * !!ADD YOUR SHEET HERE!!
+     *
+     * The order of this array should match the order of the IDs in
+     * @see SHEETS
      */
-    private CSVSheet[] CSVSheets = {new MatchData(), new PitData(), new OurMatches()};
+    private CSVSheet[] CSVSheets = {new MatchData(), new PitData(), new MatchList(), new Lookup(), new OurMatches()};
 
     /**
      * Reference to the context object for file system access
      */
     private WeakReference<Context> contextWeakReference;
-
-    /**
-     * ExportCSVTask will close the progress bar dialog automatically when it finishes
-     */
-    private WeakReference<ProgressDialog> progressDialogWeakReference;
 
     /**
      * The event that is being exported
@@ -109,17 +108,40 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
      */
     private HashMap<String, XSSFSheet> sheets;
 
+    public static class SHEETS {
+        public static int MATCH_DATA = 0;
+        public static int PIT_DATA = 1;
+        public static int MATCH_LIST = 2;
+        public static int MATCH_LOOKUP = 3;
+        public static int OUR_MATCHES = 4;
+    }
+
+    public static class VERBOSENESS {
+        public static int ONLY_OBSERVED = 0;
+        public static int NOT_OBSERVED_IF_EDITED = 1;
+        public static int ALL_NOT_OBSERVED = 2;
+    }
+
+    /**
+     * Specifies how many metrics should written to the sheet based off
+     * @see VERBOSENESS
+     */
+    private int verboseness;
+
+    private boolean isXslx;
+
     /**
      * Initializes the ExportCSVTask.
      * @param context context object
      * @param listener the listener that should be notified when the task is completed
      * @param event the event that teams and scouting data should be loaded from
      */
-    public ExportCSVTask(Context context, ExportCSVListener listener, ProgressDialog progressDialog, REvent event) {
+    public ExportCSVTask(Context context, ExportCSVListener listener, REvent event, String fileName, boolean isXslx, ArrayList<Integer> sheetsToGenerate, int verboseness) {
       this.event = event;
       this.contextWeakReference = new WeakReference<>(context);
       this.listener = listener;
-      this.progressDialogWeakReference = new WeakReference<>(progressDialog);
+      this.verboseness = verboseness;
+      this.isXslx = isXslx;
 
         /*
          *
@@ -131,20 +153,26 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
         sheets = new LinkedHashMap<>();
 
         // Create the sheets here since it doesn't work in the thread.
+        int index = 0;
         for(CSVSheet s : CSVSheets) {
+            s.setEnabled(sheetsToGenerate.indexOf(index) != -1);
+
             if(s.isEnabled()) {
+                Log.d("RBS", "Sheet "+s.getSheetName()+" is enabled.");
+
                 enabledSheets++;
                 XSSFSheet sheet = this.workbook.createSheet(s.getSheetName());
                 sheets.put(s.getSheetName(), sheet);
             }
+            index++;
         }
     }
 
     @Override
-    protected Void doInBackground(Void... voids) {
+    public void run() {
         if(Build.VERSION.SDK_INT < 21) {
             listener.errorOccurred("Your device does not support CSV exporting.");
-            return null;
+            return;
         }
 
         /*
@@ -152,8 +180,7 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
          */
         if(event == null) {
             listener.errorOccurred("Event could not be loaded.");
-            this.cancel(true);
-            return null;
+            return;
         }
         /*
          * Load teams
@@ -165,8 +192,7 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
          */
         if(teams == null || teams.length == 0 || form == null) {
             listener.errorOccurred("This event doesn't contain any teams");
-            this.cancel(true);
-            return null;
+            return;
         }
 
         /*
@@ -184,49 +210,31 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
         Collections.sort(Arrays.asList(teams));
 
         /*
-         * Sort matches
-         *
-         * This method provides a list of matches that satisfy the two following conditions:
-         * -The match is contained within at least 1 team
-         * -The match within a SPECIFIC team has at least 1 modified value
+         * Build checkouts array, nice way to store data
          */
-        final ArrayList<RMatch> matches = new ArrayList<>();
-        for(RTeam team : teams) {
-            for(int i = 1; i < team.getTabs().size(); i++) {
-                // alright, let's first check if the match has already been added to the array
-                boolean found = false;
-                for(int j = 0; j < matches.size(); j++) {
-                    if(matches.get(j).getMatchName().equalsIgnoreCase(team.getTabs().get(i).getTitle())) {
-                        found = true;
-                        break;
-                    }
-                }
 
-                // if we didn't find it, let's add it
-                if(!found) {
-                    // first, make sure that at least one team, somewhere, has a value that has been modified for this match
-                    boolean modifiedSomewhere = false;
-                    teamLoop : for(RTeam temp : teams) {
-                        for(int k = 1; k < temp.getTabs().size(); k++) {
-                            if(temp.getTabs().get(k).getTitle().equalsIgnoreCase(team.getTabs().get(i).getTitle())) {
-                                for(int l = 0; l < temp.getTabs().get(k).getMetrics().size(); l++) {
-                                    if(temp.getTabs().get(k).getMetrics().get(l).isModified()) {
-                                        modifiedSomewhere = true;
-                                        break teamLoop;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    if(modifiedSomewhere) matches.add(new RMatch(team.getTabs().get(i).getTitle()));
-                }
+        final ArrayList<RCheckout> checkouts = new ArrayList<>();
+        for(RTeam team : teams) {
+            RTeam temp = team.clone();
+            temp.removeAllTabsButPIT();
+            RCheckout newCheckout = new RCheckout(temp);
+            checkouts.add(newCheckout);
+        }
+        /*
+         * Next, add an assignment for every match, for every team
+         */
+        for(RTeam team : teams) {
+            if(team.getTabs() == null || team.getTabs().size() == 0) continue;
+            for(int i = 2; i < team.getTabs().size(); i++) {
+                RTeam temp = team.clone();
+                temp.setPage(0);
+                temp.removeAllTabsBut(i);
+                RCheckout check = new RCheckout(temp);
+                checkouts.add(check);
             }
         }
-        // Sort the matches by name
-        Collections.sort(matches);
-        // Convert to array instead of ArrayList
-        final RMatch[] matches1 = new RMatch[matches.size()];
-        for(int i = 0; i < matches.size(); i++) matches1[i] = matches.get(i);
+
+        Collections.sort(checkouts);
 
         // Create an IO reference
         final IO io = new IO(contextWeakReference.get());
@@ -236,32 +244,27 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
          */
         for(final CSVSheet s : CSVSheets) {
             new Thread() {
-              public void run() {
-                  if(s.isEnabled()) {
-                     // try {
-                          s.setIo(io);
-                          s.setWorkbook(workbook);
-                          Log.d("RBS", "ExportCSVTask: Generating sheet: "+s.getSheetName());
-                          s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
-                          s.generateSheet(sheets.get(s.getSheetName()), event, form, teams, matches1);
-                          for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
-                     // } catch(Exception e) {
-                     //     listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
-                      //    Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
-                     // }
-                  }
+                public void run() {
+                    if(s.isEnabled()) {
+                         try {
+                        s.setIo(io);
+                        s.setVerboseness(verboseness);
+                        s.setWorkbook(workbook);
+                        Log.d("RBS", "ExportCSVTask: Generating sheet: "+s.getSheetName());
+                        s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
+                        s.generateSheet(sheets.get(s.getSheetName()), event, form, teams, checkouts);
+                        for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
+                         } catch(Exception e) {
+                             listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
+                            Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
+                         }
+                        threadCompleted(s.getSheetName());
+                    }
 
-                  threadCompleted(s.getSheetName());
-              }
+                }
             }.start();
         }
 
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void params) {
-        progressDialogWeakReference.get().dismiss();
     }
 
     private void threadCompleted(String name) {
@@ -269,10 +272,17 @@ public class ExportCSVTask extends AsyncTask<Void, Void, Void> {
 
         threadsComplete++;
         if(threadsComplete == enabledSheets) {
-            File file = new IO(contextWeakReference.get()).getNewCSVExportFile();
+            File file = new IO(contextWeakReference.get()).getNewCSVExportFile(name + (isXslx ? ".xslx" : ".csv"));
             try {
                 FileOutputStream out = new FileOutputStream(file);
                 workbook.write(out);
+
+                try {
+                    if(isXslx) new ToCSV().convertExcelToCSV(file.getPath(), file.getPath());
+                } catch(InvalidFormatException e) {
+                    listener.errorOccurred("Failed to generate ");
+                }
+
                 out.close();
                 listener.csvFileGenerated(file);
             } catch(IOException e) {

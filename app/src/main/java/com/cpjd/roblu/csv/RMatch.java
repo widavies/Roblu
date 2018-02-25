@@ -2,21 +2,24 @@ package com.cpjd.roblu.csv;
 
 import android.support.annotation.NonNull;
 
+import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.utils.MatchType;
+
+import java.util.ArrayList;
 
 import lombok.Data;
 
 /**
- * This class is a sorting utility to assist in CSV generation
+ * RMatch is not an official model, it's just a helper class for CSV exports
  *
- * @version 1
+ * @version 2
  * @since 4.0.0
  * @author Will Davies
  */
 @Data
 public class RMatch implements Comparable<RMatch> {
 
-    private long score;
+    private ArrayList<RTeam> teams;
     private String matchName;
 
     /*
@@ -26,9 +29,12 @@ public class RMatch implements Comparable<RMatch> {
     private int matchOrder = 0;
     private int subMatchOrder = 0;
 
-
+    /**
+     * @param matchName The name of this match
+     */
     public RMatch(String matchName) {
         this.matchName = matchName;
+        this.teams = new ArrayList<>();
 
         matchName = matchName.toLowerCase().trim();
         String[] tokens = matchName.split("\\s+");
