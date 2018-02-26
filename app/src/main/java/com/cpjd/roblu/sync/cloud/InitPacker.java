@@ -81,6 +81,7 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         RSettings settings = io.loadSettings();
         RCloudSettings cloudSettings = io.loadCloudSettings();
         cloudSettings.setPurgeRequested(false);
+        cloudSettings.setPublicTeamNumber(-1);
         io.saveCloudSettings(cloudSettings);
         io.saveSettings(settings);
         Request r = new Request(settings.getServerIP());

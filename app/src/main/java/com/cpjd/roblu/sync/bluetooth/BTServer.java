@@ -145,17 +145,25 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
 
                                         for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
                                             for(RMetric localMetric : localTab.getMetrics()) {
-                                                // Found the metric, determine if a merge needs to occur
+                                            // Found the metric, determine if a merge needs to occur
                                                 if(downloadedMetric.getID() == localMetric.getID()) {
                                             /*
                                              * We have to deal with one special case scenario - the gallery.
                                              * The gallery should never be overrided, just added to
                                              */
-                                                    if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery && ((RGallery) localMetric).getImages() != null && ((RGallery) downloadedMetric).getImages() != null) {
-                                                        ((RGallery) localMetric).getImages().addAll(((RGallery) downloadedMetric).getImages());
+                                                    if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery) {
+                                                        if(((RGallery) localMetric).getPictureIDs() == null) ((RGallery) localMetric).setPictureIDs(new ArrayList<Integer>());
+                                                        if(((RGallery) downloadedMetric).getImages() != null) {
+                                                            // Add images to the current gallery
+                                                            for(int j = 0; j < ((RGallery) downloadedMetric).getImages().size(); j++) {
+                                                                ((RGallery) localMetric).getPictureIDs().add(io.savePicture(event.getID(), ((RGallery) downloadedMetric).getImages().get(j)));
+                                                            }
+                                                        }
+                                                        // Don't forget to clear the pictures from memory after they've been merged
+                                                        ((RGallery) downloadedMetric).setImages(null);
                                                     }
                                                     // If the local metric is already edited, keep whichever data is newest
-                                                    if(localMetric.isModified()) {
+                                                    else if(localMetric.isModified()) {
                                                         if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
                                                             int replaceIndex = localTab.getMetrics().indexOf(localMetric);
                                                             localTab.getMetrics().set(replaceIndex, downloadedMetric);
@@ -265,6 +273,24 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                         check.setStatus(HandoffStatus.AVAILABLE);
                         if(check.getTeam().getLastEdit() >= time) checkouts.add(check);
                         id++;
+                    }
+                }
+
+                /*
+                 * Load images from local disk into each checkout, this will spike memory temporarily while uploading
+                 */
+                for(RCheckout checkout : checkouts) {
+                    for(RTab tab : checkout.getTeam().getTabs()) {
+                        for(RMetric metric : tab.getMetrics()) {
+                            if(metric instanceof RGallery) {
+                                ((RGallery) metric).setImages(new ArrayList<byte[]>());
+                                if(((RGallery) metric).getPictureIDs() != null) {
+                                    for(int ID : ((RGallery) metric).getPictureIDs()) {
+                                        ((RGallery) metric).addImage(io.loadPicture(event.getID(), ID));
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 

@@ -219,7 +219,7 @@ public class EventSettings extends AppCompatActivity {
              */
             else if(preference.getKey().equalsIgnoreCase("tba_sync")) {
                 // Download the entire event
-                tbaSyncDialog = ProgressDialog.show(getActivity(), "Syncing event with TheBlueAlliance...", "This may take several seconds.", false);
+                tbaSyncDialog = ProgressDialog.show(getActivity(), "Syncing event with TheBlueAlliance...", "This may take several seconds...", false);
                 tbaSyncDialog.setCancelable(false);
                 new ImportEvent(new TBALoadEventsTask.LoadTBAEventsListener() {
                     @Override

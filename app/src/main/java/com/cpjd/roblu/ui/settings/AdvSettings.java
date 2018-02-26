@@ -23,6 +23,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
@@ -162,6 +163,9 @@ public class AdvSettings extends AppCompatActivity {
             findPreference("reddit").setOnPreferenceClickListener(this);
             findPreference("purge").setOnPreferenceClickListener(this);
             findPreference("bt_devices").setOnPreferenceClickListener(this);
+            CheckBoxPreference opted = (CheckBoxPreference) findPreference("opt_in");
+            opted.setOnPreferenceChangeListener(this);
+            opted.setChecked(new IO(getActivity()).loadCloudSettings().isOptedIn());
 
             toggleJoinTeam(!(settings.getCode() != null && !settings.getCode().equals("")));
 
@@ -285,6 +289,39 @@ public class AdvSettings extends AppCompatActivity {
                     preference.setDefaultValue(num);
                 }
                 settings.setTeamNumber(num);
+            }
+            else if(preference.getKey().equals("opt_in")) { // user selected the "opt-in" to public scouting data option
+                StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+                StrictMode.setThreadPolicy(policy);
+
+                if(!Utils.hasInternetConnection(getActivity())) {
+                    Toast.makeText(getActivity(), "Not connected to the internet. Please try again later.", Toast.LENGTH_LONG).show();
+                    return true;
+                }
+
+                if(settings.getCode() == null || settings.getCode().equals("")) {
+                    Toast.makeText(getActivity(), "No team code found in settings. Unable to opt in.", Toast.LENGTH_LONG).show();
+                    return true;
+                }
+
+                Request r = new Request(settings.getServerIP());
+                if(!r.ping()) {
+                    Toast.makeText(getActivity(), "Server appears to be offline, please try again later.", Toast.LENGTH_LONG).show();
+                    return true;
+                }
+
+                // Otherwise, update the opted in parameter on the server
+                boolean success = new CloudTeamRequest(r, settings.getCode()).setOptedIn((Boolean)o);
+
+                if(success) {
+                    RCloudSettings cloudSettings = new IO(getActivity()).loadCloudSettings();
+                    cloudSettings.setOptedIn((Boolean)o);
+                    new IO(getActivity()).saveCloudSettings(cloudSettings);
+                } else {
+                    ((CheckBoxPreference)preference).setChecked(!(Boolean)o);
+                }
+
+                return true;
             }
             /*
              * User tapped "server IP"

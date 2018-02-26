@@ -43,6 +43,8 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
 
     private IO io;
 
+    private int teamNumber;
+
     @Setter
     private EventDepackerListener listener;
 
@@ -51,8 +53,9 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
         void success(REvent event);
     }
 
-    public EventDepacker(IO io) {
+    public EventDepacker(IO io, int teamNumber) {
         this.io = io;
+        this.teamNumber = teamNumber;
     }
 
     @Override
@@ -68,12 +71,22 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
         cloudSettings.setLastCheckoutSync(0);
         cloudSettings.setLastTeamSync(0);
         cloudSettings.setPurgeRequested(false);
+        cloudSettings.setPublicTeamNumber(teamNumber);
         io.saveCloudSettings(cloudSettings);
         Request r = new Request(settings.getServerIP());
         CloudTeamRequest ctr = new CloudTeamRequest(r, settings.getCode());
-        CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
 
-        if(settings.getCode() == null || settings.getCode().equals("")) {
+        if(teamNumber != -1) {
+            ctr.setCode("");
+            ctr.setTeamNumber(teamNumber);
+        }
+        CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
+        if(teamNumber != -1) {
+            ccr.setTeamCode("");
+            ccr.setTeamNumber(teamNumber);
+        }
+
+        if(teamNumber == -1 && (settings.getCode() == null || settings.getCode().equals(""))) {
             if(listener != null) listener.errorOccurred("No team code found in settings. Unable to import event.");
             return null;
         }
@@ -89,18 +102,11 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
             return null;
         }
 
-        if(settings.getCode() == null || settings.getCode().equals("")) {
-            if(listener != null) listener.errorOccurred("Please enter a team code to download events.");
-            return null;
-        }
-
         /*
          * Download everything
          */
         CloudTeam team = ctr.getTeam(-1);
         CloudCheckout[] pulledCheckouts = ccr.pullCheckouts(0);
-
-        Log.d("RBS", "Pulled "+pulledCheckouts.length+" checkouts");
 
         // Get a new event ID
         REvent event = new REvent(io.getNewEventID(), team.getActiveEventName());

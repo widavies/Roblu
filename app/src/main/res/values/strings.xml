@@ -15,7 +15,7 @@
 
     <string-array name="verbose_types">
         <item>Only write observed metrics</item>
-        <item>Write not observed metrics, but only if the team is edited</item>
+        <item>Write not observed metrics, if team is edited</item>
         <item>Write all metrics, regardless of observed state</item>
     </string-array>
 

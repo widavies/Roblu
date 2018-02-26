@@ -17,7 +17,6 @@ import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.ui.teams.TeamsView;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -109,11 +108,11 @@ public class ExportCSVTask extends Thread {
     private HashMap<String, XSSFSheet> sheets;
 
     public static class SHEETS {
-        public static int MATCH_DATA = 0;
-        public static int PIT_DATA = 1;
-        public static int MATCH_LIST = 2;
-        public static int MATCH_LOOKUP = 3;
-        public static int OUR_MATCHES = 4;
+        static int MATCH_DATA = 0;
+        static int PIT_DATA = 1;
+        static int MATCH_LIST = 2;
+        static int MATCH_LOOKUP = 3;
+        static int OUR_MATCHES = 4;
     }
 
     public static class VERBOSENESS {
@@ -128,7 +127,15 @@ public class ExportCSVTask extends Thread {
      */
     private int verboseness;
 
+    /**
+     * Specifies the file type
+     */
     private boolean isXslx;
+
+    /**
+     * Specifies the file name of the file
+     */
+    private String fileName;
 
     /**
      * Initializes the ExportCSVTask.
@@ -142,6 +149,7 @@ public class ExportCSVTask extends Thread {
       this.listener = listener;
       this.verboseness = verboseness;
       this.isXslx = isXslx;
+      this.fileName = fileName;
 
         /*
          *
@@ -246,18 +254,18 @@ public class ExportCSVTask extends Thread {
             new Thread() {
                 public void run() {
                     if(s.isEnabled()) {
-                         try {
+                        // try {
                         s.setIo(io);
                         s.setVerboseness(verboseness);
                         s.setWorkbook(workbook);
                         Log.d("RBS", "ExportCSVTask: Generating sheet: "+s.getSheetName());
                         s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
                         s.generateSheet(sheets.get(s.getSheetName()), event, form, teams, checkouts);
-                        for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
-                         } catch(Exception e) {
-                             listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
-                            Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
-                         }
+                      //  for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
+                       //  } catch(Exception e) {
+                       //      listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
+                        //    Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
+                        // }
                         threadCompleted(s.getSheetName());
                     }
 
@@ -272,15 +280,30 @@ public class ExportCSVTask extends Thread {
 
         threadsComplete++;
         if(threadsComplete == enabledSheets) {
-            File file = new IO(contextWeakReference.get()).getNewCSVExportFile(name + (isXslx ? ".xslx" : ".csv"));
+            File file = new IO(contextWeakReference.get()).getNewCSVExportFile(fileName + ".xslx");
+
             try {
                 FileOutputStream out = new FileOutputStream(file);
                 workbook.write(out);
 
+                Log.d("RBS", "Successfully generated .xslx file: "+file.getAbsolutePath());
+
                 try {
-                    if(isXslx) new ToCSV().convertExcelToCSV(file.getPath(), file.getPath());
-                } catch(InvalidFormatException e) {
+                    if(!isXslx) {
+                        new ToCSV().convertExcelToCSV(file.getPath(), file.getParentFile().getPath());
+                        // Get the new file reference
+                        file = new File(file.getParentFile()+File.separator+fileName+".csv");
+                        Log.d("RBS", "Converted .xslx to .CSV: "+file.getAbsolutePath()+" Check: "+file.exists());
+                    }
+                } catch(Exception e) {
+                    Log.d("RBS", "Failed to convert the file to .CSV");
+
                     listener.errorOccurred("Failed to generate ");
+                }
+
+                // List contents of file
+                for(File f : file.getParentFile().listFiles()) {
+                    Log.d("RBS", "Exports dir contains "+f.getAbsolutePath());
                 }
 
                 out.close();

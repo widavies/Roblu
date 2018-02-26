@@ -69,16 +69,22 @@ public class RCalculation extends RMetric {
      * @return the value
      */
     public String getValue(ArrayList<RMetric> metrics) {
+        if(calculation == null || calculation.equals("null")) return "Bad equation";
+
         try {
             String equation = calculation;
 
             // Substitute values in for the metric names
             for(RMetric metric : metrics) {
+                // Skip the reference to "ourself"
+                if(metric.getTitle().equals(title)) continue;
+
                 if(metric instanceof RCounter || metric instanceof RStopwatch || metric instanceof RSlider) {
                     equation = equation.replaceAll(metric.getTitle(), metric.toString());
                 }
                 else if(metric instanceof RCalculation) {
-                    equation = equation.replaceAll(metric.getTitle(), ((RCalculation) metric).getValue(metrics));
+                    // This condition is required or this will overflow recursively
+                    if(equation.contains(metric.getTitle())) equation = equation.replaceAll(metric.getTitle(), ((RCalculation) metric).getValue(metrics));
                 }
             }
 

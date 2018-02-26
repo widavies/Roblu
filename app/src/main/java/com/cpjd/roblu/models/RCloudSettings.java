@@ -33,4 +33,13 @@ public class RCloudSettings implements Serializable {
      * If true, keep sending the /checkouts/purge request to the server
      */
     private boolean purgeRequested;
+    /**
+     * Used for authenticating read only events
+     */
+    private int publicTeamNumber;
+
+    /**
+     * Just stores a local copy of the optedIn status to keep the UI correct
+     */
+    private boolean optedIn;
 }

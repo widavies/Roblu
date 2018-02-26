@@ -39,6 +39,11 @@
             android:title="Purge cloud event"
             android:key="purge"
             android:summary="This will reset the server. ALL scouting data will be removed. You should purge events after you're done to save stop all devices from syncing needlessly."/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference
+            android:title="Opt in"
+            android:key="opt_in"
+            android:summary="If you select this option, other teams will be able to access a READ ONLY version of your scouting data with the official FRC team number registered to your account."
+            />
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Website"
             android:key="cloud_support"

@@ -1,5 +1,6 @@
 package com.cpjd.roblu.ui.forms;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -243,6 +244,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
      * @param counter RCounter reference to be set to the UI
      * @return a UI CardView
      */
+    @SuppressLint("ClickableViewAccessibility")
     public CardView getCounter(final RCounter counter) {
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -277,19 +279,33 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         addButton.setScaleY(1.5f);
         addButton.setLayoutParams(params);
 
+        final RelativeLayout layout = new RelativeLayout(activity);
+        final TextView number = new TextView(activity);
+        final TextView observed = new TextView(activity);
+        ImageView minusButton = new ImageView(activity);
+        final TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                counter.add();
+                number.setText(counter.getTextValue());
+                listener.changeMade(counter);
+            }
+        };
+
+
+
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, addButton.getId());
         params.addRule(RelativeLayout.CENTER_VERTICAL);
-        final TextView number = new TextView(activity);
+
         number.setTextSize(25);
         number.setTextColor(rui.getText());
         number.setId(Utils.generateViewId());
         number.setText(String.valueOf(counter.getTextValue()));
         number.setLayoutParams(params);
         number.setPadding(Utils.DPToPX(activity, 20), number.getPaddingTop(), Utils.DPToPX(activity, 20), number.getPaddingBottom());
-        final RelativeLayout layout = new RelativeLayout(activity);
+
         // Observed field
-        final TextView observed = new TextView(activity);
         observed.setTextColor(rui.getText());
         observed.setText(R.string.not_observed_yet);
         observed.setTextSize(10);
@@ -316,7 +332,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.LEFT_OF, number.getId());
         params.addRule(RelativeLayout.CENTER_VERTICAL);
-        ImageView minusButton = new ImageView(activity);
+
         minusButton.setBackground(minus);
         minusButton.setId(Utils.generateViewId());
         minusButton.setEnabled(editable);
@@ -868,6 +884,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         if(buttons.size() != 0) params.addRule(RelativeLayout.BELOW, buttons.get(buttons.size() - 1).getId());
         else params.addRule(RelativeLayout.BELOW, playButton.getId());
+        b.setTextColor(rui.getText());
         b.setLayoutParams(params);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -1278,7 +1295,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         }
 
         // Calculate the average
-        String average = "\nAverage: "+(sum / (double)data.size());
+        String average = "\n(Average: "+Utils.round(sum / (double)data.size(), 2)+")";
 
         LineDataSet set = new LineDataSet(entries, metricName+average);
         set.setValueTextSize(12f);

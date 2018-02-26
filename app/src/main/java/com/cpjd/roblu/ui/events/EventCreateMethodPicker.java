@@ -1,15 +1,24 @@
 package com.cpjd.roblu.ui.events;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
@@ -18,6 +27,7 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.sync.cloud.EventDepacker;
@@ -49,11 +59,8 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
     /*
      * Items on the list and their descriptions
      */
-    private final String items[] = { "Import from TheBlueAlliance.com", "Import from Roblu Cloud", "Import from backup file", "Create event"};
-    private final String sub_items[] = {"Import the event from an online database.", "Import an event from Roblu Cloud for use with multiple Roblu Master apps", "Import the event and all information from a previously exported backup file.","Create the event manually."};
-
-    //private long tempEventID;
-    //private Event tempEvent;
+    private final String items[] = { "Import from TheBlueAlliance.com", "Import from Roblu Cloud", "Import read only from Roblu Cloud", "Import from backup file", "Create event"};
+    private final String sub_items[] = {"Import the event from an online database.", "Import an event from Roblu Cloud for use with multiple Roblu Master apps", "View and access the scouting data of a different team who has opted for publicly available scouting information.", "Import the event and all information from a previously exported backup file.","Create the event manually."};
 
     /**
      * Reference to the user's color and UI preferences
@@ -127,7 +134,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
         /*
          * User selected manual event creation
          */
-        if(position == 3) {
+        if(position == 4) {
             startActivityForResult(new Intent(this, EventEditor.class), Constants.GENERAL);
         }
         /*
@@ -155,7 +162,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
                        .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
                            @Override
                            public void accepted() {
-                               importRobluCloudEvent();
+                               importRobluCloudEvent(-1);
                            }
 
                            @Override
@@ -164,12 +171,18 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
                            @Override
                            public void neutral() {}
                        }).build(EventCreateMethodPicker.this);
-            } else importRobluCloudEvent();
+            } else importRobluCloudEvent(-1);
+        }
+        /*
+         * User selected the read only event option, first get their username
+         */
+        else if(position == 2) {
+            importPublicRobluCloudEvent();
         }
         /*
          * User selected import from backup file
          */
-        else if(position == 2) {
+        else if(position == 3) {
             /*
              * Open a file chooser where the user can select a backup file to use.
              * We'll listen to a result in onActivityResult() and import the backup file there
@@ -189,23 +202,85 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
 
     /**
      * Imports an event from Roblu Cloud, given one exists
+     *
+     * @param teamNumber -1 to disable
      */
-    private void importRobluCloudEvent() {
+    private void importRobluCloudEvent(int teamNumber) {
         d = new ProgressDialog(EventCreateMethodPicker.this);
         d.setTitle("Get ready!");
         d.setMessage("Roblu is importing an event from Roblu Cloud...");
         d.setCancelable(false);
         d.show();
 
-
         // Stop the background service so it won't interfere
         IntentFilter serviceFilter = new IntentFilter();
         serviceFilter.addAction(Constants.SERVICE_ID);
         Intent serviceIntent = new Intent(this, Service.class);
         stopService(serviceIntent);
-        EventDepacker dp = new EventDepacker(new IO(getApplicationContext()));
+        EventDepacker dp = new EventDepacker(new IO(getApplicationContext()), teamNumber);
         dp.setListener(this);
         dp.execute();
+    }
+
+    private void importPublicRobluCloudEvent() {
+        // check for an internet connection
+        if(!Utils.hasInternetConnection(getApplicationContext())) {
+            Utils.showSnackbar(findViewById(R.id.advsettings), getApplicationContext(), "You are not connected to the internet", true, 0);
+            return;
+        }
+            /*
+             * We need to make sure that this thread has access to the internet
+             */
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
+        StrictMode.setThreadPolicy(policy);
+
+        final RSettings settings = new IO(getApplicationContext()).loadSettings();
+
+        RUI rui = settings.getRui();
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(EventCreateMethodPicker.this);
+        LinearLayout layout = new LinearLayout(EventCreateMethodPicker.this);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        // this is the team code input edit text
+        final AppCompatEditText input = new AppCompatEditText(EventCreateMethodPicker.this);
+        Utils.setInputTextLayoutColor(rui.getAccent(),null, input);
+        input.setHighlightColor(rui.getAccent());
+        input.setHintTextColor(rui.getText());
+        input.setTextColor(rui.getText());
+        input.setInputType(InputType.TYPE_CLASS_NUMBER);
+        InputFilter[] FilterArray = new InputFilter[1];
+        FilterArray[0] = new InputFilter.LengthFilter(30);
+        input.setFilters(FilterArray);
+        layout.addView(input);
+
+        builder.setView(layout);
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                importRobluCloudEvent(Integer.parseInt(input.getText().toString()));
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) { dialog.cancel(); }
+        });
+        TextView view = new TextView(EventCreateMethodPicker.this);
+        view.setTextSize(Utils.DPToPX(getApplicationContext(), 5));
+        view.setPadding(Utils.DPToPX(getApplicationContext(), 18), Utils.DPToPX(getApplicationContext(), 18), Utils.DPToPX(getApplicationContext(), 18), Utils.DPToPX(getApplicationContext(), 18));
+        view.setText("FRC team number:");
+        view.setTextColor(rui.getText());
+        AlertDialog dialog = builder.create();
+        dialog.setCustomTitle(view);
+        if(dialog.getWindow() != null) {
+            dialog.getWindow().getAttributes().windowAnimations = rui.getAnimation();
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(rui.getBackground()));
+        }
+        dialog.show();
+        dialog.getButton(Dialog.BUTTON_NEGATIVE).setTextColor(rui.getAccent());
+        dialog.getButton(Dialog.BUTTON_POSITIVE).setTextColor(rui.getAccent());
     }
 
     /**

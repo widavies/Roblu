@@ -456,9 +456,8 @@ public class IO {
      */
     public File getNewCSVExportFile(String name) {
         File f = new File(context.getCacheDir(), PREFIX+File.separator+"exports"+File.separator+name);
-        if(f.exists()) {
-            if(!f.delete()) Log.d("RBS", "Failed to delete old cached csv export file.");
-        }
+        delete(f.getParentFile());
+
         if(f.getParentFile().mkdirs()) Log.d("RBS", "Successfully created temporary .csv export directory.");
         try {
             if(f.createNewFile()) Log.d("RBS", "File created successfully.");
@@ -661,7 +660,7 @@ public class IO {
      * @return the ID of a new picture.
      */
     private int getNewPictureID(int eventID) {
-        File f = new File(context.getFilesDir(), PREFIX+File.separator+"events"+eventID+File.separator+"images"+File.separator);
+        File f = new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"images"+File.separator);
         if(!f.exists()) if(f.mkdirs()) Log.d("RBS", "Successfully created /events/images directory.");
         int maxID = 0;
         File[] children = f.listFiles();

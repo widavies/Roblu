@@ -90,7 +90,15 @@ public class Service extends android.app.Service {
         Request r = new Request(settings.getServerIP());
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         CloudTeamRequest teamRequest = new CloudTeamRequest(r, settings.getCode());
+        if(cloudSettings.getPublicTeamNumber() != -1) {
+            teamRequest.setTeamNumber(cloudSettings.getPublicTeamNumber());
+            teamRequest.setCode("");
+        }
         CloudCheckoutRequest checkoutRequest = new CloudCheckoutRequest(r, settings.getCode());
+        if(cloudSettings.getPublicTeamNumber() != -1) {
+            checkoutRequest.setTeamNumber(cloudSettings.getPublicTeamNumber());
+            checkoutRequest.setTeamCode("");
+        }
 
         boolean result = r.ping();
         if(result) Utils.requestServerHealthRefresh(getApplicationContext(), "online");
@@ -151,7 +159,9 @@ public class Service extends android.app.Service {
             try {
                 CloudTeam t = teamRequest.getTeam(cloudSettings.getLastTeamSync());
                 settings.setRui(mapper.readValue(t.getUi(), RUI.class));
+                cloudSettings.setOptedIn(t.isOptedIn());
                 cloudSettings.setLastTeamSync(System.currentTimeMillis());
+                io.saveCloudSettings(cloudSettings);
                 Log.d("RBS-Service", "Successfully downloaded RUI");
             } catch(Exception e) {
                 Log.d("RBS-Service", "Failed to download an RUI from the server.");
@@ -179,11 +189,12 @@ public class Service extends android.app.Service {
                 form = mapper.readValue(t.getForm(), RForm.class);
                 form.setUploadRequired(false);
                 io.saveForm(activeEvent.getID(), form);
+                cloudSettings.setOptedIn(t.isOptedIn());
                 cloudSettings.setLastTeamSync(System.currentTimeMillis());
                 io.saveCloudSettings(cloudSettings);
                 Log.d("RBS-Service", "Successfully downloaded a form");
             } catch(Exception e) {
-                Log.d("RBS-Service", "Failed to download an RForm from the server.");
+                Log.d("RBS-Service", "Failed to download an RForm from the server: "+e.getMessage());
             }
         }
 
@@ -198,7 +209,6 @@ public class Service extends android.app.Service {
             Log.d("RBS-Service", "Checking for completed checkouts...");
             long maxTimestamp = 0;
             CloudCheckout[] checkouts = checkoutRequest.pullCompletedCheckouts(cloudSettings.getLastCheckoutSync());
-            Log.d("RBS-Service", "Pulled: "+checkouts.length);
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS", Locale.getDefault());
             sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // server runs on UTC
@@ -307,10 +317,15 @@ public class Service extends android.app.Service {
 
                 Log.d("RBS-Service", "Merged team: "+checkout.getTeam().getName());
 
-                Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
+                // Prevent spamming the user with notifications
+                if(checkouts.length < 6) Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
 
                 // Notify the TeamViewer in case Roblu Master is viewing the data that was just modified
                 Utils.requestTeamViewerRefresh(getApplicationContext(), team.getName());
+            }
+
+            if(checkouts.length >= 6) {
+                Notify.notifyNoAction(getApplicationContext(), "Merged scouting data", "Merged "+checkouts.length+" checkouts.");
             }
 
             if(checkouts != null && checkouts.length > 0) {
