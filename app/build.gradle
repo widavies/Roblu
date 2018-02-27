@@ -84,10 +84,6 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
     testCompile 'junit:junit:4.12'
-    //compile files('libs/TBA-API.jar')
-    //compile files('libs/jackson-all-1.9.0.jar')
-    //compile files('libs/RobluCloud-API.jar')
-    //compile files('libs/poi-3.12-android-a.jar', 'libs/poi-ooxml-schemas-3.12-20150511-a.jar')
     compile('com.mikepenz:aboutlibraries:5.9.6@aar') { transitive = true }
     compile('com.mikepenz:materialdrawer:5.9.0@aar') {
         transitive = true
@@ -95,6 +91,7 @@ dependencies {
     compile "com.googlecode.json-simple:json-simple:1.1"
     compile 'com.roughike:bottom-bar:2.1.1'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
+    compile 'com.jiechic.android.library:snappy-android:1.1.7'
     compile 'pub.devrel:easypermissions:0.2.1'
     compile 'com.google.guava:guava:22.0-android'
     compile 'com.jrummyapps:colorpicker:2.1.6'

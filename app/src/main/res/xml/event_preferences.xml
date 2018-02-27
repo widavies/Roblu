@@ -51,6 +51,13 @@
             android:key="duplicate"
             android:summary="Create a copy of this event"/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
+    <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Import">
+        <Preference
+            android:title="Import QR"
+            android:key="qr"
+            android:summary="Import a checkout with a QR code."/>
+    </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
+
     <com.cpjd.roblu.ui.settings.customPreferences.RUIRedCategory android:title="DANGER ZONE">
         <Preference
             android:title="Delete teams"

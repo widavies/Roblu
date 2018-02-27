@@ -43,7 +43,7 @@ public class Notify {
     private static void notify(Context activity, String title, String content, Intent action, int ID) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(activity, "roblu-master").setSmallIcon(R.drawable.launcher)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-                .setContentTitle(title).setContentText(content).setPriority(Notification.PRIORITY_HIGH);
+                .setContentTitle(title).setContentText(content).setPriority(Notification.PRIORITY_MAX);
 
         PendingIntent pending = PendingIntent.getActivity(activity, 0, action, PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setAutoCancel(true).setContentIntent(pending);

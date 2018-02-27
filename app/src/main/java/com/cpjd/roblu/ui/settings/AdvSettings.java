@@ -510,6 +510,7 @@ public class AdvSettings extends AppCompatActivity {
                 startActivity(browserIntent);
             }
         }
+
     }
 
     // load in the bug report button, and make it match the ui settings

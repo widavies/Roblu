@@ -161,8 +161,12 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
         // don't check either if the boolean isn't modified
         yes.setChecked(bool.isValue());
+        yes.setTextColor(rui.getText());
+        yes.setHighlightColor(rui.getAccent());
         no.setChecked(!bool.isValue());
         no.setPadding(0, 0, 0, Utils.DPToPX(activity, 10));
+        no.setTextColor(rui.getText());
+        no.setHighlightColor(rui.getAccent());
         group.addView(yes);
         group.addView(no);
         no.setOnClickListener(new View.OnClickListener() {
@@ -604,6 +608,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 box.setTag(o.toString());
                 box.setId(Utils.generateViewId());
                 box.setTextColor(rui.getText());
+                box.setHighlightColor(rui.getAccent());
                 box.setChecked(checkbox.getValues().get(o.toString()));
                 box.setEnabled(editable);
                 box.setLayoutParams(params);

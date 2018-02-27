@@ -94,7 +94,7 @@ public class RUI implements Serializable {
 
         accent = -16738680;
         cardColor = -12303292;
-        background = -4013374;
+        background = Color.WHITE;
         text = -16777216;
         buttons = -16777216;
 

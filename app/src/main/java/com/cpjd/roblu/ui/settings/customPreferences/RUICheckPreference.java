@@ -49,7 +49,9 @@ public class RUICheckPreference extends CheckBoxPreference {
                             rui.getAccent()
                     }
             );
-            //if(android.os.Build.VERSION.SDK_INT >= 21) checkbox.setSupportButtonTintList(colorStateList);
+  //          if(android.os.Build.VERSION.SDK_INT >= 21) {
+//                checkbox.setSupportButtonTintList(colorStateList);
+            //}
         } catch(Exception e) {}
     }
 

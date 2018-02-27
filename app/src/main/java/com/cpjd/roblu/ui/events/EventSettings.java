@@ -22,6 +22,7 @@ import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -32,11 +33,16 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.csv.CSVActivity;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RGallery;
+import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.notifications.Notify;
 import com.cpjd.roblu.sync.cloud.InitPacker;
 import com.cpjd.roblu.tba.ImportEvent;
 import com.cpjd.roblu.tba.TBALoadEventsTask;
@@ -49,20 +55,27 @@ import com.cpjd.roblu.ui.teams.TeamsView;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.google.common.io.Files;
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+import com.jiechic.library.android.snappy.Snappy;
+
+import org.codehaus.jackson.map.DeserializationConfig;
+import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * EventSettings manages event specific settings
  *
+ * @author Will Davies
  * @version 2
  * @since 3.0.0
- * @author Will Davies
  */
 public class EventSettings extends AppCompatActivity {
     /**
@@ -104,7 +117,7 @@ public class EventSettings extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        if (id == android.R.id.home) {
+        if(id == android.R.id.home) {
             Intent intent = new Intent();
             intent.putExtra("eventID", event.getID());
             setResult(Constants.EVENT_SETTINGS_CHANGED, intent);
@@ -163,6 +176,7 @@ public class EventSettings extends AppCompatActivity {
             findPreference("delete_teams").setOnPreferenceClickListener(this);
             findPreference("delete_event").setOnPreferenceClickListener(this);
             findPreference("tba_sync").setOnPreferenceClickListener(this);
+            findPreference("qr").setOnPreferenceClickListener(this);
             RUICheckPreference bt = (RUICheckPreference) findPreference("bt_sync");
             bt.setChecked(event.isBluetoothEnabled());
             bt.setOnPreferenceChangeListener(this);
@@ -181,13 +195,14 @@ public class EventSettings extends AppCompatActivity {
              * Set the info to the UI that needs to be
              */
 
-            teams.setSummary("Delete "+new IO(getActivity()).getNumberTeams(event.getID())+" teams");
-            deleteEvent.setSummary("Delete ["+event.getName()+"] event");
+            teams.setSummary("Delete " + new IO(getActivity()).getNumberTeams(event.getID()) + " teams");
+            deleteEvent.setSummary("Delete [" + event.getName() + "] event");
 
         }
 
         /**
          * The user tapped on one of the available preferences
+         *
          * @param preference the preference that was tapped
          * @return true if the event was consumed
          */
@@ -202,6 +217,9 @@ public class EventSettings extends AppCompatActivity {
                 intent.putExtra("form", new IO(getActivity()).loadForm(event.getID()));
                 intent.putExtra("editing", true); // editing will be true
                 startActivityForResult(intent, Constants.GENERAL);
+            } else if(preference.getKey().equals("qr")) { // import QR code checkout
+                IntentIntegrator integrator = new IntentIntegrator(getActivity());
+                integrator.initiateScan();
             }
             /*
              * User clicked the "Edit event info" preference.
@@ -224,7 +242,7 @@ public class EventSettings extends AppCompatActivity {
                 new ImportEvent(new TBALoadEventsTask.LoadTBAEventsListener() {
                     @Override
                     public void errorOccurred(String errMsg) {
-                        Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Error occurred while syncing event: "+errMsg, true, 0);
+                        Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Error occurred while syncing event: " + errMsg, true, 0);
                     }
 
                     @Override
@@ -275,8 +293,8 @@ public class EventSettings extends AppCompatActivity {
             /*
              * User clicked on "Backup event"
              */
-            else if(preference.getKey().equals("backup")){
-                if (EasyPermissions.hasPermissions(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+            else if(preference.getKey().equals("backup")) {
+                if(EasyPermissions.hasPermissions(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     // Star the task
                     new BackupEventTask(new IO(getActivity()), new BackupEventTask.BackupEventTaskListener() {
                         @Override
@@ -285,7 +303,7 @@ public class EventSettings extends AppCompatActivity {
 
                             // We have an internal file now, let's ask the user for where they want to put it in a location they can see it
                             try {
-                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+                                if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
                                     Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
                                     intent.setType("application/*");
                                     intent.putExtra(Intent.EXTRA_TITLE, backupFile.getName());
@@ -303,7 +321,7 @@ public class EventSettings extends AppCompatActivity {
             /*
              * User clicked on "Delete teams"
              */
-            else if (preference.getKey().equals("delete_teams")) {
+            else if(preference.getKey().equals("delete_teams")) {
                 new FastDialogBuilder()
                         .setTitle("Delete all teams?")
                         .setMessage("Are you sure you want to delete ALL team profiles within this event? Cannot be undone!")
@@ -318,16 +336,18 @@ public class EventSettings extends AppCompatActivity {
                             }
 
                             @Override
-                            public void denied() {}
+                            public void denied() {
+                            }
 
                             @Override
-                            public void neutral() {}
+                            public void neutral() {
+                            }
                         }).build(getActivity());
             }
             /*
              * User clicked on "Delete event"
              */
-            else if (preference.getKey().equals("delete_event")) {
+            else if(preference.getKey().equals("delete_event")) {
                 new FastDialogBuilder()
                         .setTitle("Warning! Delete event?")
                         .setMessage("Are you sure you want to delete the event? This CANNOT be undone!!")
@@ -349,24 +369,26 @@ public class EventSettings extends AppCompatActivity {
                             }
 
                             @Override
-                            public void denied() {}
+                            public void denied() {
+                            }
 
                             @Override
-                            public void neutral() {}
+                            public void neutral() {
+                            }
                         }).build(getActivity());
             }
             /*
              * User clicked on "Export to .csv"
              */
-            else if (preference.getKey().equals("export_csv")) {
+            else if(preference.getKey().equals("export_csv")) {
               /*  ProgressDialog d = ProgressDialog.show(getActivity(), "Freeze!", "Roblu is generating a spreadsheet file...", true);
                 d.setCancelable(false);
                 d.show();
 
                 new ExportCSVTask(getActivity(), this, d, event).execute();*/
-              Intent intent = new Intent(getActivity(), CSVActivity.class);
-              intent.putExtra("event", event);
-              startActivity(intent);
+                Intent intent = new Intent(getActivity(), CSVActivity.class);
+                intent.putExtra("event", event);
+                startActivity(intent);
 
             }
             return true;
@@ -374,8 +396,9 @@ public class EventSettings extends AppCompatActivity {
 
         /**
          * This method is called whenever a preference is changed and has a value that needs to be saved
+         *
          * @param preference the preference whose value was changed
-         * @param o the new value that the user just set
+         * @param o          the new value that the user just set
          * @return true if the event was consumed
          */
         @Override
@@ -384,7 +407,7 @@ public class EventSettings extends AppCompatActivity {
              * User selected the cloud sync button
              */
             if(preference.getKey().equals("sync")) {
-                if((boolean)o) {
+                if((boolean) o) {
                     /*
                      * Check if an error message should be shown
                      */
@@ -413,11 +436,12 @@ public class EventSettings extends AppCompatActivity {
 
                                     @Override
                                     public void denied() {
-                                        ((CheckBoxPreference)preference).setChecked(false);
+                                        ((CheckBoxPreference) preference).setChecked(false);
                                     }
 
                                     @Override
-                                    public void neutral() {}
+                                    public void neutral() {
+                                    }
                                 }).build(getActivity());
 
                     } else uploadEvent();
@@ -433,11 +457,11 @@ public class EventSettings extends AppCompatActivity {
             else if(preference.getKey().equals("bt_sync")) {
                 REvent[] events = new IO(getActivity()).loadEvents();
                 for(REvent ev : events) {
-                    ev.setBluetoothEnabled(((Boolean)o && ev.getID() == event.getID()));
+                    ev.setBluetoothEnabled(((Boolean) o && ev.getID() == event.getID()));
                     new IO(getActivity()).saveEvent(ev);
                 }
-                event.setBluetoothEnabled((Boolean)o);
-                ((CheckBoxPreference)preference).setChecked(((Boolean)o));
+                event.setBluetoothEnabled((Boolean) o);
+                ((CheckBoxPreference) preference).setChecked(((Boolean) o));
             }
             return true;
         }
@@ -463,9 +487,10 @@ public class EventSettings extends AppCompatActivity {
 
         /**
          * Receives various data from any activities started from this class
+         *
          * @param requestCode the request code the child activities were started with
-         * @param resultCode the result code form child activites
-         * @param data any data included with the result
+         * @param resultCode  the result code form child activites
+         * @param data        any data included with the result
          */
         @Override
         public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -497,8 +522,8 @@ public class EventSettings extends AppCompatActivity {
                 event.setName(data.getStringExtra("name"));
                 event.setKey(data.getStringExtra("key"));
                 new IO(getActivity()).saveEvent(event);
-                if(((AppCompatActivity)getActivity()).getSupportActionBar() != null) {
-                    ((AppCompatActivity)getActivity()).getSupportActionBar().setTitle(event.getName());
+                if(((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+                    ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(event.getName());
                 }
             }
             /*
@@ -506,7 +531,7 @@ public class EventSettings extends AppCompatActivity {
              */
             else if(resultCode == Constants.FORM_CONFIRMED) {
                 Bundle bundle = data.getExtras();
-                RForm form = (RForm)bundle.getSerializable("form");
+                RForm form = (RForm) bundle.getSerializable("form");
                 form.setUploadRequired(true);
                 new IO(getActivity()).saveForm(event.getID(), form);
             }
@@ -542,6 +567,138 @@ public class EventSettings extends AppCompatActivity {
             protected void onPostExecute(File file) {
                 listener.eventBackupComplete(file);
             }
+        }
+    }
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        final IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if(scanResult != null) {
+                /*
+                 * Decompress and import the checkout
+                 */
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+
+                        Log.d("RBS", "IO: "+scanResult.getContents());
+
+                        byte[] decompressed = Snappy.uncompress(scanResult.getRawBytes());
+
+                        String serial = new String(decompressed, "UTF-8");
+
+                        Log.d("RBS", "Received: "+serial);
+
+                        ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+                            /*
+                             * Import the checkout!
+                             */
+                        RCheckout checkout = mapper.readValue(serial, RCheckout.class);
+
+                        Log.d("RBS", "Received checkout: "+checkout.getTeam().getName());
+
+                        RForm form = new IO(getApplicationContext()).loadForm(event.getID());
+
+                        checkout.getTeam().verify(form);
+
+                        IO io = new IO(getApplicationContext());
+
+                /*
+                 * BEGIN MERGING
+                 * -Let's check for possible conflicts
+                 */
+                        RTeam team = io.loadTeam(event.getID(), checkout.getTeam().getID());
+
+                        // The team doesn't exist locally, so create it anew
+                        if(team == null) {
+                            RTeam newTeam = new RTeam(checkout.getTeam().getName(), checkout.getTeam().getNumber(), checkout.getTeam().getID());
+                            newTeam.verify(form);
+
+                            if(checkout.getTeam().getTabs().size() > 1) { // this means the downloaded team was a PIT tab, so override the new team's tabs
+                                newTeam.setTabs(checkout.getTeam().getTabs());
+                            } else { // otherwise just add them
+                                newTeam.addTab(checkout.getTeam().getTabs().get(0));
+                            }
+                        }
+                        // Data already exists, so do a 'smart' merge
+                        else {
+                            team.verify(form);
+
+                            for(RTab downloadedTab : checkout.getTeam().getTabs()) {
+                                boolean matchLocated = false;
+                                for(RTab localTab : team.getTabs()) {
+                                    localTab.setWon(downloadedTab.isWon());
+
+                                    // Found the match, start merging
+                                    if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
+                                            /*
+                                              * Copy over the edit tabs
+                                             */
+                                        if(downloadedTab.getEdits() != null) localTab.setEdits(downloadedTab.getEdits());
+
+                                        for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
+                                            for(RMetric localMetric : localTab.getMetrics()) {
+                                                // Found the metric, determine if a merge needs to occur
+                                                if(downloadedMetric.getID() == localMetric.getID()) {
+                                            /*
+                                             * We have to deal with one special case scenario - the gallery.
+                                             * The gallery should never be overrided, just added to
+                                             */
+                                                    if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery) {
+                                                        if(((RGallery) localMetric).getPictureIDs() == null) ((RGallery) localMetric).setPictureIDs(new ArrayList<Integer>());
+                                                        if(((RGallery) downloadedMetric).getImages() != null) {
+                                                            // Add images to the current gallery
+                                                            for(int i = 0; i < ((RGallery) downloadedMetric).getImages().size(); i++) {
+                                                                ((RGallery) localMetric).getPictureIDs().add(io.savePicture(event.getID(), ((RGallery) downloadedMetric).getImages().get(i)));
+                                                            }
+                                                        }
+                                                        // Don't forget to clear the pictures from memory after they've been merged
+                                                        ((RGallery) downloadedMetric).setImages(null);
+                                                    }
+                                                    // If the local metric is already edited, keep whichever data is newest
+                                                    else if(localMetric.isModified()) {
+                                                        if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
+                                                            int replaceIndex = localTab.getMetrics().indexOf(localMetric);
+                                                            localTab.getMetrics().set(replaceIndex, downloadedMetric);
+                                                        }
+                                                    }
+                                                    // Otherwise, just do a straight override
+                                                    else {
+                                                        int replaceIndex = localTab.getMetrics().indexOf(localMetric);
+                                                        localTab.getMetrics().set(replaceIndex, downloadedMetric);
+                                                    }
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        matchLocated = true;
+                                        break;
+                                    }
+                                }
+                                if(!matchLocated) {
+                                    // Add as a new match if a merge wasn't performed
+                                    team.addTab(checkout.getTeam().getTabs().get(0));
+                                    Collections.sort(team.getTabs());
+                                }
+                            }
+
+                        }
+
+                        if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
+                        io.saveTeam(event.getID(), team);
+
+                        Log.d("RBS-Service", "Merged team: " + checkout.getTeam().getName());
+
+                        // Prevent spamming the user with notifications
+                        Notify.notifyMerged(getApplicationContext(), event.getID(), checkout);
+
+                    } catch(Exception e) {
+                        Log.d("RBS", "Failed to import checkout from QR code: "+e.getMessage());
+                    }
+                }
+            }).start();
         }
     }
 }
