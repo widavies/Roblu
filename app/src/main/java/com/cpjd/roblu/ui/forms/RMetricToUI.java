@@ -1,8 +1,8 @@
 package com.cpjd.roblu.ui.forms;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -10,12 +10,14 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.AppCompatRadioButton;
@@ -148,11 +150,23 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         yes.setEnabled(editable);
         no.setEnabled(editable);
 
-        //yes.setSupportButtonTintList(colorStateList);
-        //no.setSupportButtonTintList(colorStateList);
+        ColorStateList colorStateList = new ColorStateList(
+                new int[][] {
+                        new int[] { -android.R.attr.state_checked }, // unchecked
+                        new int[] {  android.R.attr.state_checked }  // checked
+                },
+                new int[] {
+                        rui.getButtons(),
+                        rui.getAccent()
+                }
+        );
+        CompoundButtonCompat.setButtonTintList(yes, colorStateList);
+        CompoundButtonCompat.setButtonTintList(no, colorStateList);
         group.setId(Utils.generateViewId());
         yes.setId(Utils.generateViewId());
         no.setId(Utils.generateViewId());
+        yes.setTextColor(rui.getText());
+        no.setTextColor(rui.getText());
         yes.setText(R.string.yes);
         no.setText(R.string.no);
 
@@ -161,11 +175,9 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
         // don't check either if the boolean isn't modified
         yes.setChecked(bool.isValue());
-        yes.setTextColor(rui.getText());
         yes.setHighlightColor(rui.getAccent());
         no.setChecked(!bool.isValue());
         no.setPadding(0, 0, 0, Utils.DPToPX(activity, 10));
-        no.setTextColor(rui.getText());
         no.setHighlightColor(rui.getAccent());
         group.addView(yes);
         group.addView(no);
@@ -185,7 +197,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 listener.changeMade(bool);
             }
         });
-
 
         // Observed field
         observed.setTextColor(rui.getText());
@@ -248,7 +259,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
      * @param counter RCounter reference to be set to the UI
      * @return a UI CardView
      */
-    @SuppressLint("ClickableViewAccessibility")
     public CardView getCounter(final RCounter counter) {
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         params.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -261,53 +271,148 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         title.setPadding(Utils.DPToPX(activity, 8), title.getPaddingTop(), title.getPaddingRight(), title.getPaddingBottom());
         title.setLayoutParams(params);
 
-        Drawable add = ContextCompat.getDrawable(activity, R.drawable.add_small);
-        if(add != null) {
-            add.mutate();
-            add.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
-        }
-        Drawable minus = ContextCompat.getDrawable(activity,R.drawable.minus_small);
-        if(minus != null) {
-            minus.mutate();
-            minus.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
-        }
-        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
-        ImageView addButton = new ImageView(activity);
-        addButton.setId(Utils.generateViewId());
-        addButton.setEnabled(editable);
-        addButton.setBackground(add);
-        addButton.setPadding(Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3), Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3));
-        addButton.setScaleX(1.5f);
-        addButton.setScaleY(1.5f);
-        addButton.setLayoutParams(params);
-
-        final RelativeLayout layout = new RelativeLayout(activity);
-        final TextView number = new TextView(activity);
         final TextView observed = new TextView(activity);
-        ImageView minusButton = new ImageView(activity);
-        final TimerTask task = new TimerTask() {
-            @Override
-            public void run() {
-                counter.add();
-                number.setText(counter.getTextValue());
-                listener.changeMade(counter);
+        RelativeLayout.LayoutParams oParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        final RelativeLayout layout = new RelativeLayout(activity);
+
+        layout.addView(title);
+
+        if(!counter.isVerboseInput()) {
+            Drawable add = ContextCompat.getDrawable(activity, R.drawable.add_small);
+            if(add != null) {
+                add.mutate();
+                add.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
             }
-        };
+            Drawable minus = ContextCompat.getDrawable(activity,R.drawable.minus_small);
+            if(minus != null) {
+                minus.mutate();
+                minus.setColorFilter(rui.getButtons(), PorterDuff.Mode.SRC_IN);
+            }
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            params.addRule(RelativeLayout.CENTER_VERTICAL);
+            ImageView addButton = new ImageView(activity);
+            addButton.setId(Utils.generateViewId());
+            addButton.setEnabled(editable);
+            addButton.setBackground(add);
+            addButton.setPadding(Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3), Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3));
+            addButton.setScaleX(1.5f);
+            addButton.setScaleY(1.5f);
+            addButton.setLayoutParams(params);
+
+            final TextView number = new TextView(activity);
+
+            ImageView minusButton = new ImageView(activity);
+
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.LEFT_OF, addButton.getId());
+            params.addRule(RelativeLayout.CENTER_VERTICAL);
+
+            number.setTextSize(25);
+            number.setTextColor(rui.getText());
+            number.setId(Utils.generateViewId());
+            number.setText(String.valueOf(counter.getTextValue()));
+            number.setLayoutParams(params);
+            number.setPadding(Utils.DPToPX(activity, 20), number.getPaddingTop(), Utils.DPToPX(activity, 20), number.getPaddingBottom());
+            addButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    layout.removeView(observed);
+                    counter.add();
+                    number.setText(counter.getTextValue());
+                    listener.changeMade(counter);
+                }
+            });
+
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.LEFT_OF, number.getId());
+            params.addRule(RelativeLayout.CENTER_VERTICAL);
+
+            minusButton.setBackground(minus);
+            minusButton.setId(Utils.generateViewId());
+            minusButton.setEnabled(editable);
+            minusButton.setScaleY(1.5f);
+            minusButton.setScaleX(1.5f);
+            minusButton.setLayoutParams(params);
+            minusButton.setPadding(Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3), Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3));
+
+            minusButton.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View view) {
+                    layout.removeView(observed);
+
+                    counter.minus();
+                    number.setText(String.valueOf(counter.getTextValue()));
+                    listener.changeMade(counter);
+                }
+            });
+
+            // observed params
+
+            oParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            oParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            oParams.addRule(RelativeLayout.BELOW, number.getId());
+            observed.setPadding(0, Utils.DPToPX(activity, 20), 0, 0);
+            observed.setLayoutParams(oParams);
 
 
+            layout.addView(minusButton);
+            layout.addView(number);
+            layout.addView(addButton);
+        } else {
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            title.setTextSize(14f);
+            params.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            params.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+            title.setLayoutParams(params);
+            params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, title.getId());
+            AppCompatEditText et = new AppCompatEditText(activity);
+            Utils.setCursorColor(et, rui.getAccent());
+            et.setText(String.valueOf(counter.getValue()));
+            et.setEnabled(editable);
+            et.setTextColor(rui.getText());
+            et.setId(Utils.generateViewId());
+            et.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER);
+            et.setRawInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL | InputType.TYPE_CLASS_NUMBER);
+            et.setSingleLine();
+            et.setMaxLines(1);
+            et.setHighlightColor(rui.getAccent());
+            Drawable d = et.getBackground();
+            d.setColorFilter(rui.getText(), PorterDuff.Mode.SRC_ATOP);
+            et.setBackground(d);
+            et.addTextChangedListener(new TextWatcher() {
+                @Override
+                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
-        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.LEFT_OF, addButton.getId());
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
+                @Override
+                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                    layout.removeView(observed);
 
-        number.setTextSize(25);
-        number.setTextColor(rui.getText());
-        number.setId(Utils.generateViewId());
-        number.setText(String.valueOf(counter.getTextValue()));
-        number.setLayoutParams(params);
-        number.setPadding(Utils.DPToPX(activity, 20), number.getPaddingTop(), Utils.DPToPX(activity, 20), number.getPaddingBottom());
+                    try {
+                        counter.setValue(Double.parseDouble(charSequence.toString()));
+                    } catch(NumberFormatException e) {
+                        counter.setValue(0);
+                    }
+                    listener.changeMade(counter);
+                }
+
+                @Override
+                public void afterTextChanged(Editable editable) {}
+            });
+            et.setImeOptions(EditorInfo.IME_FLAG_NO_ENTER_ACTION);
+            et.setFocusableInTouchMode(true);
+            et.setLayoutParams(params);
+            layout.addView(et);
+
+            oParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            oParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
+            oParams.addRule(RelativeLayout.BELOW, et.getId());
+            observed.setPadding(0, Utils.DPToPX(activity, 20), 0, 0);
+            observed.setLayoutParams(oParams);
+
+        }
 
         // Observed field
         observed.setTextColor(rui.getText());
@@ -323,52 +428,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 listener.changeMade(counter);
             }
         });
-        addButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                layout.removeView(observed);
-                counter.add();
-                number.setText(counter.getTextValue());
-                listener.changeMade(counter);
-            }
-        });
 
-        params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        params.addRule(RelativeLayout.LEFT_OF, number.getId());
-        params.addRule(RelativeLayout.CENTER_VERTICAL);
-
-        minusButton.setBackground(minus);
-        minusButton.setId(Utils.generateViewId());
-        minusButton.setEnabled(editable);
-        minusButton.setScaleY(1.5f);
-        minusButton.setScaleX(1.5f);
-        minusButton.setLayoutParams(params);
-        minusButton.setPadding(Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3), Utils.DPToPX(activity, 4), Utils.DPToPX(activity, 3));
-
-        minusButton.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View view) {
-                layout.removeView(observed);
-
-                counter.minus();
-                number.setText(String.valueOf(counter.getTextValue()));
-                listener.changeMade(counter);
-            }
-        });
-
-        // observed params
-        RelativeLayout.LayoutParams oParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        oParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        oParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        oParams.addRule(RelativeLayout.BELOW, number.getId());
-        observed.setPadding(0, Utils.DPToPX(activity, 20), 0, 0);
-        observed.setLayoutParams(oParams);
-        
-        layout.addView(title);
-        layout.addView(minusButton);
-        layout.addView(number);
-        layout.addView(addButton);
         if(!counter.isModified()) layout.addView(observed);
         return getCard(layout);
     }
@@ -612,7 +672,17 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 box.setChecked(checkbox.getValues().get(o.toString()));
                 box.setEnabled(editable);
                 box.setLayoutParams(params);
-                //box.setSupportButtonTintList(colorStateList);
+                ColorStateList colorStateList = new ColorStateList(
+                        new int[][] {
+                                new int[] { -android.R.attr.state_checked }, // unchecked
+                                new int[] {  android.R.attr.state_checked }  // checked
+                        },
+                        new int[] {
+                                rui.getButtons(),
+                                rui.getAccent()
+                        }
+                );
+                CompoundButtonCompat.setButtonTintList(box, colorStateList);
                 box.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                     @Override
                     public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -650,7 +720,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         imageView.setAdjustViewBounds(true);
 
         // Get field diagram
-        final Bitmap field = BitmapFactory.decodeResource(activity.getResources(), fieldDiagram.getPictureID());
+        final Bitmap field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2018);
 
         // Get drawings
         if(fieldDiagram.getDrawings() != null) {
@@ -891,6 +961,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         else params.addRule(RelativeLayout.BELOW, playButton.getId());
         b.setTextColor(rui.getText());
         b.setLayoutParams(params);
+        b.getBackground().mutate().setColorFilter(new PorterDuffColorFilter(RUI.darker(rui.getCardColor(), 0.75f), PorterDuff.Mode.SRC));
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -903,7 +974,6 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                         .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
                             @Override
                             public void accepted() {
-
                                 // Remove the time
                                 stopwatch.getTimes().remove(buttons.indexOf(b));
                                 layout.removeView(b);
@@ -913,7 +983,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                                 for(int i = 0; i < buttons.size(); i++) {
                                     final RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
                                     if(i == 0) params.addRule(RelativeLayout.BELOW, playButton.getId());
-                                    else params.addRule(RelativeLayout.BELOW, buttons.get(buttons.size() - 1).getId());
+                                    else params.addRule(RelativeLayout.BELOW, buttons.get(i - 1).getId());
                                     buttons.get(i).setLayoutParams(params);
                                 }
 
@@ -1101,6 +1171,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             params.addRule(RelativeLayout.BELOW, et.getId());
             Button b = new Button(activity);
             b.setTextColor(rui.getText());
+            b.getBackground().mutate().setColorFilter(new PorterDuffColorFilter(RUI.darker(rui.getCardColor(), 0.75f), PorterDuff.Mode.SRC));
             b.setText(R.string.Team_website);
             b.setLayoutParams(params);
             b.setId(Utils.generateViewId());
@@ -1115,6 +1186,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
             layout.addView(b);
             Button tbaTeamSite = new Button(activity);
             tbaTeamSite.setText(R.string.Blue_Alliance_Team_Page);
+            tbaTeamSite.getBackground().mutate().setColorFilter(new PorterDuffColorFilter(RUI.darker(rui.getCardColor(), 0.75f), PorterDuff.Mode.SRC));
             tbaTeamSite.setId(Utils.generateViewId());
             tbaTeamSite.setTextColor(rui.getText());
             tbaTeamSite.setOnClickListener(new View.OnClickListener() {

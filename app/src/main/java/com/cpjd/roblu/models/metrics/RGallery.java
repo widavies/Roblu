@@ -90,7 +90,6 @@ public class RGallery extends RMetric {
     @Override
     public RMetric clone() {
         RGallery gallery = new RGallery(ID, title);
-        gallery.setRequired(required);
         return gallery;
     }
 

@@ -22,7 +22,6 @@ import android.preference.PreferenceFragment;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -33,17 +32,13 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.csv.CSVActivity;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
-import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
-import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.models.metrics.RGallery;
-import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.notifications.Notify;
 import com.cpjd.roblu.sync.cloud.InitPacker;
+import com.cpjd.roblu.sync.qr.QrReader;
 import com.cpjd.roblu.tba.ImportEvent;
 import com.cpjd.roblu.tba.TBALoadEventsTask;
 import com.cpjd.roblu.tba.UnpackTBAEvent;
@@ -55,18 +50,11 @@ import com.cpjd.roblu.ui.teams.TeamsView;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 import com.google.common.io.Files;
-import com.google.zxing.integration.android.IntentIntegrator;
-import com.google.zxing.integration.android.IntentResult;
-import com.jiechic.library.android.snappy.Snappy;
-
-import org.codehaus.jackson.map.DeserializationConfig;
-import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.File;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
 
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -218,8 +206,9 @@ public class EventSettings extends AppCompatActivity {
                 intent.putExtra("editing", true); // editing will be true
                 startActivityForResult(intent, Constants.GENERAL);
             } else if(preference.getKey().equals("qr")) { // import QR code checkout
-                IntentIntegrator integrator = new IntentIntegrator(getActivity());
-                integrator.initiateScan();
+                Intent qrScanIntent = new Intent(getActivity(), QrReader.class);
+                qrScanIntent.putExtra("event", event);
+                startActivityForResult(qrScanIntent, Constants.QR_REQUEST);
             }
             /*
              * User clicked the "Edit event info" preference.
@@ -569,136 +558,5 @@ public class EventSettings extends AppCompatActivity {
             }
         }
     }
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        final IntentResult scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if(scanResult != null) {
-                /*
-                 * Decompress and import the checkout
-                 */
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-
-                        Log.d("RBS", "IO: "+scanResult.getContents());
-
-                        byte[] decompressed = Snappy.uncompress(scanResult.getRawBytes());
-
-                        String serial = new String(decompressed, "UTF-8");
-
-                        Log.d("RBS", "Received: "+serial);
-
-                        ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-                            /*
-                             * Import the checkout!
-                             */
-                        RCheckout checkout = mapper.readValue(serial, RCheckout.class);
-
-                        Log.d("RBS", "Received checkout: "+checkout.getTeam().getName());
-
-                        RForm form = new IO(getApplicationContext()).loadForm(event.getID());
-
-                        checkout.getTeam().verify(form);
-
-                        IO io = new IO(getApplicationContext());
-
-                /*
-                 * BEGIN MERGING
-                 * -Let's check for possible conflicts
-                 */
-                        RTeam team = io.loadTeam(event.getID(), checkout.getTeam().getID());
-
-                        // The team doesn't exist locally, so create it anew
-                        if(team == null) {
-                            RTeam newTeam = new RTeam(checkout.getTeam().getName(), checkout.getTeam().getNumber(), checkout.getTeam().getID());
-                            newTeam.verify(form);
-
-                            if(checkout.getTeam().getTabs().size() > 1) { // this means the downloaded team was a PIT tab, so override the new team's tabs
-                                newTeam.setTabs(checkout.getTeam().getTabs());
-                            } else { // otherwise just add them
-                                newTeam.addTab(checkout.getTeam().getTabs().get(0));
-                            }
-                        }
-                        // Data already exists, so do a 'smart' merge
-                        else {
-                            team.verify(form);
-
-                            for(RTab downloadedTab : checkout.getTeam().getTabs()) {
-                                boolean matchLocated = false;
-                                for(RTab localTab : team.getTabs()) {
-                                    localTab.setWon(downloadedTab.isWon());
-
-                                    // Found the match, start merging
-                                    if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
-                                            /*
-                                              * Copy over the edit tabs
-                                             */
-                                        if(downloadedTab.getEdits() != null) localTab.setEdits(downloadedTab.getEdits());
-
-                                        for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
-                                            for(RMetric localMetric : localTab.getMetrics()) {
-                                                // Found the metric, determine if a merge needs to occur
-                                                if(downloadedMetric.getID() == localMetric.getID()) {
-                                            /*
-                                             * We have to deal with one special case scenario - the gallery.
-                                             * The gallery should never be overrided, just added to
-                                             */
-                                                    if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery) {
-                                                        if(((RGallery) localMetric).getPictureIDs() == null) ((RGallery) localMetric).setPictureIDs(new ArrayList<Integer>());
-                                                        if(((RGallery) downloadedMetric).getImages() != null) {
-                                                            // Add images to the current gallery
-                                                            for(int i = 0; i < ((RGallery) downloadedMetric).getImages().size(); i++) {
-                                                                ((RGallery) localMetric).getPictureIDs().add(io.savePicture(event.getID(), ((RGallery) downloadedMetric).getImages().get(i)));
-                                                            }
-                                                        }
-                                                        // Don't forget to clear the pictures from memory after they've been merged
-                                                        ((RGallery) downloadedMetric).setImages(null);
-                                                    }
-                                                    // If the local metric is already edited, keep whichever data is newest
-                                                    else if(localMetric.isModified()) {
-                                                        if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
-                                                            int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                            localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                        }
-                                                    }
-                                                    // Otherwise, just do a straight override
-                                                    else {
-                                                        int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                        localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                    }
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        matchLocated = true;
-                                        break;
-                                    }
-                                }
-                                if(!matchLocated) {
-                                    // Add as a new match if a merge wasn't performed
-                                    team.addTab(checkout.getTeam().getTabs().get(0));
-                                    Collections.sort(team.getTabs());
-                                }
-                            }
-
-                        }
-
-                        if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
-                        io.saveTeam(event.getID(), team);
-
-                        Log.d("RBS-Service", "Merged team: " + checkout.getTeam().getName());
-
-                        // Prevent spamming the user with notifications
-                        Notify.notifyMerged(getApplicationContext(), event.getID(), checkout);
-
-                    } catch(Exception e) {
-                        Log.d("RBS", "Failed to import checkout from QR code: "+e.getMessage());
-                    }
-                }
-            }).start();
-        }
-    }
 }

@@ -231,8 +231,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         ruiCheckPreferenceWeakReference.get().setChecked(params);
         progressDialogWeakReference.get().dismiss();
     }
-
-
 }
 
 

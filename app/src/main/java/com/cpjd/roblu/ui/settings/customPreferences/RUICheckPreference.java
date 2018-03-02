@@ -3,9 +3,11 @@ package com.cpjd.roblu.ui.settings.customPreferences;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.preference.CheckBoxPreference;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.widget.AppCompatCheckBox;
 import android.util.AttributeSet;
 import android.view.View;
+import android.widget.TextView;
 
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
@@ -35,8 +37,16 @@ public class RUICheckPreference extends CheckBoxPreference {
     @Override
     protected void onBindView(View view) {
         super.onBindView(view);
+
+        RUI rui = new IO(getContext()).loadSettings().getRui();
+
+        TextView titleView = view.findViewById(android.R.id.title);
+        titleView.setTextColor(rui.getText());
+
+        TextView subtitle = view.findViewById(android.R.id.summary);
+        subtitle.setTextColor(rui.darker(rui.getText(), 0.60f));
+
         try {
-            RUI rui = new IO(getContext()).loadSettings().getRui();
             AppCompatCheckBox checkbox = view.findViewById(android.R.id.checkbox);
             checkbox.animate();
             ColorStateList colorStateList = new ColorStateList(
@@ -49,9 +59,7 @@ public class RUICheckPreference extends CheckBoxPreference {
                             rui.getAccent()
                     }
             );
-  //          if(android.os.Build.VERSION.SDK_INT >= 21) {
-//                checkbox.setSupportButtonTintList(colorStateList);
-            //}
+            CompoundButtonCompat.setButtonTintList(checkbox, colorStateList);
         } catch(Exception e) {}
     }
 

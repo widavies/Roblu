@@ -89,9 +89,9 @@ dependencies {
         transitive = true
     }
     compile "com.googlecode.json-simple:json-simple:1.1"
+    compile 'com.dlazaro66.qrcodereaderview:qrcodereaderview:2.0.3'
     compile 'com.roughike:bottom-bar:2.1.1'
     compile 'com.miguelcatalan:materialsearchview:1.4.0'
-    compile 'com.jiechic.android.library:snappy-android:1.1.7'
     compile 'pub.devrel:easypermissions:0.2.1'
     compile 'com.google.guava:guava:22.0-android'
     compile 'com.jrummyapps:colorpicker:2.1.6'

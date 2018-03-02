@@ -214,7 +214,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
      */
     @Override
     public void onPageSelected(int page) {
-        if(page < 2) setColorScheme(rui.getPrimaryColor(), RUI.darker(rui.getPrimaryColor(), 0.85f));
+        if(page < 3) setColorScheme(rui.getPrimaryColor(), RUI.darker(rui.getPrimaryColor(), 0.85f));
         else {
             if(tabAdapter.isPageRed(page)) setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.red), ContextCompat.getColor(getApplicationContext(), R.color.darkRed));
             else setColorScheme(ContextCompat.getColor(getApplicationContext(), R.color.colorPrimary), ContextCompat.getColor(getApplicationContext(), R.color.colorPrimaryDark));

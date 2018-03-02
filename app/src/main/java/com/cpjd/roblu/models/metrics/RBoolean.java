@@ -46,7 +46,6 @@ public class RBoolean extends RMetric {
     @Override
     public RMetric clone() {
         RBoolean bool = new RBoolean(ID, title, value);
-        bool.setRequired(required);
         return bool;
     }
 

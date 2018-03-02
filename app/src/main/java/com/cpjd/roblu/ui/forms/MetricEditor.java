@@ -2,9 +2,11 @@ package com.cpjd.roblu.ui.forms;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.design.widget.TextInputLayout;
+import android.support.v4.widget.CompoundButtonCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.CardView;
@@ -20,6 +22,8 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Spinner;
@@ -214,7 +218,37 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         if(metric instanceof RCheckbox || metric instanceof RChooser) {
             layout.addView(getConfigField("Comma separated list", layout, 1));
         } else if(metric instanceof RCounter) {
-            layout.addView(getConfigField("Increment", layout, 1));
+            final TextInputLayout til = getConfigField("Increment", layout, 1);
+            til.setId(Utils.generateViewId());
+            layout.addView(til);
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, til.getId());
+            CheckBox checkBox = new CheckBox(getApplicationContext());
+            checkBox.setId(Utils.generateViewId());
+            checkBox.setLayoutParams(params);
+            checkBox.setHighlightColor(rui.getAccent());
+            checkBox.setTextColor(rui.getText());
+            checkBox.setText("Verbose input");
+            checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    ((RCounter) metric).setVerboseInput(isChecked);
+                    addMetricPreviewToToolbar();
+                }
+            });
+            ColorStateList colorStateList = new ColorStateList(
+                    new int[][] {
+                            new int[] { -android.R.attr.state_checked }, // unchecked
+                            new int[] {  android.R.attr.state_checked }  // checked
+                    },
+                    new int[] {
+                            rui.getButtons(),
+                            rui.getAccent()
+                    }
+            );
+            CompoundButtonCompat.setButtonTintList(checkBox, colorStateList);
+            layout.addView(checkBox);
+
         } else if(metric instanceof RSlider) {
             layout.addView(getConfigField("Minimum", layout, 1));
             layout.addView(getConfigField("Maximum", layout, 2));

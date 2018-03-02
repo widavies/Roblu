@@ -297,6 +297,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                             ((RSlider) s).setValue(((RSlider) e).getValue());
                         } else if (e instanceof RCounter && s instanceof RCounter) {
                             ((RCounter) s).setIncrement(((RCounter) e).getIncrement());
+                            ((RCounter) s).setVerboseInput(((RCounter) e).isVerboseInput());
                             if (!s.isModified())
                                 ((RCounter) s).setValue(((RCounter) e).getValue());
                         }

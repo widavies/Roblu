@@ -18,8 +18,6 @@ public class BootBroadcastReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         // BOOT_COMPLETED” start Service
         if (intent.getAction().equals(ACTION)) {
-            //Service
-            System.out.println("Starting from bootup...");
             Intent serviceIntent = new Intent(context, Service.class);
             context.startService(serviceIntent);
         }

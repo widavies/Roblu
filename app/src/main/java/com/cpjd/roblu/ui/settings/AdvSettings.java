@@ -13,7 +13,6 @@ package com.cpjd.roblu.ui.settings;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -538,18 +537,8 @@ public class AdvSettings extends AppCompatActivity {
             return true;
         }
         if (id == R.id.settings_bug) { // launch an email intent to the developer, easy way to do a bug report
-            Intent i = new Intent(Intent.ACTION_SEND);
-            i.setType("message/rfc822");
-            i.putExtra(Intent.EXTRA_EMAIL  , new String[]{"wdavies973@gmail.com"});
-            i.putExtra(Intent.EXTRA_SUBJECT, "Roblu Bug Report");
-            i.putExtra(Intent.EXTRA_TEXT   , "The information below includes how to reproduce the bug and a thorough description of what went wrong. (Thanks - WD)");
-            try {
-                startActivity(Intent.createChooser(i, "Send mail..."));
-            } catch (ActivityNotFoundException ex) {
-                // to avoid a crash, make sure that the user actually has an email client installed (most will)
-                Utils.showSnackbar(findViewById(R.id.advsettings), getApplicationContext(), "No email clients installed.", true, 0);
-            }
-            return true;
+            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.github.com/wdavies973/Roblu/issues"));
+            startActivity(browserIntent);
         }
         return super.onOptionsItemSelected(item);
     }

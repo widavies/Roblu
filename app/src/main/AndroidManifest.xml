@@ -128,7 +128,7 @@
         <activity android:name=".ui.images.ImageGalleryActivity"/>
         <activity android:name=".ui.images.Drawing"/>
         <activity android:name=".csv.CSVActivity"/>
-        <activity android:name="com.cpjd.robluscouter.sync.qr.PackageQRCheckout"/>
+        <activity android:name=".sync.qr.QrReader"/>
     </application>
 
 </manifest>

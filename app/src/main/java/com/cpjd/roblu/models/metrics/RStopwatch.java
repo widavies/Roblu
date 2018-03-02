@@ -58,7 +58,6 @@ public class RStopwatch extends RMetric {
     public RMetric clone() {
         RStopwatch stopwatch = new RStopwatch(ID, title, time);
         stopwatch.setTimes(times);
-        stopwatch.setRequired(required);
         return stopwatch;
     }
 

@@ -84,7 +84,6 @@ public class RSlider extends RMetric {
     @Override
     public RMetric clone() {
         RSlider slider = new RSlider(ID, title, min, max, value);
-        slider.setRequired(required);
         return slider;
     }
 

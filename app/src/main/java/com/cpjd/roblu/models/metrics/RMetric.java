@@ -55,12 +55,6 @@ public abstract class RMetric implements Serializable {
     private boolean modified;
 
     /**
-     * If true, the user will not be permitted to remove this metric from an RForm model. This is a flag, and must
-     * be handled by the UI code, not RMetric
-     */
-    protected boolean required;
-
-    /**
      * The empty constructor is required for de-serialization
      */
     @SuppressWarnings("unused")
