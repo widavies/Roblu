@@ -26,7 +26,7 @@ Watch a short demo video here:
 <p>
             <a href="https://www.roblu.net/">
          <img alt="Official site" src="https://static1.squarespace.com/static/5981ec5ad482e95a76a4aaab/598754d6db29d60e9d347125/5987a4fde3df285a35d0eacd/1502061822285/slauncher.png?format=500w" width="15%" align="left" />
-    <a href="https://play.google.com/store/apps/details?id=com.cpjd.robluscouter">
+    <a href="https://play.google.com/store/apps/details?id=com.cpjd.roblumaster">
          <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png" width="30%" align="left" />
     </a>
     <a href="http://www.youtube.com/watch?feature=player_embedded&v=9j6ysvJJyQg
