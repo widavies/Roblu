@@ -36,5 +36,5 @@ alt="IMAGE ALT TEXT HERE" width="240" height="180" border="10" /></a>
   </a>
 </p>
 
-# Want to tweak Roblu Scouter for your team? Check out the Wiki!
-https://github.com/wdavies973/RobluScouter/wiki
+# Want to tweak Roblu Master for your team? Check out the Wiki!
+https://github.com/wdavies973/Roblu/wiki
