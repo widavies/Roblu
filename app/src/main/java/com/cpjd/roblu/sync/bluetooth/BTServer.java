@@ -4,18 +4,12 @@ import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
-import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RTab;
-import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.metrics.RGallery;
-import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.notifications.Notify;
-import com.cpjd.roblu.utils.HandoffStatus;
-import com.cpjd.roblu.utils.Utils;
+import com.cpjd.roblu.sync.SyncHelper;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
@@ -23,7 +17,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 
 import java.util.ArrayList;
-import java.util.Collections;
 
 /**
  * Manages a Bluetooth connection with a client device and data transfer over it.
@@ -39,20 +32,20 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
      */
     private Bluetooth bluetooth;
 
-    /**
-     * Used for deserializing and serializing objects to and from strings
-     */
-    private ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    private SyncHelper syncHelper;
 
     private REvent event;
 
     private ProgressDialog pd;
+
+    private ObjectMapper mapper;
 
     /**
      * Creates a BTServer object for syncing to a Bluetooth device
      */
     public BTServer(ProgressDialog pd, Bluetooth bluetooth) {
         this.pd = pd;
+        this.mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         this.bluetooth = bluetooth;
         this.bluetooth.setListener(this);
     }
@@ -69,11 +62,37 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
 
         REvent[] events = io.loadEvents();
 
+        if(events == null || events.length == 0) {
+            bluetooth.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(bluetooth.getActivity(), "No events found. Please create an event to enable Bluetooth syncing.", Toast.LENGTH_LONG).show();
+                }
+            });
+            pd.dismiss();
+            return;
+        }
+
         for(REvent event : events) {
             if(event.isBluetoothEnabled()) {
                 this.event = event;
             }
         }
+
+        if(this.event == null) {
+            bluetooth.getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(bluetooth.getActivity(), "No active Bluetooth event found. Please enable Bluetooth in event settings to enable Bluetooth syncing.", Toast.LENGTH_LONG).show();
+                }
+            });
+            pd.dismiss();
+            return;
+        }
+
+
+        this.syncHelper = new SyncHelper(bluetooth.getActivity(), this.event, SyncHelper.MODES.BLUETOOTH);
+
         if(bluetooth.isEnabled()) {
             bluetooth.startServer();
         } else bluetooth.enable();
@@ -99,110 +118,13 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
             case "SCOUTING_DATA":
                 // Process scouting data
                 try {
-                    RForm form = io.loadForm(event.getID());
-
                     JSONParser parser = new JSONParser();
                     JSONArray array = (JSONArray) parser.parse(message);
-                    for(int i = 0; i < array.size(); i++) {
-                        // Deserialize the checkout
-                        RCheckout checkout = mapper.readValue(array.get(i).toString(), RCheckout.class);
+                    String[] received = new String[array.size()];
+                    for(int i = 0; i < array.size(); i++) received[i] = array.get(i).toString();
+                    syncHelper.unpackCheckouts(syncHelper.convertStringSerialToCloudCheckouts(received), null);
 
-                        // Make sure to verify the checkout's team
-                        checkout.getTeam().verify(form);
 
-                    /*
-                    * BEGIN MERGING
-                    * -Let's check for possible conflicts
-                    */
-                        RTeam team = io.loadTeam(event.getID(), checkout.getTeam().getID());
-
-                        // The team doesn't exist locally, so create it anew
-                        if(team == null) {
-                            RTeam newTeam = new RTeam(checkout.getTeam().getName(), checkout.getTeam().getNumber(), checkout.getTeam().getID());
-                            newTeam.verify(form);
-
-                            if(checkout.getTeam().getTabs().size() > 1) { // this means the downloaded team was a PIT tab, so override the new team's tabs
-                                newTeam.setTabs(checkout.getTeam().getTabs());
-                            } else { // otherwise just add them
-                                newTeam.addTab(checkout.getTeam().getTabs().get(0));
-                            }
-                        }
-                        // Data already exists, so do a 'smart' merge
-                        else {
-                            team.verify(form);
-
-                            for(RTab downloadedTab : checkout.getTeam().getTabs()) {
-                                boolean matchLocated = false;
-                                for(RTab localTab : team.getTabs()) {
-                                    localTab.setWon(downloadedTab.isWon());
-
-                                    // Found the match, start merging
-                                    if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
-                                /*
-                                 * Copy over the edit tabs
-                                 */
-                                        if(downloadedTab.getEdits() != null) localTab.setEdits(downloadedTab.getEdits());
-
-                                        for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
-                                            for(RMetric localMetric : localTab.getMetrics()) {
-                                            // Found the metric, determine if a merge needs to occur
-                                                if(downloadedMetric.getID() == localMetric.getID()) {
-                                            /*
-                                             * We have to deal with one special case scenario - the gallery.
-                                             * The gallery should never be overrided, just added to
-                                             */
-                                                    if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery) {
-                                                        if(((RGallery) localMetric).getPictureIDs() == null) ((RGallery) localMetric).setPictureIDs(new ArrayList<Integer>());
-                                                        if(((RGallery) downloadedMetric).getImages() != null) {
-                                                            // Add images to the current gallery
-                                                            for(int j = 0; j < ((RGallery) downloadedMetric).getImages().size(); j++) {
-                                                                ((RGallery) localMetric).getPictureIDs().add(io.savePicture(event.getID(), ((RGallery) downloadedMetric).getImages().get(j)));
-                                                            }
-                                                        }
-                                                        // Don't forget to clear the pictures from memory after they've been merged
-                                                        ((RGallery) downloadedMetric).setImages(null);
-                                                    }
-                                                    // If the local metric is already edited, keep whichever data is newest
-                                                    else if(localMetric.isModified()) {
-                                                        if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
-                                                            int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                            localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                        }
-                                                    }
-                                                    // Otherwise, just do a straight override
-                                                    else {
-                                                        int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                        localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                    }
-                                                    break;
-                                                }
-                                            }
-                                        }
-                                        matchLocated = true;
-                                        break;
-                                    }
-                                }
-                                if(!matchLocated) {
-                                    // Add as a new match if a merge wasn't performed
-                                    team.addTab(checkout.getTeam().getTabs().get(0));
-                                    Collections.sort(team.getTabs());
-                                }
-                            }
-
-                        }
-
-                        if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
-                        io.saveTeam(event.getID(), team);
-
-                        Log.d("RBS", "Bluetooth: Merged team: " + checkout.getTeam().getName());
-
-                        Notify.notifyMerged(bluetooth.getActivity(), event.getID(), checkout);
-
-                        // Notify the TeamViewer in case Roblu Master is viewing the data that was just modified
-                        Utils.requestTeamViewerRefresh(bluetooth.getActivity(), team.getName());
-
-                        Utils.requestUIRefresh(bluetooth.getActivity());
-                    }
                 } catch(Exception e) {
                     Log.d("RBS", "Failed to process checkouts received over Bluetooth.");
                 }
@@ -225,79 +147,10 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 // Get the timestamp
                 long time = Long.parseLong(message.split(":")[1]);
 
-                // Package all the checkouts locally
-                RTeam[] teams = io.loadTeams(event.getID());
-                RForm form = io.loadForm(event.getID());
-            /*
-             * Start packaging
-             * Important note: We have to clone each team so that they don't have to be re-loaded
-             */
-
-            /*
-             * Verify everything
-             */
-                for(RTeam team : teams) {
-                    team.verify(form);
-                    io.saveTeam(event.getID(), team);
-                    // Remove all these, since the scouter won't use them
-                    team.setImage(null);
-                    team.setTbaInfo(null);
-                    team.setWebsite(null);
-                }
-                ArrayList<RCheckout> checkouts = new ArrayList<>();
-                int id = 0;
-                // Package PIT & Predictions checkouts first
-                for(RTeam team : teams) {
-                    RTeam temp = team.clone();
-                    temp.removeAllTabsButPIT();
-                    RCheckout newCheckout = new RCheckout(temp);
-                    newCheckout.setID(id);
-                    newCheckout.setStatus(HandoffStatus.AVAILABLE);
-
-                    if(newCheckout.getTeam().getLastEdit() >= time) checkouts.add(newCheckout);
-                    id++;
-                }
-                // Package matches checkouts
-
-            /*
-             * Next, add an assignment for every match, for every team
-             */
-                for(RTeam team : teams) {
-                    if(team.getTabs() == null || team.getTabs().size() == 0) continue;
-                    for(int i = 2; i < team.getTabs().size(); i++) {
-                        RTeam temp = team.clone();
-                        temp.setPage(0);
-                        temp.removeAllTabsBut(i);
-                        RCheckout check = new RCheckout(temp);
-                        check.setID(id);
-                        check.setStatus(HandoffStatus.AVAILABLE);
-                        if(check.getTeam().getLastEdit() >= time) checkouts.add(check);
-                        id++;
-                    }
-                }
-
-                /*
-                 * Load images from local disk into each checkout, this will spike memory temporarily while uploading
-                 */
-                for(RCheckout checkout : checkouts) {
-                    for(RTab tab : checkout.getTeam().getTabs()) {
-                        for(RMetric metric : tab.getMetrics()) {
-                            if(metric instanceof RGallery) {
-                                ((RGallery) metric).setImages(new ArrayList<byte[]>());
-                                if(((RGallery) metric).getPictureIDs() != null) {
-                                    for(int ID : ((RGallery) metric).getPictureIDs()) {
-                                        ((RGallery) metric).addImage(io.loadPicture(event.getID(), ID));
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                ArrayList<RCheckout> checkouts = syncHelper.generateCheckoutsFromEvent(io.loadTeams(event.getID()), time);
 
                 try {
-                    Log.d("RBS", "Generated "+checkouts.size()+" checkouts. Here's what is should look like: "+mapper.writeValueAsString(checkouts));
-
-                    bluetooth.send("CHECKOUTS", mapper.writeValueAsString(checkouts));
+                    bluetooth.send("CHECKOUTS", mapper.writeValueAsString(syncHelper.packCheckouts(checkouts)));
                 } catch(Exception e) {
                     Log.d("RBS", "Failed to map checkouts to Bluetooth output stream.");
                 }
@@ -310,7 +163,7 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 break;
             case "DONE":
                 bluetooth.send("DONE", "noParams");
-
+                pd.dismiss();
                 bluetooth.disconnect();
                 if(bluetooth.isEnabled()) {
                     bluetooth.startServer();

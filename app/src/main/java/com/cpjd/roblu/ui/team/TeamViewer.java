@@ -489,7 +489,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                 return;
             }
             // Force close UI if the team we are viewing was just updated.
-            if(intent.getStringExtra("teamName") != null && intent.getStringExtra("teamName").equalsIgnoreCase(TeamViewer.team.getName())) launchParent();
+            if(intent.getIntExtra("teamID", 0) == team.getID()) launchParent();
         }
     };
 

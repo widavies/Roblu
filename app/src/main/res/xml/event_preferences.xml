@@ -21,6 +21,14 @@
             android:title="Edit form"
             android:key="edit_form"
             android:summary="Make changes to this event's form"/>
+
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+            android:defaultValue="true"
+            android:key="tba_sync"
+            android:title="Sync event with TBA"
+            android:summary="Adds new matches or teams from TheBlueAlliance.com if the local device doesn't automatically contain." />
+    </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
+    <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Syncing">
         <com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference
             android:defaultValue="true"
             android:title="Sync event with Roblu Cloud"
@@ -32,10 +40,9 @@
             android:key="bt_sync"
             android:summary="Sets this event as the target Bluetooth event, all Bluetooth syncs will be directed into this event." />
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
-            android:defaultValue="true"
-            android:key="tba_sync"
-            android:title="Sync event with TBA"
-            android:summary="Adds new matches or teams from TheBlueAlliance.com if the local device doesn't automatically contain." />
+            android:title="Import QR"
+            android:key="qr"
+            android:summary="Import a checkout from a QR code."/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Export">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
@@ -51,13 +58,6 @@
             android:key="duplicate"
             android:summary="Create a copy of this event"/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
-    <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Import">
-        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
-            android:title="Import QR"
-            android:key="qr"
-            android:summary="Import a checkout with a QR code."/>
-    </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
-
     <com.cpjd.roblu.ui.settings.customPreferences.RUIRedCategory android:title="DANGER ZONE">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Delete teams"

@@ -1,6 +1,5 @@
 package com.cpjd.roblu.sync.cloud;
 
-import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.util.Log;
 
@@ -11,7 +10,7 @@ import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RCloudSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -39,7 +38,7 @@ import lombok.Setter;
  * @since 4.0.0
  * @author Will Davies
  */
-public class EventDepacker extends AsyncTask<Void, Void, Void> {
+public class EventDepacker extends Thread {
 
     private IO io;
 
@@ -59,7 +58,7 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(Void... params) {
+    public void run() {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -67,9 +66,9 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
 
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         RSettings settings = io.loadSettings();
-        RCloudSettings cloudSettings = io.loadCloudSettings();
-        cloudSettings.setLastCheckoutSync(0);
-        cloudSettings.setLastTeamSync(0);
+        RSyncSettings cloudSettings = io.loadCloudSettings();
+        cloudSettings.setTeamSyncID(0);
+        cloudSettings.getCheckoutSyncIDs().clear();
         cloudSettings.setPurgeRequested(false);
         cloudSettings.setPublicTeamNumber(teamNumber);
         io.saveCloudSettings(cloudSettings);
@@ -88,59 +87,57 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
 
         if(teamNumber == -1 && (settings.getCode() == null || settings.getCode().equals(""))) {
             if(listener != null) listener.errorOccurred("No team code found in settings. Unable to import event.");
-            return null;
+            return;
         }
 
         // Ping
         if(!r.ping()) {
             if(listener != null) listener.errorOccurred("It appears as though the server is offline. Try again later.");
-            return null;
+            return;
         }
 
         if(!ctr.isActive()) {
             if(listener != null) listener.errorOccurred("No event found on Roblu Cloud.");
-            return null;
+            return;
         }
 
         /*
          * Download everything
+         *
          */
         CloudTeam team = ctr.getTeam(-1);
-        CloudCheckout[] pulledCheckouts = ccr.pullCheckouts(0);
-
-        // Get a new event ID
-        REvent event = new REvent(io.getNewEventID(), team.getActiveEventName());
-        event.setKey(team.getTbaKey());
-        event.setID(io.getNewEventID());
-        event.setCloudEnabled(true);
-        io.saveEvent(event);
-
-        /*
-         * Un-package team information
-         */
+        REvent event;
         try {
+            // Create a new event
+            event = new REvent(io.getNewEventID(), team.getActiveEventName());
+            event.setKey(team.getTbaKey());
+            event.setID(io.getNewEventID());
+            event.setCloudEnabled(true);
+            io.saveEvent(event);
+
             settings.setTeamNumber((int)team.getNumber());
+            settings.setRui(mapper.readValue(team.getUi(), RUI.class));
+            io.saveSettings(settings);
+
             RForm form = mapper.readValue(team.getForm(), RForm.class);
             io.saveForm(event.getID(), form);
-            settings.setRui(mapper.readValue(team.getUi(), RUI.class));
-        } catch(IOException e) {
+
+        } catch(Exception e) {
             Log.d("RBS", "Failed to download event");
             listener.errorOccurred("Failed to import Roblu Cloud event.");
-            return null;
-        } finally {
-            io.saveSettings(settings);
+            return;
         }
-
         /*
          * Un-package checkouts into a teams array
          */
         ArrayList<RCheckout> checkouts = new ArrayList<>();
         try {
+            CloudCheckout[] pulledCheckouts = ccr.pullCheckouts(null, true);
             for(CloudCheckout s : pulledCheckouts) checkouts.add(mapper.readValue(s.getContent(), RCheckout.class));
         } catch(IOException e) {
             Log.d("RBS", "Failed to de-package checkouts.");
             listener.errorOccurred("Failed to import Roblu Cloud event.");
-            return null;
+            return;
         }
 
         /*
@@ -206,9 +203,16 @@ public class EventDepacker extends AsyncTask<Void, Void, Void> {
             io.saveEvent(events[i]);
         }
 
+        /*
+         * Add default sync ids
+         */
+        for(RCheckout checkout : checkouts) {
+            cloudSettings.getCheckoutSyncIDs().put(checkout.getID(), 0L);
+        }
+
+
         if(listener != null) {
             listener.success(event);
         }
-        return null;
     }
 }

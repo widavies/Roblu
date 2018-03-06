@@ -364,10 +364,10 @@ public class Utils {
         context.sendBroadcast(broadcast);
     }
 
-    public static void requestTeamViewerRefresh(Context context, String teamName) {
+    public static void requestTeamViewerRefresh(Context context, int teamID) {
         Intent broadcast = new Intent();
         broadcast.putExtra("teamViewerOnly", true);
-        broadcast.putExtra("teamName", teamName);
+        broadcast.putExtra("teamID", teamID);
         broadcast.setAction(Constants.SERVICE_ID);
         context.sendBroadcast(broadcast);
     }

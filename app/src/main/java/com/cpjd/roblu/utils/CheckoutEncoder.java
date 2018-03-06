@@ -182,7 +182,7 @@ public class CheckoutEncoder {
                             metric = new RCheckbox();
                             LinkedHashMap<String, Boolean> values = new LinkedHashMap<>();
                             for(int l = 4; l < mTokens.length; l++) {
-                                values.put(mTokens[l].split(",")[0].substring(1), Boolean.parseBoolean(mTokens[l].split(",")[2].replace(")", "")));
+                                values.put(mTokens[l].split(",")[0].substring(1), Boolean.parseBoolean(mTokens[l].split(",")[1].replace(")", "")));
                             }
                             ((RCheckbox) metric).setValues(values);
                             break;

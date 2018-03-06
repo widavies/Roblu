@@ -207,15 +207,19 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
         TeamViewer.team.setTbaInfo(tbaInfo);
         TeamViewer.team.setWebsite(tbaTeam.website);
 
-        new IO(getView().getContext()).saveTeam(getArguments().getInt("eventID"), TeamViewer.team);
+        try {
+            new IO(getView().getContext()).saveTeam(getArguments().getInt("eventID"), TeamViewer.team);
 
-        // TBA info card
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                layout.addView(rMetricToUI.getInfoField("TBA.com information", TeamViewer.team.getTbaInfo(), TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);
-            }
-        });
+            // TBA info card
+            getActivity().runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    layout.addView(rMetricToUI.getInfoField("TBA.com information", TeamViewer.team.getTbaInfo(), TeamViewer.team.getWebsite(), TeamViewer.team.getNumber()), 0);
+                }
+            });
+        } catch(Exception e) {
+            Log.d("RBS", "Failed to download TBA information.");
+        }
     }
 
     @Override

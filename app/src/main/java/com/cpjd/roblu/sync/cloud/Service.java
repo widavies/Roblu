@@ -13,27 +13,20 @@ import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RCloudSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
-import com.cpjd.roblu.models.RTab;
-import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
-import com.cpjd.roblu.models.metrics.RGallery;
-import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.notifications.Notify;
+import com.cpjd.roblu.sync.SyncHelper;
 import com.cpjd.roblu.utils.Utils;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -86,7 +79,7 @@ public class Service extends android.app.Service {
          */
         IO io = new IO(getApplicationContext());
         RSettings settings = io.loadSettings();
-        RCloudSettings cloudSettings = io.loadCloudSettings();
+        RSyncSettings cloudSettings = io.loadCloudSettings();
         Request r = new Request(settings.getServerIP());
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         CloudTeamRequest teamRequest = new CloudTeamRequest(r, settings.getCode());
@@ -119,13 +112,14 @@ public class Service extends android.app.Service {
             }
         }
 
+
         /*
          * Check if a purge is requested
          */
         if(cloudSettings.isPurgeRequested() && checkoutRequest.purge()) {
             cloudSettings.setPurgeRequested(false);
-            cloudSettings.setLastCheckoutSync(0);
-            cloudSettings.setLastTeamSync(0);
+            cloudSettings.setTeamSyncID(0);
+            cloudSettings.getCheckoutSyncIDs().clear();
             Log.d("RBS-Service", "Event successfully purged from Roblu Cloud.");
             io.saveCloudSettings(cloudSettings);
             Notify.notifyNoAction(getApplicationContext(), "Event purged", "Active event successfully removed from Roblu Cloud.");
@@ -133,6 +127,10 @@ public class Service extends android.app.Service {
         }
 
         if(activeEvent == null) return;
+
+        // Create the sync helper
+        SyncHelper syncHelper = new SyncHelper(getApplicationContext(), activeEvent, SyncHelper.MODES.NETWORK);
+
         RForm form = io.loadForm(activeEvent.getID());
 
         /*
@@ -140,33 +138,6 @@ public class Service extends android.app.Service {
          * Begin all the checks!
          *
          */
-
-        /*
-         * Check to see if the UI was modified and needs to be uploaded
-         */
-        if(settings.getRui().isUploadRequired()) {
-            try {
-                teamRequest.pushUI(mapper.writeValueAsString(settings.getRui()));
-                settings.getRui().setUploadRequired(false);
-                io.saveSettings(settings);
-                Log.d("RBS-Service", "Successfully uploaded RUI to the server.");
-            } catch(Exception e) {
-                Log.d("RBS-Service", "Failed to complete an upload required request for RUI.");
-            }
-        }
-        // Download the RUI model from the server
-        else {
-            try {
-                CloudTeam t = teamRequest.getTeam(cloudSettings.getLastTeamSync());
-                settings.setRui(mapper.readValue(t.getUi(), RUI.class));
-                cloudSettings.setOptedIn(t.isOptedIn());
-                cloudSettings.setLastTeamSync(System.currentTimeMillis());
-                io.saveCloudSettings(cloudSettings);
-                Log.d("RBS-Service", "Successfully downloaded RUI");
-            } catch(Exception e) {
-                Log.d("RBS-Service", "Failed to download an RUI from the server.");
-            }
-        }
 
         /*
          * Check to see if the form was modified and needs to be uploaded
@@ -182,20 +153,60 @@ public class Service extends android.app.Service {
                 Log.d("RBS-Service", "Failed to complete an upload required request for RForm.");
             }
         }
-        // Download the RForm from the server
-        else {
+
+        /*
+         * Check to see if the UI model should be uploaded
+         */
+        if(settings.getRui().isUploadRequired()) {
             try {
-                CloudTeam t = teamRequest.getTeam(cloudSettings.getLastTeamSync());
+                teamRequest.pushUI(mapper.writeValueAsString(settings.getRui()));
+                settings.getRui().setUploadRequired(false);
+                io.saveSettings(settings);
+                Log.d("RBS-Service", "Successfully uploaded RUI to the server.");
+            } catch(Exception e) {
+                Log.d("RBS-Service", "Failed to complete an upload required request for RUI.");
+            }
+        }
+
+        /*
+         * Check for cloud team updates
+         */
+        try {
+            CloudTeam t = teamRequest.getTeam(cloudSettings.getTeamSyncID());
+
+            if(t != null) {
+                /*
+                 * If a different master app overwrites the cloud app with a different event, run this check to prevent conflicts
+                 * from happening.
+                 */
+                if(t.getActiveEventName() != null && !t.getActiveEventName().equals("") && activeEvent.getName() != null && !t.getActiveEventName().equals(activeEvent.getName())) {
+                    activeEvent.setCloudEnabled(false);
+                    cloudSettings.getCheckoutSyncIDs().clear();
+                    io.saveCloudSettings(cloudSettings);
+                    io.saveEvent(activeEvent);
+                    return;
+                }
+
+                // Merge RForm
                 form = mapper.readValue(t.getForm(), RForm.class);
                 form.setUploadRequired(false);
                 io.saveForm(activeEvent.getID(), form);
-                cloudSettings.setOptedIn(t.isOptedIn());
-                cloudSettings.setLastTeamSync(System.currentTimeMillis());
+
+                // Merge RUI
+                RUI rui = mapper.readValue(t.getUi(), RUI.class);
+                rui.setUploadRequired(false);
+                settings.setRui(rui);
+                settings = io.loadSettings(); // make sure to refresh this
+                io.saveSettings(settings);
+
+                // Update the sync ID
+                cloudSettings.setTeamSyncID((int)t.getSyncID());
                 io.saveCloudSettings(cloudSettings);
-                Log.d("RBS-Service", "Successfully downloaded a form");
-            } catch(Exception e) {
-                Log.d("RBS-Service", "Failed to download an RForm from the server: "+e.getMessage());
+
+                Log.d("RBS-Service", "Successfully pulled team data from the server.");
             }
+        } catch(Exception e) {
+            Log.d("RBS-Service", "Failed to pull team data from the server: "+e.getMessage());
         }
 
         /*
@@ -206,136 +217,14 @@ public class Service extends android.app.Service {
          *
          */
         try {
-            Log.d("RBS-Service", "Checking for completed checkouts...");
-            long maxTimestamp = 0;
-            CloudCheckout[] checkouts = checkoutRequest.pullCompletedCheckouts(cloudSettings.getLastCheckoutSync());
+            CloudCheckout[] checkouts = checkoutRequest.pullCompletedCheckouts(syncHelper.packSyncIDs(cloudSettings.getCheckoutSyncIDs()));
 
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss.SSS", Locale.getDefault());
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // server runs on UTC
+            syncHelper.unpackCheckouts(checkouts, cloudSettings);
 
-            for(CloudCheckout s : checkouts) {
-                // Handle the timestamp
-                long time;
-                try {
-                    time = sdf.parse(s.getTime().replace("T", " ").replace("Z", " ")).getTime();
-                } catch(Exception e) {
-                    time = 0;
-                }
-                if(time > maxTimestamp) {
-                    maxTimestamp = time;
-                }
-
-                // Deserialize the checkout
-                RCheckout checkout = mapper.readValue(s.getContent(), RCheckout.class);
-
-                // Make sure to verify the checkout's team
-                checkout.getTeam().verify(form);
-
-                /*
-                 * BEGIN MERGING
-                 * -Let's check for possible conflicts
-                 */
-                RTeam team = io.loadTeam(activeEvent.getID(), checkout.getTeam().getID());
-
-                // The team doesn't exist locally, so create it anew
-                if(team == null) {
-                    RTeam newTeam = new RTeam(checkout.getTeam().getName(), checkout.getTeam().getNumber(), checkout.getTeam().getID());
-                    newTeam.verify(form);
-
-                    if(checkout.getTeam().getTabs().size() > 1) { // this means the downloaded team was a PIT tab, so override the new team's tabs
-                        newTeam.setTabs(checkout.getTeam().getTabs());
-                    } else { // otherwise just add them
-                        newTeam.addTab(checkout.getTeam().getTabs().get(0));
-                    }
-                }
-                // Data already exists, so do a 'smart' merge
-                else {
-                    team.verify(form);
-
-                    for(RTab downloadedTab : checkout.getTeam().getTabs()) {
-                        boolean matchLocated = false;
-                        for(RTab localTab : team.getTabs()) {
-                            localTab.setWon(downloadedTab.isWon());
-
-                            // Found the match, start merging
-                            if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
-                                /*
-                                 * Copy over the edit tabs
-                                 */
-                                if(downloadedTab.getEdits() != null) localTab.setEdits(downloadedTab.getEdits());
-
-                                for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
-                                    for(RMetric localMetric : localTab.getMetrics()) {
-                                        // Found the metric, determine if a merge needs to occur
-                                        if(downloadedMetric.getID() == localMetric.getID()) {
-                                            /*
-                                             * We have to deal with one special case scenario - the gallery.
-                                             * The gallery should never be overrided, just added to
-                                             */
-                                            if(downloadedMetric instanceof RGallery && localMetric instanceof RGallery) {
-                                                if(((RGallery) localMetric).getPictureIDs() == null) ((RGallery) localMetric).setPictureIDs(new ArrayList<Integer>());
-                                                if(((RGallery) downloadedMetric).getImages() != null) {
-                                                    // Add images to the current gallery
-                                                    for(int i = 0; i < ((RGallery) downloadedMetric).getImages().size(); i++) {
-                                                        ((RGallery) localMetric).getPictureIDs().add(io.savePicture(activeEvent.getID(), ((RGallery) downloadedMetric).getImages().get(i)));
-                                                    }
-                                                }
-                                                // Don't forget to clear the pictures from memory after they've been merged
-                                                ((RGallery) downloadedMetric).setImages(null);
-                                            }
-                                            // If the local metric is already edited, keep whichever data is newest
-                                            else if(localMetric.isModified()) {
-                                                if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
-                                                    int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                    localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                }
-                                            }
-                                            // Otherwise, just do a straight override
-                                            else {
-                                                int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                            }
-                                            break;
-                                        }
-                                    }
-                                }
-                                matchLocated = true;
-                                break;
-                            }
-                        }
-                        if(!matchLocated) {
-                            // Add as a new match if a merge wasn't performed
-                            team.addTab(checkout.getTeam().getTabs().get(0));
-                            Collections.sort(team.getTabs());
-                        }
-                    }
-
-                }
-
-                if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
-                io.saveTeam(activeEvent.getID(), team);
-
-                Log.d("RBS-Service", "Merged team: "+checkout.getTeam().getName());
-
-                // Prevent spamming the user with notifications
-                if(checkouts.length < 6) Notify.notifyMerged(getApplicationContext(), activeEvent.getID(), checkout);
-
-                // Notify the TeamViewer in case Roblu Master is viewing the data that was just modified
-                Utils.requestTeamViewerRefresh(getApplicationContext(), team.getName());
-            }
-
-            if(checkouts.length >= 6) {
-                Notify.notifyNoAction(getApplicationContext(), "Merged scouting data", "Merged "+checkouts.length+" checkouts.");
-            }
-
-            if(checkouts != null && checkouts.length > 0) {
-                cloudSettings.setLastCheckoutSync(maxTimestamp);
-                io.saveCloudSettings(cloudSettings);
-                Utils.requestUIRefresh(getApplicationContext());
-            }
+            io.saveCloudSettings(cloudSettings);
 
         } catch(Exception e) {
-            Log.d("RBS-Service", "An error occurred while checking for completed checkouts. "+e.getMessage());
+            Log.d("RBS-Service", "An error occurred while fetching completed checkouts. "+e.getMessage());
         }
 
         /*
@@ -343,31 +232,17 @@ public class Service extends android.app.Service {
          */
         try {
             Log.d("RBS-Service", "Checking for any checkouts to upload...");
-            RCheckout[] checkouts = io.loadPendingCheckouts();
-            ArrayList<RCheckout> toUpload = new ArrayList<>();
-            toUpload.addAll(Arrays.asList(checkouts));
-            if(toUpload.size() > 0) {
-                boolean wasSuccess = checkoutRequest.pushCheckouts(mapper.writeValueAsString(toUpload));
-                if(wasSuccess) {
-                    for(RCheckout checkout : toUpload) {
-                        /*
-                         * Pack images
-                         */
-                        for(RTab tab : checkout.getTeam().getTabs()) {
-                            for(int i = 0; tab.getMetrics() != null && i < tab.getMetrics().size(); i++) {
-                                if(!(tab.getMetrics().get(i) instanceof RGallery)) continue;
 
-                                ((RGallery)tab.getMetrics().get(i)).setImages(new ArrayList<byte[]>());
-                                for(int j = 0; ((RGallery)tab.getMetrics().get(i)).getPictureIDs() != null && j < ((RGallery)tab.getMetrics().get(i)).getPictureIDs().size(); j++) {
-                                    ((RGallery)tab.getMetrics().get(i)).getImages().add(io.loadPicture(activeEvent.getID(), ((RGallery)tab.getMetrics().get(i)).getPictureIDs().get(j)));
-                                }
-                            }
-                        }
-                        io.deletePendingCheckout(checkout.getID());
-                    }
+            ArrayList<RCheckout> checkouts = new ArrayList<>(Arrays.asList(io.loadPendingCheckouts()));
+
+            boolean wasSuccess = checkoutRequest.pushCheckouts(syncHelper.packCheckouts(checkouts));
+
+            if(wasSuccess) {
+                for(RCheckout checkout : checkouts) {
+                    io.deletePendingCheckout(checkout.getID());
                 }
             }
-            Log.d("RBS-Service", "Uploaded "+toUpload.size()+" checkouts.");
+            Log.d("RBS-Service", "Uploaded "+checkouts.size()+" checkouts.");
         } catch(Exception e) {
             Log.d("RBS-Service", "An error occurred while attempting to push /pending/ checkouts.");
         }

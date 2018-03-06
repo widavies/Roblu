@@ -9,7 +9,7 @@ import com.cpjd.http.Request;
 import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RCloudSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -17,8 +17,8 @@ import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.sync.SyncHelper;
 import com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference;
-import com.cpjd.roblu.utils.HandoffStatus;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -79,7 +79,7 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
 
         IO io = ioWeakReference.get();
         RSettings settings = io.loadSettings();
-        RCloudSettings cloudSettings = io.loadCloudSettings();
+        RSyncSettings cloudSettings = io.loadCloudSettings();
         cloudSettings.setPurgeRequested(false);
         cloudSettings.setPublicTeamNumber(-1);
         io.saveCloudSettings(cloudSettings);
@@ -103,75 +103,9 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             return false;
         }
 
-        /*
-         * Verify everything
-         */
-        for(RTeam team : teams) {
-            team.verify(form);
-            io.saveTeam(eventID, team);
-            // Remove all these, since the scouter won't use them
-            team.setImage(null);
-            team.setTbaInfo(null);
-            team.setWebsite(null);
-        }
-
-        /*
-         * Start packaging
-         * Important note: We have to clone each team so that they don't have to be re-loaded
-         */
-        ArrayList<RCheckout> checkouts = new ArrayList<>();
-        int id = 0;
-        // Package PIT & Predictions checkouts first
-        for(RTeam team : teams) {
-            RTeam temp = team.clone();
-            temp.removeAllTabsButPIT();
-            RCheckout newCheckout = new RCheckout(temp);
-            newCheckout.setID(id);
-            newCheckout.setStatus(HandoffStatus.AVAILABLE);
-            checkouts.add(newCheckout);
-            id++;
-        }
-        // Package matches checkouts
-
-        /*
-         * Next, add an assignment for every match, for every team
-         */
-        for(RTeam team : teams) {
-            if(team.getTabs() == null || team.getTabs().size() == 0) continue;
-            for(int i = 2; i < team.getTabs().size(); i++) {
-                RTeam temp = team.clone();
-                temp.setPage(0);
-                temp.removeAllTabsBut(i);
-                RCheckout check = new RCheckout(temp);
-                check.setID(id);
-                check.setStatus(HandoffStatus.AVAILABLE);
-                checkouts.add(check);
-                id++;
-            }
-        }
-
-        // save the checkouts locally
-        for(RCheckout checkout : checkouts) {
-            io.saveCheckout(checkout);
-        }
-
-        /*
-         * Load images from local disk into each checkout, this will spike memory temporarily while uploading
-         */
-        for(RCheckout checkout : checkouts) {
-            for(RTab tab : checkout.getTeam().getTabs()) {
-                for(RMetric metric : tab.getMetrics()) {
-                    if(metric instanceof RGallery) {
-                        ((RGallery) metric).setImages(new ArrayList<byte[]>());
-                        if(((RGallery) metric).getPictureIDs() != null) {
-                            for(int ID : ((RGallery) metric).getPictureIDs()) {
-                                ((RGallery) metric).addImage(io.loadPicture(eventID, ID));
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        // Generate the checkouts
+        SyncHelper syncHelper = new SyncHelper(io, event, SyncHelper.MODES.NETWORK);
+        ArrayList<RCheckout> checkouts = syncHelper.generateCheckoutsFromEvent(teams, -1);
 
         /*
          * Convert into JSON and upload
@@ -179,7 +113,7 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         ObjectMapper mapper = new ObjectMapper();
         try {
             // serialization all the checkouts and pack them in an json array, this will be processed by the server
-            String serializedCheckouts = mapper.writeValueAsString(checkouts);
+            String serializedCheckouts = syncHelper.packCheckouts(checkouts);
             String serializedForm = mapper.writeValueAsString(form);
             String serializedUI = mapper.writeValueAsString(settings.getRui());
             String eventName = event.getName();
@@ -197,7 +131,14 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
                     events[i].setCloudEnabled(events[i].getID() == eventID);
                     io.saveEvent(events[i]);
                 }
-                cloudSettings.setLastCheckoutSync(System.currentTimeMillis());
+                cloudSettings.getCheckoutSyncIDs().clear();
+                /*
+                 * Add default sync ids
+                 */
+                for(RCheckout checkout : checkouts) {
+                    cloudSettings.getCheckoutSyncIDs().put(checkout.getID(), 0L);
+                }
+
                 io.saveCloudSettings(cloudSettings);
                 io.saveSettings(settings);
             } else listener.statusUpdate("An error occurred. Event was not uploaded.");

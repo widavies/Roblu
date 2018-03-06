@@ -219,7 +219,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
         stopService(serviceIntent);
         EventDepacker dp = new EventDepacker(new IO(getApplicationContext()), teamNumber);
         dp.setListener(this);
-        dp.execute();
+        dp.start();
     }
 
     private void importPublicRobluCloudEvent() {

@@ -4,22 +4,15 @@ import android.graphics.PointF;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
-import com.cpjd.roblu.models.RForm;
-import com.cpjd.roblu.models.RTab;
-import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.notifications.Notify;
+import com.cpjd.roblu.sync.SyncHelper;
 import com.cpjd.roblu.utils.CheckoutEncoder;
-import com.cpjd.roblu.utils.HandoffStatus;
 import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
-
-import java.util.Collections;
 
 /**
  * Scans QR codes from Roblu scouter and imports checkout data into the app.
@@ -88,86 +81,11 @@ public class QrReader extends AppCompatActivity implements QRCodeReaderView.OnQR
                      */
                     RCheckout checkout = new CheckoutEncoder().decodeCheckout(text);
 
-                    RForm form = new IO(getApplicationContext()).loadForm(event.getID());
+                    new SyncHelper(getApplicationContext(), event, SyncHelper.MODES.QR).mergeCheckout(checkout);
 
-                    checkout.getTeam().verify(form);
+                    new IO(getApplicationContext()).savePendingObject(checkout);
 
-                    IO io = new IO(getApplicationContext());
-
-                    /*
-                     * BEGIN MERGING
-                     * -Let's check for possible conflicts
-                     */
-                    RTeam team = io.loadTeam(event.getID(), checkout.getTeam().getID());
-
-                    Log.d("RBS", "Checkout ID: "+checkout.getTeam().getID());
-
-                    // The team doesn't exist locally, so create it anew
-                    if(team == null) {
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "QR merge did not find a local team to merge with. QR import ONLY supports merging, not team creation.", Toast.LENGTH_LONG).show();
-                            }
-                        });
-
-                    }
-                    // Data already exists, so do a 'smart' merge
-                    if(team != null) {
-                        team.verify(form);
-
-                        for(RTab downloadedTab : checkout.getTeam().getTabs()) {
-                            boolean matchLocated = false;
-                            for(RTab localTab : team.getTabs()) {
-                                localTab.setWon(downloadedTab.isWon());
-
-                                // Found the match, start merging
-                                if(localTab.getTitle().equalsIgnoreCase(downloadedTab.getTitle())) {
-                                    /*
-                                     * Copy over the edit tabs
-                                     */
-                                    if(downloadedTab.getEdits() != null) localTab.setEdits(downloadedTab.getEdits());
-
-                                    for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
-                                        for(RMetric localMetric : localTab.getMetrics()) {
-                                            // Found the metric, determine if a merge needs to occur
-                                            if(downloadedMetric.getID() == localMetric.getID()) {
-                                                // If the local metric is already edited, keep whichever data is newest
-                                                if(localMetric.isModified()) {
-                                                    if(checkout.getTeam().getLastEdit() >= team.getLastEdit()) {
-                                                        int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                        localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                    }
-                                                }
-                                                // Otherwise, just do a straight override
-                                                else {
-                                                    int replaceIndex = localTab.getMetrics().indexOf(localMetric);
-                                                    localTab.getMetrics().set(replaceIndex, downloadedMetric);
-                                                }
-                                                break;
-                                            }
-                                        }
-                                    }
-                                    matchLocated = true;
-                                    break;
-                                }
-                            }
-                            if(!matchLocated) {
-                                // Add as a new match if a merge wasn't performed
-                                team.addTab(checkout.getTeam().getTabs().get(0));
-                                Collections.sort(team.getTabs());
-                            }
-                        }
-                        if(checkout.getTeam().getLastEdit() > team.getLastEdit()) team.setLastEdit(checkout.getTeam().getLastEdit());
-                        io.saveTeam(event.getID(), team);
-
-                        checkout.setTeam(team);
-                        checkout.setTime(System.currentTimeMillis());
-                        checkout.setStatus(HandoffStatus.COMPLETED);
-
-                        // Prevent spamming the user with notifications
-                        Notify.notifyMerged(getApplicationContext(), event.getID(), checkout);
-                    }
+                    Notify.notifyMerged(getApplicationContext(), event.getID(), checkout);
 
                     finish(); // close QR scanner
 

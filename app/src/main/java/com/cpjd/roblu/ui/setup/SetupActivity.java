@@ -86,9 +86,11 @@ public class SetupActivity extends Activity implements View.OnClickListener {
                 break;
             case R.id.number_next:
                 EditText et = findViewById(R.id.number_input);
+                EditText et2 = findViewById(R.id.team_code_input);
                 try {
                     RSettings settings = new IO(getApplicationContext()).loadSettings();
                     settings.setTeamNumber(Integer.parseInt(et.getText().toString()));
+                    settings.setCode(et2.getText().toString());
                     new IO(getApplicationContext()).saveSettings(settings);
                 } catch(Exception e) {
                     try {

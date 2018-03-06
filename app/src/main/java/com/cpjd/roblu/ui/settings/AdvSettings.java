@@ -45,7 +45,7 @@ import com.cpjd.models.CloudTeam;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
-import com.cpjd.roblu.models.RCloudSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RUI;
@@ -236,7 +236,7 @@ public class AdvSettings extends AppCompatActivity {
                                 }
 
                                 // Flag purge!
-                                RCloudSettings cloudSettings = io.loadCloudSettings();
+                                RSyncSettings cloudSettings = io.loadCloudSettings();
                                 cloudSettings.setPurgeRequested(true);
                                 io.saveCloudSettings(cloudSettings);
                             }
@@ -313,7 +313,7 @@ public class AdvSettings extends AppCompatActivity {
                 boolean success = new CloudTeamRequest(r, settings.getCode()).setOptedIn((Boolean)o);
 
                 if(success) {
-                    RCloudSettings cloudSettings = new IO(getActivity()).loadCloudSettings();
+                    RSyncSettings cloudSettings = new IO(getActivity()).loadCloudSettings();
                     cloudSettings.setOptedIn((Boolean)o);
                     new IO(getActivity()).saveCloudSettings(cloudSettings);
                 } else {

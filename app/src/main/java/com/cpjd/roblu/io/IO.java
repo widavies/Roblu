@@ -8,7 +8,7 @@ import android.util.Log;
 
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RCloudSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -105,7 +105,7 @@ public class IO {
             settings = new RSettings();
             settings.setRui(new RUI());
             settings.setMaster(Utils.createEmpty());
-            new IO(context).saveCloudSettings(new RCloudSettings());
+            new IO(context).saveCloudSettings(new RSyncSettings());
             new IO(context).saveSettings(settings);
             return true;
         }
@@ -148,17 +148,17 @@ public class IO {
 
     /**
      * Load a cloud settings object from internal storage
-     * @return RCloudSettings object instance
+     * @return RSyncSettings object instance
      */
-    public RCloudSettings loadCloudSettings() {
-        return (RCloudSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
+    public RSyncSettings loadCloudSettings() {
+        return (RSyncSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
     }
 
     /**
      * Save a cloud settings reference to internal storage
-     * @param settings RCloudSettings object instance
+     * @param settings RSyncSettings object instance
      */
-    public void saveCloudSettings(RCloudSettings settings) {
+    public void saveCloudSettings(RSyncSettings settings) {
         serializeObject(settings, new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
     }
 

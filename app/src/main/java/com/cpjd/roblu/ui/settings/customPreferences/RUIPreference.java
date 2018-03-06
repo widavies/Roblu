@@ -3,6 +3,7 @@ package com.cpjd.roblu.ui.settings.customPreferences;
 import android.content.Context;
 import android.preference.Preference;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -34,12 +35,17 @@ public class RUIPreference extends Preference {
     protected void onBindView(View view) {
         super.onBindView(view);
 
-        RUI rui = new IO(getContext()).loadSettings().getRui();
+        try {
+            RUI rui = new IO(view.getContext()).loadSettings().getRui();
 
-        TextView titleView = view.findViewById(android.R.id.title);
-        titleView.setTextColor(rui.getText());
+            TextView titleView = view.findViewById(android.R.id.title);
+            titleView.setTextColor(rui.getText());
 
-        TextView subtitle = view.findViewById(android.R.id.summary);
-        subtitle.setTextColor(rui.darker(rui.getText(), 0.60f));
+            TextView subtitle = view.findViewById(android.R.id.summary);
+            subtitle.setTextColor(rui.darker(rui.getText(), 0.60f));
+        } catch(Exception e) {
+            Log.d("RBS", "Failed to bind UI to settings preference.");
+        }
+
     }
 }
