@@ -151,7 +151,12 @@ public class IO {
      * @return RSyncSettings object instance
      */
     public RSyncSettings loadCloudSettings() {
-        return (RSyncSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
+        RSyncSettings cloudSettings = (RSyncSettings) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"cloudSettings.ser"));
+        if(cloudSettings == null) {
+            cloudSettings = new RSyncSettings();
+            saveCloudSettings(cloudSettings);
+        }
+        return cloudSettings;
     }
 
     /**
