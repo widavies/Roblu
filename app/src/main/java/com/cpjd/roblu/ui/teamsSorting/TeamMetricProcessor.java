@@ -3,6 +3,7 @@ package com.cpjd.roblu.ui.teamsSorting;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCalculation;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
@@ -181,7 +182,9 @@ public class TeamMetricProcessor {
                     }
                     // RCounter type
                     else if(metric instanceof RCounter) {
+
                         double value = ((RCounter) metric).getValue();
+                        if(i == 2) min = value;
                         // Overview stats will only consider modified items
                         if(metric.isModified()) {
 
@@ -196,9 +199,33 @@ public class TeamMetricProcessor {
                         // add raw data
                         rawData.append(friendlyCounter((RCounter)metric)).append(ending(i, team.getTabs()));
                     }
+                    else if(metric instanceof RCalculation) {
+                        try {
+                            double value = Double.parseDouble(((RCalculation) metric).getValue(team.getTabs().get(i).getMetrics()));
+
+                            if(i == 2) min = value;
+                            // Overview stats will only consider modified items
+                            if(metric.isModified()) {
+
+                            /*
+                             * Progressively calculate the min, max, and average values
+                             */
+                                if(value < min) min = value;
+                                if(value > max) max = value;
+                                average += value / (double) numModified(team.getTabs(), ID);
+                                relevance = average;
+                            }
+                            // add raw data
+                            rawData.append(friendlyCounter((RCounter)metric)).append(ending(i, team.getTabs()));
+                        } catch(Exception e) {
+                            // eat it
+                        }
+
+                    }
                     // RSlider type
                     else if(metric instanceof RSlider) {
                         int value = ((RSlider) metric).getValue();
+                        if(i == 2) min = value;
                         // Overview stats will only consider modified sliders
                         if(metric.isModified()) {
                             if(value < min) min = value;
@@ -212,6 +239,7 @@ public class TeamMetricProcessor {
                     // RStopwatch type
                     else if(metric instanceof RStopwatch) {
                         double value = ((RStopwatch) metric).getTime();
+                        if(i == 2) min = value;
                         // Overview stats will only consider modified stopwatches
                         if(metric.isModified()) {
                             /*
@@ -272,7 +300,23 @@ public class TeamMetricProcessor {
                     // Field data
                     else if(metric instanceof RFieldData) {
                         // Find the sub metric
-                        if(((RFieldData) metric).getData() != null) rawData.append(((RFieldData) metric).getData().get(inMatchTitle).get(0).toString()).append(ending(i, team.getTabs()));
+                        if(((RFieldData) metric).getData() != null) rawData.append(((RFieldData) metric).getData().get(inMatchTitle).get(team.getTabs().get(i).isRedAlliance() ? 0 : 1).toString()).append(ending(i, team.getTabs()));
+                        // Overview stats will only consider modified textfields
+                        if(metric.isModified()) {
+                            /*
+                             * Progressively calculate the min, max, and average values
+                             */
+                            try {
+                                double value = Double.parseDouble(((RFieldData) metric).getData().get(inMatchTitle).get(team.getTabs().get(i).isRedAlliance() ? 0 : 1).toString());
+                                if(i == 2) min = value;
+                                if(value < min) min = value;
+                                if(value > max) max = value;
+                                average += value / (double) numModified(team.getTabs(), ID);
+                                relevance = average;
+                            } catch(Exception e) {
+                                // eat it
+                            }
+                        }
                     }
 
                     /*
@@ -286,13 +330,23 @@ public class TeamMetricProcessor {
                     StringBuilder overview = new StringBuilder();
                     if(metric instanceof RBoolean) overview.append("Boolean: ").append(metric.getTitle()).append(" is true in ").append(occurrences).append(" / ").append(team.getTabs().size() - 2).append(" matches");
                     else if(metric instanceof RCounter) overview.append("Counter: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
+                    else if(metric instanceof RCalculation) overview.append("Calculation: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RSlider) overview.append("Slider: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RStopwatch) overview.append("Stopwatch: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RTextfield) overview.append("Textfield: ").append(metric.getTitle()).append(" Average chars: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RGallery) overview.append("Gallery: ").append(metric.getTitle()).append(" Average images: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RChooser) overview.append("Chooser: ").append(metric.getTitle());
                     else if(metric instanceof RCheckbox) overview.append("Checkbox: ").append(metric.getTitle());
-                    else if(metric instanceof RFieldData) overview.append("Field data: ").append(inMatchTitle);
+                    else if(metric instanceof RFieldData) {
+                        overview.append("Field data: ").append(inMatchTitle);
+                        try {
+                            // this will fail if the value isn't a number
+                            Double.parseDouble(((RFieldData) metric).getData().get(inMatchTitle).get(0).toString());
+                            overview.append("\nAverage: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
+                        } catch(Exception e) {
+                            // eat it
+                        }
+                    }
 
                     /*
                      * Now append the raw data as processed above

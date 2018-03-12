@@ -155,7 +155,7 @@ public class ManualScheduleImporter extends Thread {
     // Expands the match code, NOTE: this doesn't remove the R or B tag
     private String expandMatchName(String name) {
         return name.replaceAll("QU", "Quarters ").replaceAll("Q", "Quals ")
-                .replaceAll("S", "Semis ").replaceAll("M", " Match ");
+                .replaceAll("S", "Semis ").replaceAll("M", " Match ").replaceAll("F", "Finals ");
     }
 
 }

@@ -82,6 +82,7 @@ public class QrReader extends AppCompatActivity implements QRCodeReaderView.OnQR
 
                     new SyncHelper(getApplicationContext(), event, SyncHelper.MODES.QR).mergeCheckout(checkout);
 
+                    // Flag for upload
                     new IO(getApplicationContext()).savePendingCheckout(checkout);
 
                     Notify.notifyMerged(getApplicationContext(), event.getID(), checkout);

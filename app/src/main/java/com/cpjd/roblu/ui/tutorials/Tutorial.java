@@ -51,12 +51,11 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
         tutorials = new ArrayList<>();
         tutorials.add(new RTutorial("Text based", "View the Roblu text based tutorial", "https://docs.google.com/document/d/1DqpgKPdtfZDUc7Zu3MqdJHL59aB-ht8H1ZwllYlzMuc/edit?usp=sharing"));
         tutorials.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc.", "9j6ysvJJyQg"));
-        tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "KoylfzTBvKM"));
+        tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "6BLlLxltppk"));
         tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "LpWvnavebNw"));
-        tutorials.add(new RTutorial("Scouting", "Learn how to scout with the RTeam model, sort, organize, search", "5ktHjyQq4XY"));
-        tutorials.add(new RTutorial("Roblu Cloud", "Learn how to use Roblu cloud to sync events between teammates, admin controls", "UqAVql6eps4"));
-        tutorials.add(new RTutorial("Bluetooth [Coming soon]", "Learn how to use setup Roblu's Bluetooth server for syncing events", ""));
-        tutorials.add(new RTutorial("MEGA-TUTORIAL [Coming soon]", "Feeling ambitious? Learn about everything in one video.", ""));
+        tutorials.add(new RTutorial("QR Codes", "Learn how to use QR code syncing", "RF4evYIlU04"));
+        tutorials.add(new RTutorial("CSV Exporting", "Learn about CSV exporting and defining your own CSV export schemes", "RF4evYIlU04"));
+        tutorials.add(new RTutorial("How to get Roblu Cloud for free", "Get Roblu Cloud for free", "dQw4w9WgXcQ"));
         tutorials.add(new RTutorial("Roblu Devlogs", "For those interested in watching the development process", ""));
 
         /*
