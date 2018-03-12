@@ -150,11 +150,11 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
             RCheckout checkout = new RCheckout(newTeam);
             /*
              * It would require a lot more code to check all devices and be sure that a new ID is
-             * valid, so generate a random one. The chances of an error occurring are so low, this is acceptable (somewhat)
+             * valid, so generate a random one. The chances of an error occurring are so low, this is acceptable (somewhat :\)
              */
             checkout.setID(new Random().nextInt(Integer.MAX_VALUE - 50_000) + 20_000);
             checkout.setStatus(HandoffStatus.AVAILABLE);
-            new IO(context).savePendingObject(checkout);
+            new IO(context).savePendingCheckout(checkout);
         }
 
         Bundle bundle = new Bundle();

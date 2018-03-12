@@ -8,10 +8,10 @@ import android.util.Log;
 
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Utils;
@@ -396,7 +396,10 @@ public class IO {
      * @param form the form to save
      */
     public void saveForm(int eventID, RForm form) {
-        if(eventID == -1) serializeObject(form, new File(context.getFilesDir(), PREFIX+File.separator+"master_form.ser"));
+        if(eventID == -1) {
+            serializeObject(form, new File(context.getFilesDir(), PREFIX+File.separator+"master_form.ser"));
+            return;
+        }
 
         serializeObject(form, new File(context.getFilesDir(), PREFIX+File.separator+"events"+File.separator+eventID+File.separator+"form.ser"));
     }
@@ -405,15 +408,14 @@ public class IO {
     /*
      * Backup methods
      */
-
     /**
      * Saves a backup file to the cache directory. It should be saved to an external location by the user
      * IMMEDIATELY, because the cache dir does not guarantee the existence of any files
      * @param backup the backup file to save to a temporary file
      * @return File reference to a temporary file location that can later be saved to an external location
      */
-    public File saveBackup(RBackup backup) {
-        File file = new File(context.getCacheDir(), PREFIX+File.separator+"backups"+ File.separator+"event.roblubackup");
+    public File saveBackup(RBackup backup, String name) {
+        File file = new File(context.getCacheDir(), PREFIX+File.separator+"backups"+ File.separator+name);
         if(file.mkdirs()) Log.d("RBS", "Successfully created backup parent dirs");
         if(file.exists()) delete(file);
         serializeObject(backup, file);
@@ -426,7 +428,7 @@ public class IO {
      * @return RBackup object instance
      */
     public RBackup convertBackupFile(Uri toCopy) {
-        File file = new File(context.getCacheDir(), PREFIX+ File.separator+"tempBackupImport.roblubackup");
+        File file = new File(context.getCacheDir(), PREFIX+ File.separator+"tempBackup.backup");
         if(file.mkdirs()) Log.d("RBS", "Successfully created backup parent dirs");
         if(file.exists()) {
             if(!file.delete()) Log.d("RBS", "Failed to delete old cached backup file.");
@@ -444,9 +446,33 @@ public class IO {
             }
             return null;
         } catch(Exception e) {
+            Log.d("RBS", "Exception: "+e.getMessage());
             return null;
         } finally {
             if(file.delete()) Log.d("RBS", "Cached backup file successfully deleted.");
+        }
+    }
+
+    public RForm convertFormFile(Uri toCopy) {
+        File file = new File(context.getFilesDir(), PREFIX+ File.separator+"master_form.ser");
+        if(file.mkdirs()) Log.d("RBS", "Successfully created form backup parent dirs");
+        if(file.exists()) {
+            if(!file.delete()) Log.d("RBS", "Failed to delete old cached backup file.");
+        }
+        try {
+            InputStream is = context.getContentResolver().openInputStream(toCopy);
+            FileOutputStream out = new FileOutputStream(file);
+            if(is != null) {
+                IOUtils.copy(is, out);
+                RForm backup = (RForm) deserializeObject(file);
+                is.close();
+                out.flush();
+                out.close();
+            }
+            return (RForm) deserializeObject(file);
+        } catch(Exception e) {
+            Log.d("RBS", "Exception: "+e.getMessage());
+            return null;
         }
     }
     // End backup methods
@@ -472,61 +498,6 @@ public class IO {
         return f;
     }
     // End CSV Methods
-
-    /*
-     * CHECKOUTS Methods
-     */
-    /**
-     * Saves a checkout to the /checkouts/ directory, presumably because an import has occured
-     * @param checkout the RCheckout object instance to save
-     */
-    public void saveCheckout(RCheckout checkout) {
-        serializeObject(checkout, new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator+checkout.getID()+".ser"));
-    }
-
-    /**
-     * Loads the RCheckout with the specified ID
-     * @param checkoutID the checkout ID to laod
-     * @return RCheckout object instance
-     */
-    private RCheckout loadCheckout(int checkoutID) {
-        RCheckout checkout = (RCheckout) deserializeObject(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator+checkoutID+".ser"));
-        if(checkout != null) checkout.setID(checkoutID);
-        return checkout;
-    }
-
-    /**
-     * Loads all checkouts in the file system
-     * @return Array of RCheckout object instances
-     */
-    public RCheckout[] loadCheckouts() {
-        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+File.separator+"checkouts"+File.separator));
-        if(files == null || files.length == 0) return null;
-        RCheckout[] checkouts = new RCheckout[files.length];
-        for(int i = 0; i < checkouts.length; i++) {
-            checkouts[i] = loadCheckout(Integer.parseInt(files[i].getName().replace(".ser", "")));
-        }
-        return checkouts;
-    }
-
-    /**
-     * Returns an unused, new event ID that a new team can be saved under.
-     * This method will take the HIGHEST ID it finds, and add one to it. It will
-     * not just find the closest unused ID to 0.
-     * @return unused ID to save this team's info to
-     */
-    public int getNewCheckoutID() {
-        File[] files = getChildFiles(new File(context.getFilesDir(), PREFIX+ File.separator+"checkouts"+File.separator));
-        if(files == null || files.length == 0) return 0;
-        int topID = 0;
-        for(File f : files) {
-            int newID = Integer.parseInt(f.getName().replaceAll(".ser", ""));
-            if(newID > topID) topID = newID;
-        }
-        return topID + 1;
-    }
-    // End checkouts methods
-
     /*
      * PENDING methods
      */
@@ -535,13 +506,13 @@ public class IO {
      * Saves a checkout to the /pending/ directory, presumably because an import has occurred
      * @param checkout the RCheckout instance to save
      */
-    public void savePendingObject(RCheckout checkout) {
+    public void savePendingCheckout(RCheckout checkout) {
         serializeObject(checkout, new File(context.getFilesDir(), PREFIX+File.separator+"pending"+File.separator+checkout.getID()+".ser"));
     }
 
     /**
      * Loads the RCheckout with the specified ID
-     * @param checkoutID the checkout ID to laod
+     * @param checkoutID the checkout ID to load
      * @return RCheckout object instance
      */
     public RCheckout loadPendingCheckout(int checkoutID) {
@@ -559,7 +530,7 @@ public class IO {
         if(files == null || files.length == 0) return null;
         RCheckout[] checkouts = new RCheckout[files.length];
         for(int i = 0; i < checkouts.length; i++) {
-            checkouts[i] = loadCheckout(Integer.parseInt(files[i].getName().replace(".ser", "")));
+            checkouts[i] = loadPendingCheckout(Integer.parseInt(files[i].getName().replace(".ser", "")));
         }
         return checkouts;
     }

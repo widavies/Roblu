@@ -34,6 +34,7 @@ import android.widget.TextView;
 import com.cpjd.main.TBA;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
@@ -303,7 +304,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 4.3.0")
+                    .setTitle("Changelist for Version 4.4.0")
                     .setMessage(Constants.UPDATE_MESSAGE)
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
@@ -430,6 +431,17 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             public void onClick(DialogInterface dialog, int which) {
                 if(input2.getText().toString().equals("")) input2.setText("0");
                 RTeam team = new RTeam(input.getText().toString(), Integer.parseInt(input2.getText().toString()), io.getNewTeamID(eventDrawerManager.getEvent().getID()));
+
+                /*
+                 * Package for cloud
+                 */
+                if(eventDrawerManager.getEvent() != null && eventDrawerManager.getEvent().isCloudEnabled()) {
+                    team.verify(io.loadForm(eventDrawerManager.getEvent().getID()));
+                    RCheckout checkout = new RCheckout(team);
+                    checkout.setStatus(0);
+                    io.savePendingCheckout(checkout);
+                }
+
                 io.saveTeam(eventDrawerManager.getEvent().getID(), team);
                 executeLoadTeamsTask(lastFilter, true);
             }

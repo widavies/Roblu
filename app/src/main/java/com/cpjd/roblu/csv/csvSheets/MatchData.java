@@ -4,6 +4,7 @@ import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 
@@ -45,6 +46,7 @@ public class MatchData extends CSVSheet {
             for(RMetric metric : checkout.getTeam().getTabs().get(0).getMetrics()) {
                 if(shouldWriteMetric(checkout.getTeam(), metric)) {
                     if(metric instanceof RStopwatch) createCell(data, index + 2, ((RStopwatch) metric).getLapsString());
+                    else if(metric instanceof RFieldData) continue;
                     else createCell(data, index + 2, metric.toString());
                 }
                 else createCell(data, index + 2, "");

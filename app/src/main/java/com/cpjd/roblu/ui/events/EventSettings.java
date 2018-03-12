@@ -12,7 +12,10 @@ package com.cpjd.roblu.ui.events;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -40,8 +43,9 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.sync.cloud.InitPacker;
 import com.cpjd.roblu.sync.qr.QrReader;
 import com.cpjd.roblu.tba.ImportEvent;
+import com.cpjd.roblu.tba.ManualScheduleImporter;
+import com.cpjd.roblu.tba.SyncTBAEvent;
 import com.cpjd.roblu.tba.TBALoadEventsTask;
-import com.cpjd.roblu.tba.UnpackTBAEvent;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.ui.forms.FormViewer;
@@ -142,6 +146,8 @@ public class EventSettings extends AppCompatActivity {
          */
         private ProgressDialog tbaSyncDialog;
 
+        private int fileChooserMode;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -164,6 +170,7 @@ public class EventSettings extends AppCompatActivity {
             findPreference("delete_teams").setOnPreferenceClickListener(this);
             findPreference("delete_event").setOnPreferenceClickListener(this);
             findPreference("tba_sync").setOnPreferenceClickListener(this);
+            findPreference("import_schedule").setOnPreferenceClickListener(this);
             findPreference("qr").setOnPreferenceClickListener(this);
             RUICheckPreference bt = (RUICheckPreference) findPreference("bt_sync");
             bt.setChecked(event.isBluetoothEnabled());
@@ -210,6 +217,21 @@ public class EventSettings extends AppCompatActivity {
                 qrScanIntent.putExtra("event", event);
                 startActivityForResult(qrScanIntent, Constants.QR_REQUEST);
             }
+            // Manual schedule importer
+            else if(preference.getKey().equals("import_schedule")) {
+                fileChooserMode = 1;
+
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                try {
+                    startActivityForResult(
+                            Intent.createChooser(intent, "Select a schedule file"),
+                            Constants.FILE_CHOOSER);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Utils.showSnackbar(getActivity().findViewById(R.id.activity_create_event_picker), getActivity(), "No file manager found", true, 0);
+                }
+            }
             /*
              * User clicked the "Edit event info" preference.
              * Keep in mind, we'll need to listen to the EventEditor for changes
@@ -225,6 +247,11 @@ public class EventSettings extends AppCompatActivity {
              * User clicked "Sync with TBA" option
              */
             else if(preference.getKey().equalsIgnoreCase("tba_sync")) {
+                if(event.getKey() == null || event.getKey().equalsIgnoreCase("")) {
+                    Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "No TBA key found. Set it in this event's settings.", true, 0);
+                    return true;
+                }
+
                 // Download the entire event
                 tbaSyncDialog = ProgressDialog.show(getActivity(), "Syncing event with TheBlueAlliance...", "This may take several seconds...", false);
                 tbaSyncDialog.setCancelable(false);
@@ -237,7 +264,12 @@ public class EventSettings extends AppCompatActivity {
                     @Override
                     public void eventDownloaded(Event e) {
                         // Start the merge!
-                        new UnpackTBAEvent(e, event.getID(), true, getActivity(), tbaSyncDialog).execute();
+                        new SyncTBAEvent(e, event.getID(), new IO(getActivity()), new SyncTBAEvent.SyncTBAEventListener() {
+                            @Override
+                            public void done() {
+                                tbaSyncDialog.dismiss();
+                            }
+                        }).start();
                     }
 
                     @Override
@@ -283,6 +315,8 @@ public class EventSettings extends AppCompatActivity {
              * User clicked on "Backup event"
              */
             else if(preference.getKey().equals("backup")) {
+                fileChooserMode = 2;
+
                 if(EasyPermissions.hasPermissions(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     // Star the task
                     new BackupEventTask(new IO(getActivity()), new BackupEventTask.BackupEventTaskListener() {
@@ -487,7 +521,7 @@ public class EventSettings extends AppCompatActivity {
              * Received after the user selected a backup file location and data needs to be
              * copied to it
              */
-            if(requestCode == Constants.FILE_CHOOSER) {
+            if(requestCode == Constants.FILE_CHOOSER && fileChooserMode == 2) {
                 try {
                     /*
                      * This will copy the internal backup file to the external location the user selected
@@ -503,6 +537,36 @@ public class EventSettings extends AppCompatActivity {
                 } catch(Exception e) {
                     Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Error occurred while creating backup", true, 0);
                 }
+
+                fileChooserMode = 0;
+            }
+            else if(requestCode == Constants.FILE_CHOOSER && fileChooserMode == 1) {
+                // this means the user didn't select a file, no point in returning an error message
+                if(data == null) return;
+
+                new ManualScheduleImporter(getActivity(), data.getData(), event.getID(), new ManualScheduleImporter.ManualScheduleImporterListener() {
+                    @Override
+                    public void error(final String message) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), "An error occurred: "+message, Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void success() {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getActivity(), "Successfully imported manual match schedule.", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                }).start();
+
+                fileChooserMode = 0;
             }
             /*
              * Called when event info was edited
@@ -533,7 +597,7 @@ public class EventSettings extends AppCompatActivity {
 
             private WeakReference<IO> ioWeakReference;
 
-            interface BackupEventTaskListener {
+            public interface BackupEventTaskListener {
                 void eventBackupComplete(File backupFile);
             }
 
@@ -542,7 +606,7 @@ public class EventSettings extends AppCompatActivity {
              */
             private BackupEventTaskListener listener;
 
-            BackupEventTask(IO io, BackupEventTaskListener listener) {
+            public BackupEventTask(IO io, BackupEventTaskListener listener) {
                 this.listener = listener;
                 this.ioWeakReference = new WeakReference<>(io);
             }
@@ -550,12 +614,34 @@ public class EventSettings extends AppCompatActivity {
             protected File doInBackground(Void... params) {
                 RTeam[] teams = ioWeakReference.get().loadTeams(event.getID());
                 RForm form = ioWeakReference.get().loadForm(event.getID());
-                return ioWeakReference.get().saveBackup(new RBackup(event, teams, form));
+                return ioWeakReference.get().saveBackup(new RBackup(event, teams, form), "event.roblubackup");
             }
 
             protected void onPostExecute(File file) {
                 listener.eventBackupComplete(file);
             }
+        }
+
+        private static String getPath(Context context, Uri uri) {
+            if ("content".equalsIgnoreCase(uri.getScheme())) {
+                String[] projection = { "_data" };
+                Cursor cursor;
+
+                try {
+                    cursor = context.getContentResolver().query(uri, projection, null, null, null);
+                    int column_index = cursor.getColumnIndexOrThrow("_data");
+                    if (cursor.moveToFirst()) {
+                        return cursor.getString(column_index);
+                    }
+                } catch (Exception e) {
+                    // Eat it
+                }
+            }
+            else if ("file".equalsIgnoreCase(uri.getScheme())) {
+                return uri.getPath();
+            }
+
+            return null;
         }
     }
 

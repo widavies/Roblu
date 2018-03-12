@@ -162,7 +162,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             public void onCheckedChanged(final IDrawerItem drawerItem, CompoundButton buttonView, boolean isChecked) {
                 if(drawerItem.getIdentifier() == Constants.BLUETOOTH_SERVER) {
                     if(((SwitchDrawerItem)drawerItem).isChecked()) {
-                        ProgressDialog dialog = ProgressDialog.show(bluetooth.getActivity(), "Listening for incoming connections...", "Waiting for a device to connect...", false);
+                        ProgressDialog dialog = ProgressDialog.show(bluetooth.getActivity(), "Bluetooth Server", "Bluetooth server is online", false);
                         dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override
                             public void onCancel(DialogInterface dialog) {

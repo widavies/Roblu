@@ -10,6 +10,7 @@
 
 package com.cpjd.roblu.ui.settings;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
@@ -33,6 +34,7 @@ import android.support.v7.widget.AppCompatEditText;
 import android.support.v7.widget.Toolbar;
 import android.text.InputFilter;
 import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -45,17 +47,24 @@ import com.cpjd.models.CloudTeam;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
-import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
+import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.sync.bluetooth.Bluetooth;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
+import com.google.common.io.Files;
 import com.mikepenz.aboutlibraries.Libs;
 import com.mikepenz.aboutlibraries.LibsBuilder;
+
+import java.io.File;
+import java.io.OutputStream;
+
+import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  *
@@ -134,6 +143,8 @@ public class AdvSettings extends AppCompatActivity {
                 "2.0.0-2.9.9\nRoblu Version 2, we don't talk about that anymore\n\n1.0.0-1.9.9\nRoblu Version 1 is where humans go to die";
 
 
+        private int masterMode;
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -162,6 +173,8 @@ public class AdvSettings extends AppCompatActivity {
             findPreference("reddit").setOnPreferenceClickListener(this);
             findPreference("purge").setOnPreferenceClickListener(this);
             findPreference("bt_devices").setOnPreferenceClickListener(this);
+            findPreference("import_master_form").setOnPreferenceClickListener(this);
+            findPreference("backup_master_form").setOnPreferenceClickListener(this);
             CheckBoxPreference opted = (CheckBoxPreference) findPreference("opt_in");
             opted.setOnPreferenceChangeListener(this);
             opted.setChecked(new IO(getActivity()).loadCloudSettings().isOptedIn());
@@ -183,6 +196,8 @@ public class AdvSettings extends AppCompatActivity {
                 joinTeam.setSummary("Enter your team code to join a team");
             }
         }
+
+        private File backupFile;
 
         // Called when the user taps a preference
         @Override
@@ -269,6 +284,49 @@ public class AdvSettings extends AppCompatActivity {
                 getActivity().startActivityForResult(new Intent(getActivity(), UICustomizer.class), Constants.GENERAL);
                 return true;
             }
+            // user wants to import a master form from the file system
+            else if(preference.getKey().equals("import_master_form")) {
+
+                masterMode = 1;
+
+/*
+             * Open a file chooser where the user can select a backup file to use.
+             * We'll listen to a result in onActivityResult() and import the backup file there
+             */
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("*/*");
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                try {
+                    startActivityForResult(
+                            Intent.createChooser(intent, "Select a .roblubackup file"),
+                            Constants.FILE_CHOOSER);
+                } catch (android.content.ActivityNotFoundException ex) {
+                    Utils.showSnackbar(getActivity().findViewById(R.id.activity_create_event_picker), getActivity(), "No file manager found", true, settings.getRui().getPrimaryColor());
+                }
+            }
+            // user wants to export the master form to the file system
+            else if(preference.getKey().equals("backup_master_form")) {
+                masterMode = 2;
+
+                if(EasyPermissions.hasPermissions(getActivity(), Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    // Copy the master form to a file on the system
+                    RForm form = new IO(getActivity()).loadSettings().getMaster();
+
+                    IO io = new IO(getActivity());
+                    io.saveForm(-1, form);
+                    backupFile = new File(getActivity().getFilesDir(), IO.PREFIX+File.separator+"master_form.ser");
+                Log.d("RBS", "Backup file: "+backupFile.exists());
+
+                    Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+                    intent.setType("application/*");
+                    intent.putExtra(Intent.EXTRA_TITLE, backupFile.getName());
+                    startActivityForResult(intent, Constants.FILE_CHOOSER);
+
+                } else {
+                    Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Storage permission is disabled. Please enable it.", true, settings.getRui().getPrimaryColor());
+                }
+            }
+
             return false;
         }
 
@@ -510,6 +568,49 @@ public class AdvSettings extends AppCompatActivity {
             }
         }
 
+        @Override
+        public void onActivityResult(int requestCode, int resultCode, Intent data) {
+           /*
+             * The user selected a backup file, let's attempt to import it here
+             */
+            if(requestCode == Constants.FILE_CHOOSER && masterMode == 1) {
+                // this means the user didn't select a file, no point in returning an error message
+                if(data == null) return;
+
+                try {
+                    IO io = new IO(getActivity());
+                    RForm form = io.convertFormFile(data.getData());
+                    settings.setMaster(form);
+                    io.saveSettings(settings);
+                    Toast.makeText(getActivity(), "Successfully imported master form.", Toast.LENGTH_LONG).show();
+                } catch(Exception e) {
+                    Log.d("RBS", "Error: "+e.getMessage());
+                    Toast.makeText(getActivity(), "Invalid master form backup.", Toast.LENGTH_LONG).show();
+                }
+            }
+            /*
+             * User exported a file, copy to the backup location
+             */
+            else if(requestCode == Constants.FILE_CHOOSER && masterMode == 2) {
+                try {
+                    /*
+                     * This will copy the internal backup file to the external location the user selected
+                     * (internal is app data, external is a location the user can see, but still on internal storage for the device)
+                     */
+                    OutputStream os = getActivity().getContentResolver().openOutputStream(data.getData());
+                    if(os != null) {
+                        Files.copy(backupFile, os);
+                        os.flush();
+                        os.close();
+                        Toast.makeText(getActivity(), "Successfully created master form backup", Toast.LENGTH_LONG).show();
+                    } else Toast.makeText(getActivity(), "Error occurred while creating master form backup", Toast.LENGTH_LONG).show();
+                } catch(Exception e) {
+                    Toast.makeText(getActivity(), "Error occurred while creating master form backup"+e.getMessage(), Toast.LENGTH_LONG).show();
+                }
+            }
+
+            masterMode = 0;
+        }
     }
 
     // load in the bug report button, and make it match the ui settings

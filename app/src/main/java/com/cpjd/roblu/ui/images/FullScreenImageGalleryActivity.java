@@ -100,7 +100,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode == Constants.IMAGE_EDITED) {
-            setResult(Constants.IMAGE_EDITED);
+            setResult(Constants.IMAGE_EDITED, data);
             finish();
         }
     }
@@ -114,7 +114,7 @@ public class FullScreenImageGalleryActivity extends AppCompatActivity implements
         /*
          * User wants to delete an image
          */
-        else if(item.getItemId() == R.id.delete_image) {
+        else if(item.getItemId() == R.id.delete_image && editable) {
             Intent result = new Intent();
             result.putExtra("position", viewPager.getCurrentItem());
             setResult(Constants.IMAGE_DELETED, result);

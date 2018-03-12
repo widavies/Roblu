@@ -43,7 +43,6 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         if(getSupportActionBar() != null) {
-            getSupportActionBar().setSubtitle("Tutorials for Roblu Master");
             getSupportActionBar().setTitle("Tutorials");
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }

@@ -237,8 +237,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                 }
             }
         }
-
-        // Update default values for non-modified values, also check for some weird scenarios
+        // Update default values for non-modified values, also check for some weird scenario
         temp = form.getPit();
         for(int i = 0; i < tabs.size(); i++) {
             if(!tabs.get(i).getTitle().equalsIgnoreCase("PIT")) temp = form.getMatch();

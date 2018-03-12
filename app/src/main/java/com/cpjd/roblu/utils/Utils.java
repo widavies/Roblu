@@ -35,6 +35,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
@@ -161,6 +162,19 @@ public class Utils {
             field.set(editor, drawables);
         } catch (Exception ignored) {
         }
+    }
+
+    public static String[] depackFieldData(RFieldData fieldData) {
+        String[] values = null;
+        if(fieldData.getData() != null) {
+            values = new String[fieldData.getData().size()];
+            int index = 0;
+            for(Object key : fieldData.getData().keySet()) {
+                values[index] = key.toString();
+                index++;
+            }
+        }
+        return values;
     }
 
     /**

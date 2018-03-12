@@ -4,23 +4,26 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import com.cpjd.models.Event;
 import com.cpjd.roblu.io.IO;
-import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RFieldData;
+import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.utils.Constants;
-import com.cpjd.roblu.utils.HandoffStatus;
 import com.cpjd.roblu.utils.Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Random;
+import java.util.LinkedHashMap;
 
 import lombok.Setter;
 
@@ -36,24 +39,17 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
     private Event event;
     private int eventID;
 
-    /**
-     * If true, UnpackTBAEvent will act as if the event already exists and attempt
-     * to merge only new data
-     */
-    private boolean merge;
-
     private WeakReference<Activity> activityWeakReference;
     private WeakReference<ProgressDialog> progressDialogWeakReference;
 
     @Setter
     private boolean randomize;
 
-    public UnpackTBAEvent(Event e, int eventID, boolean merge, Activity activity, ProgressDialog d) {
+    public UnpackTBAEvent(Event e, int eventID, Activity activity, ProgressDialog d) {
         this.eventID = eventID;
         this.event = e;
         this.activityWeakReference = new WeakReference<>(activity);
         this.progressDialogWeakReference = new WeakReference<>(d);
-        this.merge = merge;
     }
 
     protected Void doInBackground(Void... params) {
@@ -83,10 +79,6 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
         IO io = new IO(activityWeakReference.get());
         RForm form = io.loadForm(eventID);
 
-        // For merge mode
-        RTeam[] localTeams = null;
-        if(merge) localTeams = io.loadTeams(eventID);
-
         int result;
         for(RTeam t : teams) {
             t.verify(form);
@@ -113,6 +105,43 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
                     RTab tab = new RTab(t.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000);
                     // set the match position, if possible
                     tab.setAlliancePosition(event.matches[j].getTeamPosition(t.getNumber()));
+
+                    // Check for FieldData metrics
+                    if(tab.getMetrics() != null) {
+                        for(RMetric metric : tab.getMetrics()) {
+                            if(metric instanceof RFieldData) {
+                                if(((RFieldData) metric).getData() == null) ((RFieldData) metric).setData(new LinkedHashMap<String, ArrayList<RMetric>>());
+
+                                for(int i = 0; i < event.matches[j].scorableItems.length; i++) {
+
+                                    Log.d("RBS", "Metric name: "+event.matches[j].scorableItems[i]+", "+"Red value: "+event.matches[j].redValues[i]+", Blue value: "+event.matches[j].blueValues[i]);
+
+                                    ArrayList<RMetric> metrics = new ArrayList<>();
+                                    try {
+                                        metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[j].redValues[i])));
+                                    } catch(Exception e) {
+                                        try {
+                                            metrics.add(new RBoolean(0, "", Boolean.parseBoolean(event.matches[j].redValues[i])));
+                                        } catch(Exception e2) {
+                                            metrics.add(new RTextfield(0, "", (event.matches[j].redValues[i])));
+                                        }
+
+                                    }
+                                    try {
+                                        metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[j].blueValues[i])));
+                                    } catch(Exception e) {
+                                        try {
+                                            metrics.add(new RBoolean(0, "", Boolean.parseBoolean(event.matches[j].blueValues[i])));
+                                        } catch(Exception e2) {
+                                            metrics.add(new RTextfield(0, "", (event.matches[j].blueValues[i])));
+                                        }
+                                    }
+
+                                    if(event.matches[j].scorableItems[i] != null && metrics.size() > 0) ((RFieldData) metric).getData().put(event.matches[j].scorableItems[i], metrics);
+                                }
+                            }
+                        }
+                    }
                     t.addTab(tab);
                 }
             }
@@ -120,68 +149,12 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
             /*
              * This is where the merge decision comes into play
              */
-            if(!merge) {
-                if(randomize) {
-                    t.setLastEdit(System.currentTimeMillis());
-                    Utils.randomizeTeamMetrics(t.getTabs());
-                }
-
-                io.saveTeam(eventID, t);
-            } else {
-                REvent localEvent = io.loadEvent(eventID);
-
-                /*
-                 * User wants to merge with an event, we need to do a team merge.
-                 * This involves two things:
-                 * 1) If team doesn't exist locally, just write it new (check for existence with name + number equivalence)
-                 * 2) If a team does exist, add any matches from the team model here that aren't there
-                 */
-                if(localTeams != null && localTeams.length > 0) {
-                    boolean found = false;
-                    RTeam localRef = null;
-                    for(RTeam team : localTeams) {
-                        if(team.getName().equals(t.getName()) && team.getNumber() == t.getNumber()) {
-                            found = true;
-                            localRef = team;
-                        }
-                    }
-                    // Team wasn't found locally, so ignore it
-                    if(!found) {
-                        t.setID(io.getNewTeamID(eventID));
-                        io.saveTeam(eventID, t);
-                    } else { // team was found locally, so do a match merge (only add matches if they're new!)
-                        for(RTab tab : t.getTabs()) {
-                            if(!doesExist(localRef, tab.getTitle())) {
-                                localRef.addTab(tab);
-                                // If these event is cloud synced, a new checkout needs to be packaged
-                                if(localEvent.isCloudEnabled()) {
-                                    RTeam newTeam = new RTeam(localRef.getName(), localRef.getNumber(), localRef.getID());
-                                    newTeam.addTab(tab);
-                                    RCheckout checkout = new RCheckout(newTeam);
-                                    /*
-                                     * It would require a lot more code to check all devices and be sure that a new ID is
-                                     * valid, so generate a random one. The chances of an error occurring are so low, this is acceptable (somewhat)
-                                     */
-                                    checkout.setID(new Random().nextInt(Integer.MAX_VALUE - 50_000) + 20_000);
-                                    checkout.setStatus(HandoffStatus.AVAILABLE);
-                                    io.savePendingObject(checkout);
-                                }
-
-                            }
-
-                            // Update the match wins
-                            for(RTab tab1 : localRef.getTabs()) {
-                                if(tab1.getTitle().equalsIgnoreCase(tab.getTitle())) tab1.setWon(tab.isWon());
-                            }
-                        }
-                        Collections.sort(localRef.getTabs());
-                        io.saveTeam(eventID, localRef);
-                    }
-                } else {
-                    io.saveTeam(eventID, t);
-                }
+            if(randomize) {
+                t.setLastEdit(System.currentTimeMillis());
+                Utils.randomizeTeamMetrics(t.getTabs());
             }
 
+            io.saveTeam(eventID, t);
         }
         return null;
     }

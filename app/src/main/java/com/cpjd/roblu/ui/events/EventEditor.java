@@ -272,7 +272,7 @@ public class EventEditor extends AppCompatActivity {
             d.setCancelable(false);
             event.setKey(((Event)getIntent().getSerializableExtra("tbaEvent")).key);
             io.saveEvent(event);
-            UnpackTBAEvent unpackTBAEvent = new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), false, this, d);
+            UnpackTBAEvent unpackTBAEvent = new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), this, d);
             if(((Switch)findViewById(R.id.switch1)).isChecked()) unpackTBAEvent.setRandomize(true);
             unpackTBAEvent.execute();
         }

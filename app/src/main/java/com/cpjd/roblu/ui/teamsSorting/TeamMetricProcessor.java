@@ -6,6 +6,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
@@ -50,7 +51,7 @@ public class TeamMetricProcessor {
         /**
          * Metric (matching inputted ID) should be analyzed from the MATCHES within each team
          */
-        static final int MATCHES = 2;
+        public static final int MATCHES = 2;
 
         public static final int OTHER = 3;
 
@@ -183,6 +184,7 @@ public class TeamMetricProcessor {
                         double value = ((RCounter) metric).getValue();
                         // Overview stats will only consider modified items
                         if(metric.isModified()) {
+
                             /*
                              * Progressively calculate the min, max, and average values
                              */
@@ -267,6 +269,11 @@ public class TeamMetricProcessor {
                         // add raw data
                         rawData.append(((RChooser)metric).getValues()[((RChooser)metric).getSelectedIndex()]).append(ending(i, team.getTabs()));
                     }
+                    // Field data
+                    else if(metric instanceof RFieldData) {
+                        // Find the sub metric
+                        if(((RFieldData) metric).getData() != null) rawData.append(((RFieldData) metric).getData().get(inMatchTitle).get(0).toString()).append(ending(i, team.getTabs()));
+                    }
 
                     /*
                      * Now, add the overview statistics to the team if the metric has overview statistics
@@ -283,8 +290,9 @@ public class TeamMetricProcessor {
                     else if(metric instanceof RStopwatch) overview.append("Stopwatch: ").append(metric.getTitle()).append(" Average: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RTextfield) overview.append("Textfield: ").append(metric.getTitle()).append(" Average chars: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                     else if(metric instanceof RGallery) overview.append("Gallery: ").append(metric.getTitle()).append(" Average images: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
-                    else if(metric instanceof RChooser) overview.append("RChooser: ").append(metric.getTitle());
-                    else if(metric instanceof RCheckbox) overview.append("RCheckbox: ").append(metric.getTitle());
+                    else if(metric instanceof RChooser) overview.append("Chooser: ").append(metric.getTitle());
+                    else if(metric instanceof RCheckbox) overview.append("Checkbox: ").append(metric.getTitle());
+                    else if(metric instanceof RFieldData) overview.append("Field data: ").append(inMatchTitle);
 
                     /*
                      * Now append the raw data as processed above

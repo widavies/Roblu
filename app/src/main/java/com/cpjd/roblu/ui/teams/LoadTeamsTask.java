@@ -239,6 +239,9 @@ public class LoadTeamsTask extends Thread {
                 teamMetricProcessor.setInMatchTitle(customSortToken.split(":")[2]);
                 Log.d("RBS", "In match title: "+teamMetricProcessor.getInMatchTitle());
                 shouldHideZeroRelevance = true;
+            } else if(methodID == TeamMetricProcessor.PROCESS_METHOD.MATCHES && customSortToken.split(":").length == 3) {
+                teamMetricProcessor.setInMatchTitle(customSortToken.split(":")[2]);
+                Log.d("RBS", "In match title: "+teamMetricProcessor.getInMatchTitle());
             }
 
             /*

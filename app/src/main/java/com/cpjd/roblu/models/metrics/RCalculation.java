@@ -96,7 +96,7 @@ public class RCalculation extends RMetric {
 
             // Process
             lastValue = Utils.round(new DoubleEvaluator().evaluate(equation), 2);
-            return String.valueOf(Utils.round(new DoubleEvaluator().evaluate(equation), 2));
+            return String.valueOf(lastValue);
         } catch(Exception e) {
             Log.d("RBS", "bad equation: ", e);
             return "Bad equation";

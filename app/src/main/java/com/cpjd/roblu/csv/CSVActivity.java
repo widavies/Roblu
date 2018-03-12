@@ -73,6 +73,7 @@ public class CSVActivity extends AppCompatActivity implements ExportCSVTask.Expo
             CheckBox matchList = findViewById(R.id.match_list);
             CheckBox matchLookup = findViewById(R.id.match_lookup);
             CheckBox ourMatches = findViewById(R.id.our_matches);
+            CheckBox fieldData = findViewById(R.id.field_data);
             ArrayList<Integer> enabledSheets = new ArrayList<>();
 
             if(matchData.isChecked()) enabledSheets.add(ExportCSVTask.SHEETS.MATCH_DATA);
@@ -80,6 +81,7 @@ public class CSVActivity extends AppCompatActivity implements ExportCSVTask.Expo
             if(matchList.isChecked()) enabledSheets.add(ExportCSVTask.SHEETS.MATCH_LIST);
             if(matchLookup.isChecked()) enabledSheets.add(ExportCSVTask.SHEETS.MATCH_LOOKUP);
             if(ourMatches.isChecked()) enabledSheets.add(ExportCSVTask.SHEETS.OUR_MATCHES);
+            if(fieldData.isChecked()) enabledSheets.add(ExportCSVTask.SHEETS.FIELD_DATA);
 
             String fileName = ((AppCompatEditText)findViewById(R.id.file_name)).getText().toString();
 

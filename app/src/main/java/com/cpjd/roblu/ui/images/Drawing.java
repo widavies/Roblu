@@ -167,7 +167,9 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
                     canvas.setDrawer(CanvasView.Drawer.PEN);
                     return true;
                 } else if(item.getItemId() == R.id.eraser) {
-                    canvas.clear();
+                    DRAWINGS = null;
+                    getIntent().putExtra("fieldDrawings", DRAWINGS);
+                    recreate();
                     return true;
                 }
                 else if(item.getItemId() == R.id.line) {

@@ -25,6 +25,14 @@
             android:title="UI Customizer"
             android:key="customizer"
             android:summary="Change colors, animations, icons, layouts, and more"/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+            android:title="Import master form"
+            android:key="import_master_form"
+            android:summary="Import master form that was previously backed up"/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+            android:title="Backup master form"
+            android:key="backup_master_form"
+            android:summary="Backup master form to preserve your custom forms, especially between updates"/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
     <com.cpjd.roblu.ui.settings.customPreferences.RUICategory android:title="Roblu Cloud">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIEditPreference

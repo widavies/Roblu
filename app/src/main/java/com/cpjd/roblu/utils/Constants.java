@@ -14,7 +14,7 @@ public abstract class Constants {
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
     public static final String RESTART_BROADCAST = "com.cpjd.roblu.service.RestartService";
 
-    public static final String UPDATE_MESSAGE = "-Added Bluetooth syncing\n-Added divider, field diagram, and calculation metrics\n-Added form previewing\n-And much, much more!";
+    public static final String UPDATE_MESSAGE = "-Bug fixes";
 
     public static final int VERSION = 11; // used for updating the changelist
 

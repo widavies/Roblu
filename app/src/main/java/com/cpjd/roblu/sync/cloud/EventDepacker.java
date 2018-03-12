@@ -154,6 +154,7 @@ public class EventDepacker extends Thread {
                     found = true;
                     break;
                 }
+                t.setLastEdit(checkout.getTime());
             }
 
             // If not found, create a new team
@@ -210,6 +211,7 @@ public class EventDepacker extends Thread {
             cloudSettings.getCheckoutSyncIDs().put(checkout.getID(), 0L);
         }
 
+        io.saveCloudSettings(cloudSettings);
 
         if(listener != null) {
             listener.success(event);

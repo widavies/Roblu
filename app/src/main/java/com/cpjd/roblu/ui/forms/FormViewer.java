@@ -14,12 +14,14 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.UIHandler;
@@ -308,6 +310,12 @@ public class FormViewer extends AppCompatActivity implements View.OnClickListene
             changesMade = true;
             Bundle b = data.getExtras();
             RMetric metric = (RMetric) b.getSerializable("metric");
+
+            if(metric instanceof RFieldData && currentTab == 0) {
+                Toast.makeText(getApplicationContext(), "You can't add the field data metric to the pit tab.", Toast.LENGTH_LONG).show();
+                return;
+            }
+
             metricsAdapter.addMetric(metric);
         }
         /*

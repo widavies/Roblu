@@ -39,6 +39,7 @@ import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RDivider;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
@@ -83,7 +84,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
     /**
      * All the different metric types that the user can select from
      */
-    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider", "Field", "Calculation"};
+    private final static String[] METRIC_TYPES = {"Boolean", "Counter", "Slider", "Chooser", "Checkbox", "Stopwatch", "Textfield", "Gallery", "Divider", "Field", "Calculation", "Field data"};
     /**
      * The user's color preferences, so the metrics can be synced with the user's preferences
      */
@@ -433,6 +434,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(metric instanceof RDivider) toolbar.addView(rMetricToUI.getDivider((RDivider)metric));
         else if(metric instanceof RFieldDiagram) toolbar.addView(rMetricToUI.getFieldDiagram(-1, (RFieldDiagram)metric));
         else if(metric instanceof RCalculation) toolbar.addView(rMetricToUI.getCalculationMetric(null, ((RCalculation)metric)));
+        else if(metric instanceof RFieldData) toolbar.addView(rMetricToUI.getFieldData((RFieldData)metric));
     }
 
     /**
@@ -517,6 +519,8 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
             metric = new RFieldDiagram(0, R.drawable.field2018, null);
         } else if(stringOfSelected.equals(METRIC_TYPES[10])) {
             metric = new RCalculation(0, "Custom calculation");
+        } else if(stringOfSelected.equals(METRIC_TYPES[11])) {
+            metric = new RFieldData(0, "Match data");
         }
 
         metric.setModified(true);

@@ -37,6 +37,7 @@ import java.util.TimerTask;
  * @since 3.6.1
  * @author Will Davies
  */
+
 public class Service extends android.app.Service {
 
     @Nullable
@@ -241,10 +242,11 @@ public class Service extends android.app.Service {
                 for(RCheckout checkout : checkouts) {
                     io.deletePendingCheckout(checkout.getID());
                 }
+                Notify.notifyNoAction(getApplicationContext(), "Uploaded new checkouts", "Uploaded "+checkouts.size()+" new checkout(s).");
             }
             Log.d("RBS-Service", "Uploaded "+checkouts.size()+" checkouts.");
         } catch(Exception e) {
-            Log.d("RBS-Service", "An error occurred while attempting to push /pending/ checkouts.");
+            Log.d("RBS-Service", "An error occurred while attempting to push /pending/ checkouts: "+e.getMessage());
         }
         io.saveCloudSettings(cloudSettings);
         Log.d("RBS-Service", "Sleeping Roblu background service for 10 seconds...");

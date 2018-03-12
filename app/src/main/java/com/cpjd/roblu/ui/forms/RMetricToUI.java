@@ -42,6 +42,8 @@ import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.Spinner;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import com.cpjd.roblu.R;
@@ -53,6 +55,7 @@ import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RDivider;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
@@ -208,6 +211,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!editable) return;
                 layout.removeView(observed);
 
                 listener.changeMade(bool);
@@ -424,6 +429,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!editable) return;
                 layout.removeView(observed);
                 listener.changeMade(counter);
             }
@@ -482,6 +489,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!editable) return;
                 layout.removeView(observed);
 
                 listener.changeMade(slider);
@@ -566,6 +575,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!editable) return;
                 layout.removeView(observed);
                 listener.changeMade(chooser);
             }
@@ -650,6 +661,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!editable) return;
                 layout.removeView(observed);
                 listener.changeMade(checkbox);
             }
@@ -844,6 +857,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         observed.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+                if(!editable) return;
                 layout.removeView(observed);
                 listener.changeMade(stopwatch);
             }
@@ -1145,6 +1160,52 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
         layout.addView(textView);
         layout.addView(open);
+        return getCard(layout);
+    }
+
+    public CardView getFieldData(RFieldData fieldData) {
+        RelativeLayout layout = new RelativeLayout(activity);
+
+        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+
+        TextView text = new TextView(activity);
+        text.setText(fieldData.getTitle());
+        text.setId(Utils.generateViewId());
+        TableLayout tableLayout = new TableLayout(activity);
+        tableLayout.setId(Utils.generateViewId());
+
+        if(fieldData.getData() != null) {
+            for(Object key : fieldData.getData().keySet()) {
+
+                TableRow tableRow = new TableRow(activity);
+                TextView red = new TextView(activity);
+                red.setBackgroundColor(Color.RED);
+                red.setText(fieldData.getData().get(key).get(0).toString());
+
+                TextView title = new TextView(activity);
+                title.setPadding(Utils.DPToPX(activity, 15), title.getPaddingTop(), Utils.DPToPX(activity, 15), title.getPaddingBottom());
+                title.setText(key.toString());
+
+                TextView blue = new TextView(activity);
+                blue.setBackgroundColor(Color.BLUE);
+                blue.setText(fieldData.getData().get(key).get(1).toString());
+
+                tableRow.setBackgroundResource(R.drawable.row_border);
+
+                tableRow.addView(red);
+                tableRow.addView(title);
+                tableRow.addView(blue);
+                tableLayout.addView(tableRow);
+            }
+        }
+
+        tableLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+        params.addRule(RelativeLayout.BELOW, text.getId());
+        layout.setGravity(Gravity.CENTER_HORIZONTAL);
+        tableLayout.setLayoutParams(params);
+        layout.addView(text);
+        layout.addView(tableLayout);
+
         return getCard(layout);
     }
 

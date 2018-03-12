@@ -21,9 +21,12 @@ import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
+import com.cpjd.roblu.models.RTab;
+import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.ui.forms.FormRecyclerTouchHelper;
 import com.cpjd.roblu.ui.forms.FormRecyclerAdapter;
+import com.cpjd.roblu.ui.forms.FormRecyclerTouchHelper;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
@@ -100,13 +103,72 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
 
     /**
      * This method is called when the user taps on a metric
+     *
      * @param v the View that the user tapped on (used for inferring the RMetric object)
      */
     @Override
     public void metricSelected(View v) {
-        int position = rv.getChildLayoutPosition(v);
+        final int position = rv.getChildLayoutPosition(v);
+
+        if(metrics.get(position) instanceof RFieldData) {
+            final Dialog d = new Dialog(getActivity());
+            d.setTitle("Select sub metric");
+            d.setContentView(R.layout.submetric_import);
+            final Spinner spinner = d.findViewById(R.id.type);
+
+            // Attempt to load a team to get a list of values
+            int id = 0;
+            IO io = new IO(getActivity());
+            RTeam team;
+            do {
+                team = io.loadTeam(eventID, id);
+                id++;
+            } while(team == null && id < 50);
+
+            RFieldData fieldData = null;
+            try {
+                mainLoop:
+                for(RTab tab : team.getTabs()) {
+                    if(tab.getTitle().equalsIgnoreCase("PIT") || tab.getTitle().equalsIgnoreCase("PREDICTIONS")) continue;
+                    for(RMetric metric2 : tab.getMetrics()) {
+                        if(metric2 instanceof RFieldData && metrics.get(position).getID() == metric2.getID()) {
+                            fieldData = (RFieldData) metric2;
+                            break mainLoop;
+                        }
+                    }
+                }
+            } catch(Exception e) {//}
+            }
+                if(fieldData == null) return;
+
+                final String[] values = Utils.depackFieldData(fieldData);
+                if(values == null) {
+                    Toast.makeText(getActivity(), "Error occurred while loading metrics.", Toast.LENGTH_LONG).show();
+                    return;
+                }
+                ArrayAdapter<String> adp = new ArrayAdapter<>(getActivity(), android.R.layout.simple_list_item_1, values);
+                adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                spinner.setAdapter(adp);
+                Button button = d.findViewById(R.id.button7);
+                button.setText(R.string.select);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent result = new Intent();
+                        result.putExtra("sortToken", TeamMetricProcessor.PROCESS_METHOD.MATCHES + ":" + metrics.get(position).getID() + ":" + values[spinner.getSelectedItemPosition()]);
+                        getActivity().setResult(Constants.CUSTOM_SORT_CONFIRMED, result);
+                        getActivity().finish();
+                        d.dismiss();
+                    }
+                });
+                if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(getActivity()).loadSettings().getRui().getAnimation();
+                d.show();
+                return;
+
+        }
+
         // User selected the "In Match" option, now we have to display a list of all the matches within the event
-        if(processMethod == TeamMetricProcessor.PROCESS_METHOD.OTHER && metrics.get(position).getID() == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
+        else if(processMethod == TeamMetricProcessor.PROCESS_METHOD.OTHER && metrics.get(position).getID() == TeamMetricProcessor.PROCESS_METHOD.OTHER_METHOD.IN_MATCH) {
             final Dialog d = new Dialog(getActivity());
             d.setTitle("Select match");
             d.setContentView(R.layout.event_import_dialog);

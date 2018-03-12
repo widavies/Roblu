@@ -13,7 +13,6 @@ import com.cpjd.roblu.sync.SyncHelper;
 
 import org.codehaus.jackson.map.DeserializationConfig;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 
 import java.util.ArrayList;
@@ -76,6 +75,7 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
         for(REvent event : events) {
             if(event.isBluetoothEnabled()) {
                 this.event = event;
+                break;
             }
         }
 
@@ -108,7 +108,7 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
         IO io = new IO(bluetooth.getActivity());
 
         if(header.equals("isActive")) {
-            bluetooth.send("ACTIVE", String.valueOf(event == null));
+            bluetooth.send("ACTIVE", String.valueOf(event != null));
         }
         if(event == null) {
             return;
@@ -119,17 +119,18 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 // Process scouting data
                 try {
                     JSONParser parser = new JSONParser();
-                    JSONArray array = (JSONArray) parser.parse(message);
+                    org.json.simple.JSONArray array = (org.json.simple.JSONArray)parser.parse(message);
                     String[] received = new String[array.size()];
                     for(int i = 0; i < array.size(); i++) received[i] = array.get(i).toString();
                     syncHelper.unpackCheckouts(syncHelper.convertStringSerialToCloudCheckouts(received), null);
-
-
+                    Log.d("RBS", "Received "+array.size()+" checkouts from Roblu Scouter.");
                 } catch(Exception e) {
-                    Log.d("RBS", "Failed to process checkouts received over Bluetooth.");
+                    Log.d("RBS", "Failed to process checkouts received over Bluetooth: "+e.getMessage());
                 }
                 break;
             case "requestForm":
+                Log.d("RBS", "Roblu Scouter requested form, responding with it.");
+
                 try {
                     bluetooth.send("FORM", mapper.writeValueAsString(io.loadForm(event.getID())));
                 } catch(Exception e) {
@@ -137,6 +138,8 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 }
                 break;
             case "requestUI":
+                Log.d("RBS", "Roblu Scouter requested ui, responding with it.");
+
                 try {
                     bluetooth.send("UI", mapper.writeValueAsString(io.loadSettings().getRui()));
                 } catch(Exception e) {
@@ -144,24 +147,32 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 }
                 break;
             case "requestCheckouts":
+                Log.d("RBS", "Roblu Scouter requested checkouts, responding with them.");
+
                 // Get the timestamp
                 long time = Long.parseLong(message.split(":")[1]);
 
                 ArrayList<RCheckout> checkouts = syncHelper.generateCheckoutsFromEvent(io.loadTeams(event.getID()), time);
 
                 try {
-                    bluetooth.send("CHECKOUTS", mapper.writeValueAsString(syncHelper.packCheckouts(checkouts)));
+                    bluetooth.send("CHECKOUTS", syncHelper.packCheckouts(checkouts));
                 } catch(Exception e) {
                     Log.d("RBS", "Failed to map checkouts to Bluetooth output stream.");
                 }
                 break;
             case "requestNumber":
+                Log.d("RBS", "Roblu Scouter requested team number, responding with it.");
+
                 bluetooth.send("NUMBER", String.valueOf(io.loadSettings().getTeamNumber()));
                 break;
             case "requestEventName":
+                Log.d("RBS", "Roblu Scouter requested event name, responding with it.");
+
                 bluetooth.send("EVENT_NAME", event.getName());
                 break;
             case "DONE":
+                Log.d("RBS", "Roblu Scouter requested DONE. Confirming.");
+
                 bluetooth.send("DONE", "noParams");
                 pd.dismiss();
                 bluetooth.disconnect();

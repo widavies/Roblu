@@ -11,6 +11,8 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RCalculation;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.notifications.Notify;
@@ -69,7 +71,6 @@ public class SyncHelper {
         mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-
     /**
      * Packages a list of checkouts and converts them to a string
      * @param checkouts the checkouts to package
@@ -87,10 +88,15 @@ public class SyncHelper {
 
         /*
          * Pack images into the checkouts
+         * (and wipe data from any RFieldData metrics)
          */
         for(RCheckout checkout : checkouts) {
             for(RTab tab : checkout.getTeam().getTabs()) {
                 for(int i = 0; tab.getMetrics() != null && i < tab.getMetrics().size(); i++) {
+                    if(tab.getMetrics().get(i) instanceof RFieldData) {
+                        ((RFieldData) tab.getMetrics().get(i)).setData(null);
+                    }
+
                     if(!(tab.getMetrics().get(i) instanceof RGallery)) continue;
 
                     // Make sure the array is not null.
@@ -135,9 +141,9 @@ public class SyncHelper {
                     // Update the sync IDs
                     cloudSettings.getCheckoutSyncIDs().put(checkout.getID(), serial.getSyncID());
                 }
-
+                // Flag for uploading
                 else if(mode == MODES.BLUETOOTH) {
-                    io.savePendingObject(checkout);
+                    io.savePendingCheckout(checkout);
                 }
             } catch(Exception e) {
                 Log.d("RBS", "Failed to unpack checkout: "+serial);
@@ -168,8 +174,8 @@ public class SyncHelper {
         // The team was found, so do a merge
         if(team != null) {
             team.verify(form);
-            team.setLastEdit(checkout.getTeam().getLastEdit());
 
+            boolean shouldOverrideLastEdited = false;
             for(RTab downloadedTab : checkout.getTeam().getTabs()) {
                 boolean matchLocated = false;
                 for(RTab localTab : team.getTabs()) {
@@ -183,9 +189,14 @@ public class SyncHelper {
                         if(downloadedTab.getEdits() != null) localTab.setEdits(downloadedTab.getEdits());
 
                         for(RMetric downloadedMetric : downloadedTab.getMetrics()) {
+                            if(!(downloadedMetric instanceof RCalculation) && !(downloadedMetric instanceof RFieldData) && downloadedMetric.isModified()) shouldOverrideLastEdited = true;
+
                             for(RMetric localMetric : localTab.getMetrics()) {
                                 // Found the metric, determine if a merge needs to occur
                                 if(downloadedMetric.getID() == localMetric.getID()) {
+                                    // Ignore imports from this metric
+                                    if(downloadedMetric instanceof RFieldData) break;
+
                                     /*
                                      * We have to deal with one special case scenario - the gallery.
                                      * The gallery should never be overrided, just added to
@@ -230,7 +241,7 @@ public class SyncHelper {
                     Collections.sort(team.getTabs());
                 }
             }
-
+            if(shouldOverrideLastEdited) team.setLastEdit(checkout.getTeam().getLastEdit());
         }
         // The team was not found locally, create a new one
         else {
@@ -281,8 +292,8 @@ public class SyncHelper {
             newCheckout.setID(id);
             newCheckout.setStatus(HandoffStatus.AVAILABLE);
 
-            if(mode == MODES.BLUETOOTH && newCheckout.getTeam().getLastEdit() >= time) checkouts.add(newCheckout);
-            else checkouts.add(newCheckout);
+            if(mode == MODES.BLUETOOTH && newCheckout.getTeam().getLastEdit() > time) checkouts.add(newCheckout);
+            else if(mode != MODES.BLUETOOTH)  checkouts.add(newCheckout);
             id++;
         }
         // Package matches checkouts
@@ -300,8 +311,8 @@ public class SyncHelper {
                 check.setID(id);
                 check.setStatus(HandoffStatus.AVAILABLE);
 
-                if(mode == MODES.BLUETOOTH && check.getTeam().getLastEdit() >= time) checkouts.add(check);
-                else checkouts.add(check);
+                if(mode == MODES.BLUETOOTH && check.getTeam().getLastEdit() > time) checkouts.add(check);
+                else if(mode != MODES.BLUETOOTH) checkouts.add(check);
 
                 id++;
             }
@@ -343,5 +354,4 @@ public class SyncHelper {
         for(int i = 0; i < serial.length; i++) cloudCheckouts[i] = new CloudCheckout(-1, serial[i]);
         return cloudCheckouts;
     }
-
 }

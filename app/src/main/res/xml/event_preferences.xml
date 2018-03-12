@@ -58,6 +58,13 @@
             android:key="duplicate"
             android:summary="Create a copy of this event"/>
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
+    <com.cpjd.roblu.ui.settings.customPreferences.RUICategory
+        android:title="Other">
+    <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+        android:title="Manually import schedule"
+        android:key="import_schedule"
+        android:summary="If TheBlueAlliance.com is down, use this option to import your match schedule more quickly."/>
+    </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
     <com.cpjd.roblu.ui.settings.customPreferences.RUIRedCategory android:title="DANGER ZONE">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
             android:title="Delete teams"

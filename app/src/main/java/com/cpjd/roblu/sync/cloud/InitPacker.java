@@ -9,12 +9,13 @@ import com.cpjd.http.Request;
 import com.cpjd.requests.CloudCheckoutRequest;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
-import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RSyncSettings;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.sync.SyncHelper;
@@ -107,6 +108,21 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         SyncHelper syncHelper = new SyncHelper(io, event, SyncHelper.MODES.NETWORK);
         ArrayList<RCheckout> checkouts = syncHelper.generateCheckoutsFromEvent(teams, -1);
 
+        // Remove field data
+        try {
+            for(RCheckout checkout : checkouts) {
+                for(RTab tab : checkout.getTeam().getTabs()) {
+                    for(RMetric metric : tab.getMetrics()) {
+                        if(metric instanceof RFieldData) {
+                            ((RFieldData) metric).setData(null);
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            // Doesn't matter
+        }
+
         /*
          * Convert into JSON and upload
          */
@@ -118,6 +134,7 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
             String serializedUI = mapper.writeValueAsString(settings.getRui());
             String eventName = event.getName();
             if(eventName == null) eventName = "";
+            if(event.getKey() == null) event.setKey("");
             CloudCheckoutRequest ccr = new CloudCheckoutRequest(r, settings.getCode());
             Log.d("RBS", "Initializing init packer upload...");
             boolean success = ccr.init(settings.getTeamNumber(), eventName, serializedForm, serializedUI, serializedCheckouts, event.getKey());

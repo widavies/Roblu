@@ -22,6 +22,7 @@ import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RDivider;
+import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
@@ -130,7 +131,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
 
             // Return for incompatible metrics
             if(team.getTabs().get(1).getMetrics().get(i) instanceof RDivider || team.getTabs().get(1).getMetrics().get(i) instanceof RGallery
-                    || team.getTabs().get(1).getMetrics().get(i) instanceof RTextfield || team.getTabs().get(1).getMetrics().get(i) instanceof RFieldDiagram) continue;
+                    || team.getTabs().get(1).getMetrics().get(i) instanceof RTextfield || team.getTabs().get(1).getMetrics().get(i) instanceof RFieldDiagram || team.getTabs().get(1).getMetrics().get(i) instanceof RFieldData) continue;
 
             /*
              * If the metric was boolean, chooser, or checkbox, all the values need to be

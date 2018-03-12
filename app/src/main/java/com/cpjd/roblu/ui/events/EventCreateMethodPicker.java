@@ -328,6 +328,7 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
                 Utils.showSnackbar(findViewById(R.id.activity_create_event_picker), getApplicationContext(), "Invalid backup file", true, rui.getPrimaryColor());
             }
         }
+
         /*
          * The user created an event manually with EventEditor, we actually don't need to do anything but auto-finish our class
          * with a result code letting the TeamsView class now to refresh the event list

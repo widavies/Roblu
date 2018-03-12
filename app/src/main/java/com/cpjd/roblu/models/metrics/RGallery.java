@@ -56,24 +56,6 @@ public class RGallery extends RMetric {
     }
 
     /**
-     * Adds a new image to the image array
-     * @param image a byte[] representing the image, format must match that UI requirements
-     */
-    public void addImage(byte[] image) {
-        if(images == null) images = new ArrayList<>();
-
-        images.add(image);
-    }
-
-    /**
-     * Removes an image from the image array
-     * @param position the index position of the image to be removed
-     */
-    public void removeImage(int position) {
-        if(images != null) images.remove(position);
-    }
-
-    /**
      * Returns the image array, ensuring that it's not null
      * @return array containing all images
      */

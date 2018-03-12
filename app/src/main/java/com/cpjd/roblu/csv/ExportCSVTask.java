@@ -5,6 +5,7 @@ import android.os.Build;
 import android.util.Log;
 
 import com.cpjd.roblu.csv.csvSheets.CSVSheet;
+import com.cpjd.roblu.csv.csvSheets.FieldData;
 import com.cpjd.roblu.csv.csvSheets.Lookup;
 import com.cpjd.roblu.csv.csvSheets.MatchData;
 import com.cpjd.roblu.csv.csvSheets.MatchList;
@@ -53,7 +54,7 @@ public class ExportCSVTask extends Thread {
      * The order of this array should match the order of the IDs in
      * @see SHEETS
      */
-    private CSVSheet[] CSVSheets = {new MatchData(), new PitData(), new MatchList(), new Lookup(), new OurMatches()};
+    private CSVSheet[] CSVSheets = {new MatchData(), new PitData(), new MatchList(), new Lookup(), new OurMatches(), new FieldData()};
 
     /**
      * Reference to the context object for file system access
@@ -113,6 +114,7 @@ public class ExportCSVTask extends Thread {
         static int MATCH_LIST = 2;
         static int MATCH_LOOKUP = 3;
         static int OUR_MATCHES = 4;
+        static int FIELD_DATA = 5;
     }
 
     public static class VERBOSENESS {
@@ -254,18 +256,18 @@ public class ExportCSVTask extends Thread {
             new Thread() {
                 public void run() {
                     if(s.isEnabled()) {
-                        // try {
+                         try {
                         s.setIo(io);
                         s.setVerboseness(verboseness);
                         s.setWorkbook(workbook);
                         Log.d("RBS", "ExportCSVTask: Generating sheet: "+s.getSheetName());
                         s.setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, false); // sets the default, this may get overrided at any point in time by the user
                         s.generateSheet(sheets.get(s.getSheetName()), event, form, teams, checkouts);
-                      //  for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
-                       //  } catch(Exception e) {
-                       //      listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
-                        //    Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
-                        // }
+                        for(int i = 0; i < sheets.get(s.getSheetName()).getRow(0).getLastCellNum(); i++) sheets.get(s.getSheetName()).setColumnWidth(i, s.getColumnWidth());
+                         } catch(Exception e) {
+                             listener.errorOccurred("Failed to execute "+s.getSheetName()+" sheet generation.");
+                            Log.d("RBS", "Failed to execute "+s.getSheetName()+" sheet generation. Err: "+e.getMessage());
+                         }
                         threadCompleted(s.getSheetName());
                     }
 

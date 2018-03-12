@@ -11,7 +11,6 @@ import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.notifications.Notify;
 import com.cpjd.roblu.sync.SyncHelper;
-import com.cpjd.roblu.utils.CheckoutEncoder;
 import com.dlazaro66.qrcodereaderview.QRCodeReaderView;
 
 /**
@@ -83,7 +82,7 @@ public class QrReader extends AppCompatActivity implements QRCodeReaderView.OnQR
 
                     new SyncHelper(getApplicationContext(), event, SyncHelper.MODES.QR).mergeCheckout(checkout);
 
-                    new IO(getApplicationContext()).savePendingObject(checkout);
+                    new IO(getApplicationContext()).savePendingCheckout(checkout);
 
                     Notify.notifyMerged(getApplicationContext(), event.getID(), checkout);
 
