@@ -52,9 +52,12 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
         tutorials.add(new RTutorial("Text based", "View the Roblu text based tutorial", "https://docs.google.com/document/d/1DqpgKPdtfZDUc7Zu3MqdJHL59aB-ht8H1ZwllYlzMuc/edit?usp=sharing"));
         tutorials.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc.", "9j6ysvJJyQg"));
         tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "6BLlLxltppk"));
-        tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "LpWvnavebNw"));
-        tutorials.add(new RTutorial("QR Codes", "Learn how to use QR code syncing", "RF4evYIlU04"));
-        tutorials.add(new RTutorial("CSV Exporting", "Learn about CSV exporting and defining your own CSV export schemes", "RF4evYIlU04"));
+        tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "xLLbPyhW9fg"));
+        tutorials.add(new RTutorial("Roblu Cloud (Network syncing)", "Learn how to setup and sync scouting data across unlimited devices over a data connection.", "z9tIGaaV1jQ"));
+        tutorials.add(new RTutorial("Bluetooth Syncing", "Learn how to setup and sync with Bluetooth syncing.", "Adjp3rjt2_4"));
+        tutorials.add(new RTutorial("QR Codes", "Learn how to use QR code syncing", "pS_5bvp1D_c"));
+        tutorials.add(new RTutorial("Manual Schedule Importer", "Learn how to use the manual schedule importer if the FIRST API is down.", "https://github.com/wdavies973/Roblu/wiki/Manually-Importing-a-Match-Schedule"));
+        tutorials.add(new RTutorial("Scouting / Odds and Ends", "Learn about those features that weren't in any of the other tutorial videos", "JL_lSaB0gsk"));
         tutorials.add(new RTutorial("How to get Roblu Cloud for free", "Get Roblu Cloud for free", "dQw4w9WgXcQ"));
         tutorials.add(new RTutorial("Roblu Devlogs", "For those interested in watching the development process", ""));
 
@@ -122,7 +125,7 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
             i.setData(Uri.parse(url));
             startActivity(i);
         }
-        else if(position == 0) {
+        else if(position == 0 || position == 7) {
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(tutorials.get(position).getYoutubeID()));
             startActivity(i);

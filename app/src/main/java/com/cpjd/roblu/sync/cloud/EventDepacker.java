@@ -154,6 +154,7 @@ public class EventDepacker extends Thread {
                     found = true;
                     break;
                 }
+
                 t.setLastEdit(checkout.getTime());
             }
 
