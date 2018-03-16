@@ -1,13 +1,10 @@
 package com.cpjd.roblu.tba;
 
-import android.util.Log;
-
 import com.cpjd.models.Event;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RMetric;
@@ -121,27 +118,16 @@ public class SyncTBAEvent extends Thread {
 
                     for(int i = 0; i < event.matches[index].scorableItems.length; i++) {
 
-                        Log.d("RBS", "Metric name: "+event.matches[index].scorableItems[i]+", "+"Red value: "+event.matches[index].redValues[i]+", Blue value: "+event.matches[index].blueValues[i]);
-
                         ArrayList<RMetric> metrics = new ArrayList<>();
                         try {
                             metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[index].redValues[i])));
                         } catch(Exception e) {
-                            try {
-                                metrics.add(new RBoolean(0, "", Boolean.parseBoolean(event.matches[index].redValues[i])));
-                            } catch(Exception e2) {
-                                metrics.add(new RTextfield(0, "", (event.matches[index].redValues[i])));
-                            }
-
+                            metrics.add(new RTextfield(0, "", (event.matches[index].redValues[i])));
                         }
                         try {
                             metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[index].blueValues[i])));
                         } catch(Exception e) {
-                            try {
-                                metrics.add(new RBoolean(0, "", Boolean.parseBoolean(event.matches[index].blueValues[i])));
-                            } catch(Exception e2) {
-                                metrics.add(new RTextfield(0, "", (event.matches[index].blueValues[i])));
-                            }
+                            metrics.add(new RTextfield(0, "", (event.matches[index].blueValues[i])));
                         }
 
                         if(event.matches[index].scorableItems[i] != null && metrics.size() > 0) ((RFieldData) metric).getData().put(event.matches[index].scorableItems[i], metrics);

@@ -38,8 +38,11 @@ import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RFieldData;
+import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.sync.cloud.InitPacker;
 import com.cpjd.roblu.sync.qr.QrReader;
 import com.cpjd.roblu.tba.ImportEvent;
@@ -52,6 +55,7 @@ import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.settings.customPreferences.RUICheckPreference;
 import com.cpjd.roblu.ui.teams.TeamsView;
 import com.cpjd.roblu.utils.Constants;
+import com.cpjd.roblu.utils.EventMergeTask;
 import com.cpjd.roblu.utils.Utils;
 import com.google.common.io.Files;
 
@@ -171,6 +175,7 @@ public class EventSettings extends AppCompatActivity {
             findPreference("delete_event").setOnPreferenceClickListener(this);
             findPreference("tba_sync").setOnPreferenceClickListener(this);
             findPreference("import_schedule").setOnPreferenceClickListener(this);
+            findPreference("merge_events").setOnPreferenceClickListener(this);
             findPreference("qr").setOnPreferenceClickListener(this);
             RUICheckPreference bt = (RUICheckPreference) findPreference("bt_sync");
             bt.setChecked(event.isBluetoothEnabled());
@@ -231,6 +236,29 @@ public class EventSettings extends AppCompatActivity {
                 } catch (android.content.ActivityNotFoundException ex) {
                     Utils.showSnackbar(getActivity().findViewById(R.id.activity_create_event_picker), getActivity(), "No file manager found", true, 0);
                 }
+            }
+            // User selected "merge events" option
+            else if(preference.getKey().equals("merge_events")) {
+                Utils.launchEventPicker(getActivity(), new EventDrawerManager.EventSelectListener() {
+                    @Override
+                    public void eventSelected(REvent selected) {
+                        final ProgressDialog pd = ProgressDialog.show(getActivity(), "Merging events...", "Please wait...", false);
+                        new EventMergeTask(new IO(getActivity()), event.getID(), selected.getID(), new EventMergeTask.EventMergeListener() {
+                            @Override
+                            public void error() {
+                                Toast.makeText(getActivity(), "An error occurred while merging events.", Toast.LENGTH_LONG).show();
+                                pd.dismiss();
+                            }
+
+                            @Override
+                            public void success() {
+                                Toast.makeText(getActivity(), "Successfully merged events.", Toast.LENGTH_LONG).show();
+                                pd.dismiss();
+                            }
+                        }).start();
+
+                    }
+                });
             }
             /*
              * User clicked the "Edit event info" preference.
@@ -613,8 +641,32 @@ public class EventSettings extends AppCompatActivity {
 
             protected File doInBackground(Void... params) {
                 RTeam[] teams = ioWeakReference.get().loadTeams(event.getID());
-                RForm form = ioWeakReference.get().loadForm(event.getID());
-                return ioWeakReference.get().saveBackup(new RBackup(event, teams, form), "event.roblubackup");
+                IO io = ioWeakReference.get();
+
+                /*
+                 * Package images into the backup file
+                 */
+                for(RTeam team : teams) {
+                    for(RTab tab : team.getTabs()) {
+                        for(int i = 0; tab.getMetrics() != null && i < tab.getMetrics().size(); i++) {
+                            if(tab.getMetrics().get(i) instanceof RFieldData) {
+                                ((RFieldData) tab.getMetrics().get(i)).setData(null);
+                            }
+
+                            if(!(tab.getMetrics().get(i) instanceof RGallery)) continue;
+
+                            // Make sure the array is not null.
+                            ((RGallery)tab.getMetrics().get(i)).setImages(new ArrayList<byte[]>());
+
+                            for(int j = 0; ((RGallery)tab.getMetrics().get(i)).getPictureIDs() != null && j < ((RGallery)tab.getMetrics().get(i)).getPictureIDs().size(); j++) {
+                                ((RGallery)tab.getMetrics().get(i)).getImages().add(io.loadPicture(event.getID(), ((RGallery)tab.getMetrics().get(i)).getPictureIDs().get(j)));
+                            }
+                        }
+                    }
+                }
+
+                RForm form = io.loadForm(event.getID());
+                return io.saveBackup(new RBackup(event, teams, form), "event.roblubackup");
             }
 
             protected void onPostExecute(File file) {

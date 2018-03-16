@@ -1,0 +1,35 @@
+Title:FRC 2018
+Description:Courtesy Team PWNAGE
+PIT
+DEFAULTS
+checkbox,Abilities,Auto Cross:Auto Scale:Auto Switch:Scale:Switch:Exchange:Climb:Lift
+textfield,Programming Language
+boolean,Programmer on site,false
+slider,Robot Speed in fps,1,20,1
+textfield,Pit Notes
+gallery,Gallery
+MATCH
+divider,AUTONOMOUS
+boolean,Auto Cross,false
+counter,Auto Switch,0
+counter,Auto Scale,0
+boolean,Auto Penalty,false
+divider,TELEOP
+counter,Switch,0
+counter,Scale Missed,0
+counter,Scale Placed,0
+counter,Exchange,0
+counter,Opponents Switch,0
+counter,Cubes Dropped,0
+counter,Penalty,0
+divider,End game
+checkbox,Final Position,Parked:Lifted Others:Lifted by Another:Still Running Cubes
+textfield,If lifted, by whom?
+textfield,Match Notes
+
+
+
+
+
+
+

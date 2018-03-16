@@ -64,6 +64,11 @@
         android:title="Manually import schedule"
         android:key="import_schedule"
         android:summary="If TheBlueAlliance.com is down, use this option to import your match schedule more quickly."/>
+        <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference
+            android:title="Merge events"
+            android:key="merge_events"
+            android:summary="Select an event to merge into this event. Data will be merged via SMART merge, which analyzes data per metric to make sure all scouting data is preserved."
+            />
     </com.cpjd.roblu.ui.settings.customPreferences.RUICategory>
     <com.cpjd.roblu.ui.settings.customPreferences.RUIRedCategory android:title="DANGER ZONE">
         <com.cpjd.roblu.ui.settings.customPreferences.RUIPreference

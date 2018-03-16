@@ -28,8 +28,11 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RBackup;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RSettings;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RGallery;
+import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.sync.cloud.EventDepacker;
 import com.cpjd.roblu.sync.cloud.Service;
 import com.cpjd.roblu.ui.UIHandler;
@@ -316,7 +319,20 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
                 io.saveEvent(event);
                 io.saveForm(event.getID(), backup.getForm());
                 if(backup.getTeams() != null) {
-                    for(RTeam team : backup.getTeams()) io.saveTeam(event.getID(), team);
+                    for(RTeam team : backup.getTeams()) {
+                        for(RTab tab : team.getTabs()) {
+                            for(RMetric metric : tab.getMetrics()) {
+                                if(metric instanceof RGallery && ((RGallery) metric).getImages() != null) {
+                                    // Add images to the current gallery
+                                    for(int i = 0; i < ((RGallery) metric).getImages().size(); i++) {
+                                        ((RGallery) metric).getPictureIDs().add(io.savePicture(event.getID(), ((RGallery) metric).getImages().get(i)));
+                                    }
+                                    ((RGallery) metric).setImages(null);
+                                }
+                            }
+                        }
+                        io.saveTeam(event.getID(), team);
+                    }
                 }
                 Utils.showSnackbar(findViewById(R.id.activity_create_event_picker), getApplicationContext(), "Successfully imported event from backup", false, rui.getPrimaryColor());
                 Intent intent = new Intent();
@@ -382,7 +398,6 @@ public class EventCreateMethodPicker extends AppCompatActivity implements Adapte
             }
         });
     }
-
 
     /**
      * Returns true if an active event is being synced with the cloud

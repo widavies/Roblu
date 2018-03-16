@@ -209,9 +209,11 @@ public class ExportCSVTask extends Thread {
          * Verify all the teams
          */
         for(RTeam team : teams) {
-            team.setFilter(TeamsView.SORT_TYPE.NUMERICAL); // also sneak in a line here to tell each team to sort by numerical if a sort request is made
-            team.verify(form);
-            new IO(contextWeakReference.get()).saveTeam(event.getID(), team);
+            if(team != null) {
+                team.setFilter(TeamsView.SORT_TYPE.NUMERICAL); // also sneak in a line here to tell each team to sort by numerical if a sort request is made
+                team.verify(form);
+                new IO(contextWeakReference.get()).saveTeam(event.getID(), team);
+            }
         }
 
         /*
