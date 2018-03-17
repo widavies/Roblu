@@ -485,25 +485,10 @@ public class EventSettings extends AppCompatActivity {
 
                     if(ctr.isActive()) {
                         new FastDialogBuilder()
-                                .setTitle("Warning")
-                                .setMessage("It looks like you already have some scouting data on the server. If you overwrite, you may lose some scouting data. Are you sure you want to overwrite?")
-                                .setPositiveButtonText("Overwrite")
-                                .setNegativeButtonText("Cancel")
-                                .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
-                                    @Override
-                                    public void accepted() {
-                                        uploadEvent();
-                                    }
-
-                                    @Override
-                                    public void denied() {
-                                        ((CheckBoxPreference) preference).setChecked(false);
-                                    }
-
-                                    @Override
-                                    public void neutral() {
-                                    }
-                                }).build(getActivity());
+                                .setTitle("Error")
+                                .setMessage("It looks like you already have an event synced on the server. Please go into Roblu application settings and select \"Purge Cloud Event\", then try uploading" +
+                                        " the event again.")
+                                .setPositiveButtonText("Ok").build(getActivity());
 
                     } else uploadEvent();
                 } else {

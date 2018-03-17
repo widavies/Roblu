@@ -131,7 +131,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
                 for(RTab tab : team.getTabs()) {
                     if(tab.getTitle().equalsIgnoreCase("PIT") || tab.getTitle().equalsIgnoreCase("PREDICTIONS")) continue;
                     for(RMetric metric2 : tab.getMetrics()) {
-                        if(metric2 instanceof RFieldData && metrics.get(position).getID() == metric2.getID()) {
+                        if(metric2 instanceof RFieldData && metrics.get(position).getID() == metric2.getID() && ((RFieldData) metric2).getData() != null && ((RFieldData) metric2).getData().size() >= 1) {
                             fieldData = (RFieldData) metric2;
                             break mainLoop;
                         }

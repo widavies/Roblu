@@ -110,31 +110,35 @@ public class SyncTBAEvent extends Thread {
     }
     
     private void insertFieldData(int index, RTab tab) {
-        // Check for FieldData metrics
-        if(tab.getMetrics() != null) {
-            for(RMetric metric : tab.getMetrics()) {
-                if(metric instanceof RFieldData) {
-                    if(((RFieldData) metric).getData() == null) ((RFieldData) metric).setData(new LinkedHashMap<String, ArrayList<RMetric>>());
+        try {
 
-                    for(int i = 0; i < event.matches[index].scorableItems.length; i++) {
+            // Check for FieldData metrics
+            if(tab.getMetrics() != null) {
+                for(RMetric metric : tab.getMetrics()) {
+                    if(metric instanceof RFieldData) {
+                        if(((RFieldData) metric).getData() == null) ((RFieldData) metric).setData(new LinkedHashMap<String, ArrayList<RMetric>>());
 
-                        ArrayList<RMetric> metrics = new ArrayList<>();
-                        try {
-                            metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[index].redValues[i])));
-                        } catch(Exception e) {
-                            metrics.add(new RTextfield(0, "", (event.matches[index].redValues[i])));
+                        for(int i = 0; i < event.matches[index].scorableItems.length; i++) {
+
+                            ArrayList<RMetric> metrics = new ArrayList<>();
+                            try {
+                                metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[index].redValues[i])));
+                            } catch(Exception e) {
+                                metrics.add(new RTextfield(0, "", (event.matches[index].redValues[i])));
+                            }
+                            try {
+                                metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[index].blueValues[i])));
+                            } catch(Exception e) {
+                                metrics.add(new RTextfield(0, "", (event.matches[index].blueValues[i])));
+                            }
+
+                            if(event.matches[index].scorableItems[i] != null && metrics.size() > 0) ((RFieldData) metric).getData().put(event.matches[index].scorableItems[i], metrics);
                         }
-                        try {
-                            metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[index].blueValues[i])));
-                        } catch(Exception e) {
-                            metrics.add(new RTextfield(0, "", (event.matches[index].blueValues[i])));
-                        }
-
-                        if(event.matches[index].scorableItems[i] != null && metrics.size() > 0) ((RFieldData) metric).getData().put(event.matches[index].scorableItems[i], metrics);
                     }
                 }
             }
-        }
+        } catch(Exception e) {}
+
     }
     
     private RTab matchModelToTab(int index, int teamNumber) {
