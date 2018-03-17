@@ -13,7 +13,7 @@ public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
 
-    public static final String UPDATE_MESSAGE = "-Added field data metric\n-Master form can be backed up\nAdded manual match schedule importer\n-Bug fixes";
+    public static final String UPDATE_MESSAGE = "-Event merger\n-New predefined forms\n-Field data metric improvements\nBug fixes";
 
     public static final int VERSION = 11; // used for updating the changelist
 

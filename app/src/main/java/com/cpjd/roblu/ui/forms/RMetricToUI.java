@@ -1179,15 +1179,18 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
                 TableRow tableRow = new TableRow(activity);
                 TextView red = new TextView(activity);
+                red.setGravity(Gravity.CENTER_HORIZONTAL);
                 red.setBackgroundColor(Color.RED);
                 red.setText(fieldData.getData().get(key).get(0).toString());
 
                 TextView title = new TextView(activity);
                 title.setPadding(Utils.DPToPX(activity, 15), title.getPaddingTop(), Utils.DPToPX(activity, 15), title.getPaddingBottom());
+                title.setGravity(Gravity.CENTER_HORIZONTAL);
                 title.setText(key.toString());
 
                 TextView blue = new TextView(activity);
                 blue.setBackgroundColor(Color.BLUE);
+                blue.setGravity(Gravity.CENTER_HORIZONTAL);
                 blue.setText(fieldData.getData().get(key).get(1).toString());
 
                 tableRow.setBackgroundResource(R.drawable.row_border);
@@ -1195,14 +1198,14 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 tableRow.addView(red);
                 tableRow.addView(title);
                 tableRow.addView(blue);
+                tableRow.setGravity(Gravity.CENTER_HORIZONTAL);
                 tableLayout.addView(tableRow);
             }
         }
-
-        tableLayout.setGravity(Gravity.CENTER_HORIZONTAL);
         params.addRule(RelativeLayout.BELOW, text.getId());
         layout.setGravity(Gravity.CENTER_HORIZONTAL);
         tableLayout.setLayoutParams(params);
+        tableLayout.setGravity(Gravity.CENTER_HORIZONTAL);
         layout.addView(text);
         layout.addView(tableLayout);
 

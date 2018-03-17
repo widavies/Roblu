@@ -239,20 +239,30 @@ public class EventSettings extends AppCompatActivity {
             }
             // User selected "merge events" option
             else if(preference.getKey().equals("merge_events")) {
-                Utils.launchEventPicker(getActivity(), new EventDrawerManager.EventSelectListener() {
+                Utils.launchEventPickerWithExcludedEvent(getActivity(), event.getID(), new EventDrawerManager.EventSelectListener() {
                     @Override
                     public void eventSelected(REvent selected) {
                         final ProgressDialog pd = ProgressDialog.show(getActivity(), "Merging events...", "Please wait...", false);
                         new EventMergeTask(new IO(getActivity()), event.getID(), selected.getID(), new EventMergeTask.EventMergeListener() {
                             @Override
                             public void error() {
-                                Toast.makeText(getActivity(), "An error occurred while merging events.", Toast.LENGTH_LONG).show();
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getActivity(), "An error occurred while merging events.", Toast.LENGTH_LONG).show();
+                                    }
+                                });
                                 pd.dismiss();
                             }
 
                             @Override
                             public void success() {
-                                Toast.makeText(getActivity(), "Successfully merged events.", Toast.LENGTH_LONG).show();
+                                getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getActivity(), "Successfully merged events.", Toast.LENGTH_LONG).show();
+                                    }
+                                });
                                 pd.dismiss();
                             }
                         }).start();

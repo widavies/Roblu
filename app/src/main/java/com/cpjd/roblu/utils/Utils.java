@@ -12,6 +12,7 @@ import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
 import android.support.annotation.ColorInt;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
@@ -92,8 +93,11 @@ public class Utils {
                 (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-        return activeNetwork != null &&
-                activeNetwork.isConnectedOrConnecting();
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return activeNetwork != null &&
+                    activeNetwork.isConnectedOrConnecting() || (cm.getNetworkInfo(ConnectivityManager.TYPE_VPN).isConnectedOrConnecting());
+        } else return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
     /**
@@ -264,6 +268,51 @@ public class Utils {
             @Override
             public void onClick(View v) {
                 listener.eventSelected(events[spinner.getSelectedItemPosition()]);
+                d.dismiss();
+            }
+        });
+        if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(context).loadSettings().getRui().getAnimation();
+        d.show();
+        return true;
+    }
+
+    /**
+     * For certain things, the user may need to select an event from a list of locally stored event,
+     * this method does just that! The EventSelectListener method will trigger when an event is successfully
+     * selected.
+     * @param context context reference
+     * @param listener listener to respond to events
+     * @return true if some events exist
+     */
+    public static boolean launchEventPickerWithExcludedEvent(Context context, int eventIDExcluded, final EventDrawerManager.EventSelectListener listener) {
+        final Dialog d = new Dialog(context);
+        d.setTitle("Pick event:");
+        d.setContentView(R.layout.event_import_dialog);
+        final Spinner spinner = d.findViewById(R.id.type);
+        String[] values;
+        final REvent[] events = new IO(context).loadEvents();
+        if(events == null || events.length == 0) return false;
+
+        final ArrayList<REvent> eventArrayList = new ArrayList<>();
+
+        for(REvent event : events) {
+            if(event.getID() != eventIDExcluded) eventArrayList.add(event);
+        }
+
+        values = new String[eventArrayList.size()];
+        for(int i = 0; i < values.length; i++) {
+            values[i] = eventArrayList.get(i).getName();
+        }
+        ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, values);
+        adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adp);
+
+        Button button = d.findViewById(R.id.button7);
+        button.setText("Select");
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                listener.eventSelected(eventArrayList.get(spinner.getSelectedItemPosition()));
                 d.dismiss();
             }
         });

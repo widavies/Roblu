@@ -1,5 +1,7 @@
 package com.cpjd.roblu.utils;
 
+import android.util.Log;
+
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
@@ -47,7 +49,6 @@ public class EventMergeTask extends Thread {
     @Override
     public void run() {
         try {
-
             // Load teams for each event
             RTeam[] localTeams = io.loadTeams(localEventID);
             RTeam[] targetTeams = io.loadTeams(targetEventID);
@@ -61,8 +62,7 @@ public class EventMergeTask extends Thread {
             for(RTeam local : localTeams) {
                 // Find the team
                 for(RTeam target : targetTeams) {
-                    if(target.getID() == local.getID()) {
-
+                    if(local.getNumber() == target.getNumber()) {
                         for(RTab localTab : local.getTabs()) {
                             // Find tab
                             for(RTab targetTab : target.getTabs()) {
@@ -95,16 +95,24 @@ public class EventMergeTask extends Thread {
                                                     }
                                                     // Don't forget to clear the pictures from memory after they've been merged
                                                     ((RGallery) targetMetric).setImages(null);
-                                                    break;
+                                                    local.setLastEdit(target.getLastEdit());
                                                 }
                                                 // Alright, looks like we can do the checks now
                                                 else if(targetMetric.isModified() && !localMetric.isModified()) {
-                                                    localMetric = targetMetric;
+                                                    int tabIndex = local.getTabs().indexOf(localTab);
+                                                    int metricIndex = local.getTabs().get(tabIndex).getMetrics().indexOf(localMetric);
+                                                    local.getTabs().get(tabIndex).getMetrics().set(metricIndex, targetMetric);
+                                                    local.setLastEdit(target.getLastEdit());
                                                 } else if(targetMetric.isModified() && localMetric.isModified() && target.getLastEdit() > local.getLastEdit()) {
-                                                    localMetric = targetMetric;
+                                                    int tabIndex = local.getTabs().indexOf(localTab);
+                                                    int metricIndex = local.getTabs().get(tabIndex).getMetrics().indexOf(localMetric);
+                                                    local.getTabs().get(tabIndex).getMetrics().set(metricIndex, targetMetric);
+                                                    local.setLastEdit(target.getLastEdit());
                                                 }
+                                                break;
                                             }
                                         }
+
                                     }
 
                                     break;
@@ -115,10 +123,13 @@ public class EventMergeTask extends Thread {
                         break;
                     }
                 }
+
                 io.saveTeam(localEventID, local);
             }
             listener.success();
         } catch(Exception e) {
+            Log.d("RBS", "Error occurred in EventMergeTask: "+e.getMessage());
+
             listener.error();
         }
     }

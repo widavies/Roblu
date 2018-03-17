@@ -11,7 +11,6 @@ import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
-import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RFieldData;
 import com.cpjd.roblu.models.metrics.RMetric;
@@ -118,23 +117,14 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
 
                                     ArrayList<RMetric> metrics = new ArrayList<>();
                                     try {
-                                        metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[j].redValues[i])));
+                                        metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[j].redValues[i])));
                                     } catch(Exception e) {
-                                        try {
-                                            metrics.add(new RBoolean(0, "", Boolean.parseBoolean(event.matches[j].redValues[i])));
-                                        } catch(Exception e2) {
-                                            metrics.add(new RTextfield(0, "", (event.matches[j].redValues[i])));
-                                        }
-
+                                        metrics.add(new RTextfield(0, "", (event.matches[j].redValues[i])));
                                     }
                                     try {
-                                        metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[j].blueValues[i])));
+                                        metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[j].blueValues[i])));
                                     } catch(Exception e) {
-                                        try {
-                                            metrics.add(new RBoolean(0, "", Boolean.parseBoolean(event.matches[j].blueValues[i])));
-                                        } catch(Exception e2) {
-                                            metrics.add(new RTextfield(0, "", (event.matches[j].blueValues[i])));
-                                        }
+                                        metrics.add(new RTextfield(0, "", (event.matches[j].blueValues[i])));
                                     }
 
                                     if(event.matches[j].scorableItems[i] != null && metrics.size() > 0) ((RFieldData) metric).getData().put(event.matches[j].scorableItems[i], metrics);

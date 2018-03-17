@@ -120,12 +120,12 @@ public class SyncTBAEvent extends Thread {
 
                         ArrayList<RMetric> metrics = new ArrayList<>();
                         try {
-                            metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[index].redValues[i])));
+                            metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[index].redValues[i])));
                         } catch(Exception e) {
                             metrics.add(new RTextfield(0, "", (event.matches[index].redValues[i])));
                         }
                         try {
-                            metrics.add(new RCounter(0, "", 0, Integer.parseInt(event.matches[index].blueValues[i])));
+                            metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[index].blueValues[i])));
                         } catch(Exception e) {
                             metrics.add(new RTextfield(0, "", (event.matches[index].blueValues[i])));
                         }

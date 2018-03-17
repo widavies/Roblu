@@ -11,17 +11,17 @@ gallery,Gallery
 MATCH
 divider,AUTONOMOUS
 boolean,Auto Cross,false
-counter,Auto Switch,0
-counter,Auto Scale,0
+counter,Auto Switch,1,0
+counter,Auto Scale,1,0
 boolean,Auto Penalty,false
 divider,TELEOP
-counter,Switch,0
-counter,Scale Missed,0
-counter,Scale Placed,0
-counter,Exchange,0
-counter,Opponents Switch,0
-counter,Cubes Dropped,0
-counter,Penalty,0
+counter,Switch,1,0
+counter,Scale Missed,1,0
+counter,Scale Placed,1,0
+counter,Exchange,1,0
+counter,Opponents Switch,1,0
+counter,Cubes Dropped,1,0
+counter,Penalty,1,0
 divider,End game
 checkbox,Final Position,Parked:Lifted Others:Lifted by Another:Still Running Cubes
 textfield,If lifted, by whom?
