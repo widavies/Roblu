@@ -63,11 +63,13 @@ public class FieldData extends CSVSheet {
             mainLoop : for(RTab tab : checkout.getTeam().getTabs()) {
                 for(RMetric metric2 : tab.getMetrics()) {
                     if(metric2 instanceof RFieldData) {
-                        for(Object key : ((RFieldData)metric2).getData().keySet()) {
-                            createCell(row, index + 2, ((RFieldData)metric2).getData().get(key).get(tab.isRedAlliance() ? 0 : 1).toString());
-                            index++;
-                        }
-                        break mainLoop;
+                        try {
+                            for(Object key : ((RFieldData) metric2).getData().keySet()) {
+                                createCell(row, index + 2, ((RFieldData) metric2).getData().get(key).get(tab.isRedAlliance() ? 0 : 1).toString());
+                                index++;
+                            }
+                            break mainLoop;
+                        } catch(Exception e) {}
                     }
                 }
             }

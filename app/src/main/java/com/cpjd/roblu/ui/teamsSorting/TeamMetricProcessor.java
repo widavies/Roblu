@@ -300,7 +300,7 @@ public class TeamMetricProcessor {
                     // Field data
                     else if(metric instanceof RFieldData) {
                         // Find the sub metric
-                        if(((RFieldData) metric).getData() != null) rawData.append(((RFieldData) metric).getData().get(inMatchTitle).get(team.getTabs().get(i).isRedAlliance() ? 0 : 1).toString()).append(ending(i, team.getTabs()));
+                        if(((RFieldData) metric).getData() != null && ((RFieldData) metric).getData().get(inMatchTitle) != null) rawData.append(((RFieldData) metric).getData().get(inMatchTitle).get(team.getTabs().get(i).isRedAlliance() ? 0 : 1).toString()).append(ending(i, team.getTabs()));
                         // Overview stats will only consider modified textfields
                         if(metric.isModified()) {
                             /*
@@ -341,8 +341,7 @@ public class TeamMetricProcessor {
                         overview.append("Field data: ").append(inMatchTitle);
                         try {
                             // this will fail if the value isn't a number
-                            Double.parseDouble(((RFieldData) metric).getData().get(inMatchTitle).get(0).toString());
-                            overview.append("\nAverage: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
+                            if(average != 0 || min != 0 || max != 0) overview.append("\nAverage: ").append(Utils.round(average, 2)).append(" Min: ").append(min).append(" Max: ").append(max);
                         } catch(Exception e) {
                             // eat it
                         }

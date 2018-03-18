@@ -21,12 +21,12 @@ import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RDivider;
-import com.cpjd.roblu.models.metrics.RFieldData;
-import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
-import com.cpjd.roblu.models.metrics.RTextfield;
+import com.cpjd.roblu.models.metrics.RSlider;
+import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.ui.forms.RMetricToUI;
 import com.cpjd.roblu.ui.team.TBATeamInfoTask;
 import com.cpjd.roblu.ui.team.TeamViewer;
@@ -64,94 +64,156 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
         RTeam team = new IO(getActivity()).loadTeam(event.getID(), TeamViewer.team.getID());
         rMetricToUI = new RMetricToUI(getActivity(), new IO(getActivity()).loadSettings().getRui(), true);
 
+        try {
         /*
-         * Do statistics generation!
+         * Do statistics generation, this will generate graphs for certain metrics
          */
-        // This is not really included in statistics generation, it's more of a side project so only 1 loop needs to be used
-        ArrayList<RGallery> galleries = new ArrayList<>();
+            // Stores pie chart values, with the sub linked hash map <item,occurrences>, this will need to be processed later into a percent
+            LinkedHashMap<String, LinkedHashMap<String, Double>> pieValues = new LinkedHashMap<>();
 
-        for(int i = 0; i < team.getTabs().get(1).getMetrics().size(); i++) { // predictions form will be the same for every tab
-            /*
-             * This will store the values of whatever metric is being analyzed.
-             * -For RCounter, RSlider, and RStopwatch, String key will be the match name, and the Object will be a Double value
-             * -For RChooser and RCheckbox, String key will be the item name, Object will be the double percentage occurrence
-             * -For RBoolean, String key 1 is YES, key 2 is NO, Object value is the percentage occurrence
-             *
-             * All other metrics are not valid for analyzing with this method
-             */
-            LinkedHashMap<String, Object> values = new LinkedHashMap<>();
+            // Stores line chart values, with the sub linked hash map <matchName,value>
+            LinkedHashMap<String, LinkedHashMap<String, Double>> lineValues = new LinkedHashMap<>();
 
-            if(team.getTabs().get(1).getMetrics().get(i) instanceof RDivider) {
-                layout.addView(new RMetricToUI(getActivity(), new IO(view.getContext()).loadSettings().getRui(), false).getDivider((RDivider)team.getTabs().get(1).getMetrics().get(i)));
-                continue;
-            }
+            // This isn't directly related, more of a side project
+            ArrayList<RGallery> galleries = new ArrayList<>();
 
-            // Process all the values
-            for(int j = 1; j < team.getTabs().size(); j++) {
-                RMetric metric = team.getTabs().get(j).getMetrics().get(i);
+            for(RTab tab : team.getTabs()) {
+                // Rule out disallowed tabs
+                if(tab.getTitle().equalsIgnoreCase("PIT")) continue;
 
-                if(metric instanceof RGallery) {
-                    galleries.add((RGallery)metric);
-                    continue;
-                }
-
-                if(!metric.isModified() || metric instanceof RTextfield) continue;
-
-                if(metric instanceof RBoolean) {
-                    // Process the new value
-                    String key = "Yes";
-                    if(!((RBoolean) metric).isValue()) key = "No";
-                    // Check for old value
-                    if(values.get(key) != null) values.put(key, ((Double)values.get(key)) + 1.0);
-                    else values.put(key, 1.0);
-                }
-                else if(metric instanceof RChooser) {
-                    // Process the new value
-                    String key = metric.toString();
-                    // Check for old value
-                    if(values.get(key) != null) values.put(key, ((Double)values.get(key)) + 1);
-                    else values.put(key, 1.0);
-                }
-                else if(metric instanceof RCheckbox) {
-                    for(Object o : ((RCheckbox) metric).getValues().keySet()) {
-                        if(!((RCheckbox) metric).getValues().get(o.toString())) continue;
-                        // Process the new value
-                        String key = o.toString();
-                        // Check for old value
-                        if(values.get(key) != null) values.put(key, ((Double)values.get(key)) + 1);
-                        else values.put(key, 1.0);
+                // Start processing metrics
+                for(RMetric metric : tab.getMetrics()) {
+                    if(metric instanceof RGallery) {
+                        galleries.add((RGallery) metric);
                     }
-                } else {
-                    values.put(team.getTabs().get(j).getTitle(), metric.toString());
+
+                    if(!metric.isModified()) continue;
+
+                    // Pie graph metrics, scan these here
+                    if(metric instanceof RBoolean) {
+                        LinkedHashMap<String, Double> temp = pieValues.get(metric.getTitle());
+                        if(temp == null) temp = new LinkedHashMap<>();
+                        String key = ((RBoolean) metric).isValue() ? "Yes" : "No";
+                        if(temp.get(key) == null) temp.put(key, 1.0);
+                        else temp.put(key, temp.get(key) + 1);
+                        pieValues.put(metric.getTitle(), temp);
+                    } else if(metric instanceof RCheckbox) {
+                        if(((RCheckbox) metric).getValues() != null) {
+                            for(Object key : ((RCheckbox) metric).getValues().keySet()) {
+                                LinkedHashMap<String, Double> temp = pieValues.get(metric.getTitle());
+                                if(temp == null) temp = new LinkedHashMap<>();
+                                if(temp.get(key.toString()) == null) temp.put(key.toString(), 1.0);
+                                else temp.put(key.toString(), temp.get(key.toString()) + 1);
+                                pieValues.put(metric.getTitle(), temp);
+                            }
+                        }
+                    } else if(metric instanceof RChooser) {
+                        LinkedHashMap<String, Double> temp = pieValues.get(metric.getTitle());
+                        if(temp == null) temp = new LinkedHashMap<>();
+                        if(temp.get(metric.toString()) == null) temp.put(metric.toString(), 1.0);
+                        else temp.put(metric.toString(), temp.get(metric.toString()) + 1);
+                        pieValues.put(metric.getTitle(), temp);
+                    }
+                    // Line chart metrics
+                    else if(metric instanceof RCounter || metric instanceof RSlider || metric instanceof RStopwatch) {
+                        LinkedHashMap<String, Double> temp = lineValues.get(metric.getTitle());
+                        if(temp == null) temp = new LinkedHashMap<>();
+                        temp.put(tab.getTitle(), Double.parseDouble(metric.toString()));
+                        lineValues.put(metric.getTitle(), temp);
+                    }
                 }
             }
 
-            // Require at least two values for line charts
-            if((team.getTabs().get(1).getMetrics().get(i) instanceof RBoolean && values.size() < 1) || values.size() <= 1) continue;
+            // Add the divider metrics by position, -1 if no metric after it, or at the end
+            ArrayList<RDivider> addedDividers = new ArrayList<>();
 
-            // Return for incompatible metrics
-            if(team.getTabs().get(1).getMetrics().get(i) instanceof RDivider || team.getTabs().get(1).getMetrics().get(i) instanceof RGallery
-                    || team.getTabs().get(1).getMetrics().get(i) instanceof RTextfield || team.getTabs().get(1).getMetrics().get(i) instanceof RFieldDiagram || team.getTabs().get(1).getMetrics().get(i) instanceof RFieldData) continue;
+        /*
+         * Add the charts!
+         */
+            for(Object key : lineValues.keySet()) {
+                if(lineValues.get(key.toString()).size() >= 2) {
 
-            /*
-             * If the metric was boolean, chooser, or checkbox, all the values need to be
-             * converted to percentages
-             */
-            if(team.getTabs().get(1).getMetrics().get(i) instanceof RBoolean
-                    || team.getTabs().get(1).getMetrics().get(i) instanceof RCheckbox
-                    || team.getTabs().get(1).getMetrics().get(i) instanceof RChooser) {
-                for(Object o : values.keySet()) {
-                    values.put(o.toString(), ((Double)values.get(o.toString())) / (double)numModified(team.getTabs(), team.getTabs().get(1).getMetrics().get(i).getID()) * 100.0);
+                    loop:
+                    for(RTab tab : team.getTabs()) {
+                        for(int i = 0; i < tab.getMetrics().size(); i++) {
+                            if(tab.getMetrics().get(i).getTitle().equals(key.toString())) {
+                                // See if there is a RDivider hiding above this metric
+                                for(int j = i; j >= 0; j--) {
+                                    if(tab.getMetrics().get(j) instanceof RDivider && !addedDividers.contains(tab.getMetrics().get(j))) {
+                                        layout.addView(rMetricToUI.getDivider((RDivider) tab.getMetrics().get(j)));
+                                        addedDividers.add((RDivider) tab.getMetrics().get(j));
+                                        break loop;
+                                    }
+                                }
+                            }
+
+                        }
+                    }
+
+
+                    layout.addView(rMetricToUI.generateLineChart(key.toString(), lineValues.get(key.toString())));
+                }
+            }
+
+            // Process the pie charts
+            for(Object key : pieValues.keySet()) {
+                if(pieValues.get(key.toString()).size() <= 1) continue;
+
+                int metricID = 0;
+
+                loop:
+                for(RTab tab : team.getTabs()) {
+                    for(int i = 0; i < tab.getMetrics().size(); i++) {
+                        if(tab.getMetrics().get(i).getTitle().equals(key.toString())) {
+                            metricID = tab.getMetrics().get(i).getID();
+                            // See if there is a RDivider hiding above this metric
+                            for(int j = i; j >= 0; j--) {
+                                if(tab.getMetrics().get(j) instanceof RDivider && !addedDividers.contains(tab.getMetrics().get(j))) {
+                                    layout.addView(rMetricToUI.getDivider((RDivider) tab.getMetrics().get(j)));
+                                    addedDividers.add((RDivider) tab.getMetrics().get(j));
+                                    break loop;
+                                }
+                            }
+                        }
+
+                    }
                 }
 
-                layout.addView(rMetricToUI.generatePieChart(team.getTabs().get(1).getMetrics().get(i).getTitle(), values));
-            } else layout.addView(rMetricToUI.generateLineChart(team.getTabs().get(1).getMetrics().get(i).getTitle(), values));
+                for(Object key2 : pieValues.get(key.toString()).keySet()) {
+                    if(numModified(team.getTabs(), metricID) != 0)
+                        pieValues.get(key.toString()).put(key2.toString(), pieValues.get(key.toString()).get(key2.toString()) / (double) numModified(team.getTabs(), metricID));
+                }
+
+                layout.addView(rMetricToUI.generatePieChart(key.toString(), pieValues.get(key.toString())));
+            }
+
+        /*
+         * Find the image with the most entropy, and add
+         * it as the "featured" image
+         */
+            galleryLoop: for(int j = galleries.size() - 1; j >= 0; j--) {
+                if(galleries.get(j).getImages() != null && galleries.get(j).getImages().size() > 0) {
+                    for(int i = galleries.get(j).getImages().size() - 1; i >= 0; i--) {
+                        try {
+                            layout.addView(rMetricToUI.getImageView(
+                                    "Featured image",  BitmapFactory.decodeByteArray(galleries.get(j).getImages().get(i),
+                                            0,  galleries.get(j).getImages().get(i).length)));
+                            break galleryLoop;
+                        } catch(Exception e) {
+                            Log.d("RBS", "Failed to load featured image: "+e.getMessage());
+                        }
+                    }
+                }
+            }
+
+        } catch(Exception e) {
+            Log.d("RBS", "Failed to generate graphs for this team profile.");
         }
+
 
         /*
          * Attempt to download TBA info for this team
          */
-
         if(!team.hasTBAInfo()) {
             if(event.getKey() != null && event.getKey().length() >= 4) new TBATeamInfoTask(view.getContext(), team.getNumber(), event.getKey().substring(0, 4),  this);
         } else {
@@ -164,24 +226,6 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
             }
         }
 
-        /*
-         * Find the image with the most entropy, and add
-         * it as the "featured" image
-         */
-        galleryLoop: for(int j = galleries.size() - 1; j >= 0; j--) {
-            if(galleries.get(j).getImages() != null && galleries.get(j).getImages().size() > 0) {
-                for(int i = galleries.get(j).getImages().size() - 1; i >= 0; i--) {
-                    try {
-                        layout.addView(rMetricToUI.getImageView(
-                                "Featured image",  BitmapFactory.decodeByteArray(galleries.get(j).getImages().get(i),
-                                        0,  galleries.get(j).getImages().get(i).length)));
-                        break galleryLoop;
-                    } catch(Exception e) {
-                        Log.d("RBS", "Failed to load featured image: "+e.getMessage());
-                    }
-                }
-            }
-        }
 
         /*
          * Add UI cards to the layout

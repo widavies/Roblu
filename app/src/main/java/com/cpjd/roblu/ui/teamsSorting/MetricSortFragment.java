@@ -123,7 +123,7 @@ public class MetricSortFragment extends Fragment implements FormRecyclerAdapter.
             do {
                 team = io.loadTeam(eventID, id);
                 id++;
-            } while(team == null && id < 50);
+            } while(team == null && id < 100);
 
             RFieldData fieldData = null;
             try {

@@ -1405,7 +1405,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
     /*
      * Statistics!
      */
-    public CardView generateLineChart(String metricName, LinkedHashMap<String, Object> data) {
+    public CardView generateLineChart(String metricName, LinkedHashMap<String, Double> data) {
         LineChart chart = new LineChart(activity);
         chart.setNoDataTextColor(rui.getText());
         chart.getXAxis().setValueFormatter(new MyAxisValueFormatter(data));
@@ -1424,14 +1424,8 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
         int index = 0;
         for(Object o : data.keySet()) {
-            if(data.get(o.toString()) instanceof String) {
-                entries.add(new Entry(index, Float.parseFloat((String)data.get(o.toString()))));
-                sum += Float.parseFloat((String)data.get(o.toString()));
-            }
-            else {
-                entries.add(new Entry(index, ((Double)data.get(o.toString())).floatValue()));
-                sum += ((Double)data.get(o.toString())).floatValue();
-            }
+            entries.add(new Entry(index, data.get(o.toString()).floatValue()));
+            sum += data.get(o.toString()).floatValue();
             index++;
         }
 
@@ -1473,7 +1467,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         return card;
     }
 
-    public CardView generatePieChart(String metricName, LinkedHashMap<String, Object> data) {
+    public CardView generatePieChart(String metricName, LinkedHashMap<String, Double> data) {
         PieChart chart = new PieChart(activity);
         chart.setMinimumHeight(1000);
         chart.setDrawHoleEnabled(false);
@@ -1485,7 +1479,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         chart.getDescription().setEnabled(false);
         List<PieEntry> entries = new ArrayList<>();
         for(Object o : data.keySet()) {
-            entries.add(new PieEntry(((Double)data.get(o.toString())).floatValue(), o.toString()));
+            entries.add(new PieEntry((data.get(o.toString())).floatValue(), o.toString()));
         }
         PieDataSet set = new PieDataSet(entries, "");
         set.setColors(ColorTemplate.MATERIAL_COLORS);
@@ -1501,7 +1495,7 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
     public class MyAxisValueFormatter implements IAxisValueFormatter {
         private String[] titles;
 
-        MyAxisValueFormatter(LinkedHashMap<String, Object> values) {
+        MyAxisValueFormatter(LinkedHashMap<String, Double> values) {
             titles = new String[values.size()];
             int index = 0;
             for(Object o : values.keySet()) {
