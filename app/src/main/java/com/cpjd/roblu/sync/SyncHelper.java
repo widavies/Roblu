@@ -288,7 +288,7 @@ public class SyncHelper {
             newCheckout.setID(id);
             newCheckout.setStatus(HandoffStatus.AVAILABLE);
 
-            if(mode == MODES.BLUETOOTH && newCheckout.getTeam().getLastEdit() > time) checkouts.add(newCheckout);
+            if(mode == MODES.BLUETOOTH && newCheckout.getTeam().getLastEdit() >= time) checkouts.add(newCheckout);
             else if(mode != MODES.BLUETOOTH)  checkouts.add(newCheckout);
             id++;
         }
@@ -307,7 +307,7 @@ public class SyncHelper {
                 check.setID(id);
                 check.setStatus(HandoffStatus.AVAILABLE);
 
-                if(mode == MODES.BLUETOOTH && check.getTeam().getLastEdit() > time) checkouts.add(check);
+                if(mode == MODES.BLUETOOTH && check.getTeam().getLastEdit() >= time) checkouts.add(check);
                 else if(mode != MODES.BLUETOOTH) checkouts.add(check);
 
                 id++;

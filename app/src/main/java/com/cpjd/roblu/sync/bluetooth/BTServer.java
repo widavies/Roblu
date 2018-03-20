@@ -150,7 +150,7 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
                 try {
                     bluetooth.send("CHECKOUTS", syncHelper.packCheckouts(checkouts));
                 } catch(Exception e) {
-                    Log.d("RBS", "Failed to map checkouts to Bluetooth output stream.");
+                    Log.d("RBS", "Failed to map checkouts to Bluetooth output stream. "+e.getMessage());
                 }
                 break;
             case "requestNumber":
