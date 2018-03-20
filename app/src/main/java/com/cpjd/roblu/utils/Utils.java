@@ -89,15 +89,19 @@ public class Utils {
      * @return true if a connection is available
      */
     public static boolean hasInternetConnection(Context context) {
-        ConnectivityManager cm =
-                (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        try {
+            ConnectivityManager cm =
+                    (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return activeNetwork != null &&
-                    activeNetwork.isConnectedOrConnecting() || (cm.getNetworkInfo(ConnectivityManager.TYPE_VPN).isConnectedOrConnecting());
-        } else return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return activeNetwork != null &&
+                        activeNetwork.isConnectedOrConnecting() || (cm.getNetworkInfo(ConnectivityManager.TYPE_VPN).isConnectedOrConnecting());
+            } else return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+        } catch(Exception e) {
+            return false;
+        }
     }
 
     /**

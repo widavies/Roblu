@@ -70,7 +70,6 @@ public class EventDepacker extends Thread {
         cloudSettings.setTeamSyncID(0);
         cloudSettings.getCheckoutSyncIDs().clear();
         cloudSettings.setPurgeRequested(false);
-        cloudSettings.setPublicTeamNumber(teamNumber);
         io.saveCloudSettings(cloudSettings);
         Request r = new Request(settings.getServerIP());
         CloudTeamRequest ctr = new CloudTeamRequest(r, settings.getCode());
@@ -111,6 +110,7 @@ public class EventDepacker extends Thread {
             // Create a new event
             event = new REvent(io.getNewEventID(), team.getActiveEventName());
             event.setKey(team.getTbaKey());
+            event.setReadOnlyTeamNumber(teamNumber); // should be -1 if cloud is not enabled
             event.setID(io.getNewEventID());
             event.setCloudEnabled(true);
             io.saveEvent(event);

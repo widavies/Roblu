@@ -50,9 +50,16 @@ public class REvent implements Serializable, Comparable<REvent> {
      */
     private boolean bluetoothEnabled;
 
+    /**
+     * If non -1, this event is being synced with read only mode and therefore write access
+     * should not be assumed
+     */
+    private int readOnlyTeamNumber;
+
     public REvent(int ID, String name) {
         this.ID = ID;
         this.name = name;
+        this.readOnlyTeamNumber = -1;
     }
 
     @Override

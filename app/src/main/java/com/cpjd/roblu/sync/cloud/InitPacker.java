@@ -82,7 +82,6 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
         RSettings settings = io.loadSettings();
         RSyncSettings cloudSettings = io.loadCloudSettings();
         cloudSettings.setPurgeRequested(false);
-        cloudSettings.setPublicTeamNumber(-1);
         io.saveCloudSettings(cloudSettings);
         io.saveSettings(settings);
         Request r = new Request(settings.getServerIP());
@@ -96,6 +95,7 @@ public class InitPacker extends AsyncTask<Void, Integer, Boolean> {
          * Load all teams from the event, also make sure that that the teams are verified
          */
         REvent event = io.loadEvent(eventID);
+        event.setReadOnlyTeamNumber(-1);
         RForm form = io.loadForm(eventID);
         RTeam[] teams = io.loadTeams(eventID);
         if(event == null || form == null || teams == null || teams.length == 0) {

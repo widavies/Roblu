@@ -51,10 +51,6 @@ public class SyncHelper {
         NETWORK,BLUETOOTH,QR
     }
 
-    public SyncHelper() {
-
-    }
-
     public SyncHelper(Context context, REvent activeEvent, MODES mode) {
         this.context = context;
         this.activeEvent = activeEvent;

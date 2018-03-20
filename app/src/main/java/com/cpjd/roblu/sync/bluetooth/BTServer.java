@@ -107,13 +107,6 @@ public class BTServer extends Thread implements Bluetooth.BluetoothListener {
     public void messageReceived(String header, String message) {
         IO io = new IO(bluetooth.getActivity());
 
-        if(header.equals("isActive")) {
-            bluetooth.send("ACTIVE", String.valueOf(event != null));
-        }
-        if(event == null) {
-            return;
-        }
-
         switch(header) {
             case "SCOUTING_DATA":
                 // Process scouting data

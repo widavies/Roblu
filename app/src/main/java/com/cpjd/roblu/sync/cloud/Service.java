@@ -71,7 +71,7 @@ public class Service extends android.app.Service {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
         if(!Utils.hasInternetConnection(getApplicationContext())) {
-            Log.d("RBS-Service", "No internet connection detected. Ending loop() early.");
+            Log.d("RBS", "No internet connection detected. Ending loop() early.");
             return;
         }
 
@@ -84,22 +84,14 @@ public class Service extends android.app.Service {
         Request r = new Request(settings.getServerIP());
         ObjectMapper mapper = new ObjectMapper().configure(DeserializationConfig.Feature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         CloudTeamRequest teamRequest = new CloudTeamRequest(r, settings.getCode());
-        if(cloudSettings.getPublicTeamNumber() != -1) {
-            teamRequest.setTeamNumber(cloudSettings.getPublicTeamNumber());
-            teamRequest.setCode("");
-        }
         CloudCheckoutRequest checkoutRequest = new CloudCheckoutRequest(r, settings.getCode());
-        if(cloudSettings.getPublicTeamNumber() != -1) {
-            checkoutRequest.setTeamNumber(cloudSettings.getPublicTeamNumber());
-            checkoutRequest.setTeamCode("");
-        }
 
         boolean result = r.ping();
         if(result) Utils.requestServerHealthRefresh(getApplicationContext(), "online");
         else Utils.requestServerHealthRefresh(getApplicationContext(), "offline");
 
         if(!result) {
-            Log.d("Service-RSBS", "Roblu server is down. Unable to connect.");
+            Log.d("RBS", "Roblu server is down. Unable to connect.");
             return;
         }
 
@@ -113,6 +105,12 @@ public class Service extends android.app.Service {
             }
         }
 
+        if(activeEvent != null && activeEvent.getReadOnlyTeamNumber() != -1) {
+            teamRequest.setTeamNumber(activeEvent.getReadOnlyTeamNumber());
+            teamRequest.setCode("");
+            checkoutRequest.setTeamNumber(activeEvent.getReadOnlyTeamNumber());
+            checkoutRequest.setTeamCode("");
+        }
 
         /*
          * Check if a purge is requested
@@ -121,7 +119,7 @@ public class Service extends android.app.Service {
             cloudSettings.setPurgeRequested(false);
             cloudSettings.setTeamSyncID(0);
             cloudSettings.getCheckoutSyncIDs().clear();
-            Log.d("RBS-Service", "Event successfully purged from Roblu Cloud.");
+            Log.d("RBS", "Event successfully purged from Roblu Cloud.");
             io.saveCloudSettings(cloudSettings);
             Notify.notifyNoAction(getApplicationContext(), "Event purged", "Active event successfully removed from Roblu Cloud.");
             return;

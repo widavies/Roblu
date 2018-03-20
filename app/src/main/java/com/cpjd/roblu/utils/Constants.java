@@ -13,9 +13,9 @@ public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
 
-    public static final String UPDATE_MESSAGE = "-Event merger\n-New predefined forms\n-Field data metric improvements\nBug fixes";
+    public static final String UPDATE_MESSAGE = "-Bug fixes";
 
-    public static final int VERSION = 11; // used for updating the changelist
+    public static final int VERSION = 12; // used for updating the changelist
 
     /*
      * v4.0.0 cross activity codes

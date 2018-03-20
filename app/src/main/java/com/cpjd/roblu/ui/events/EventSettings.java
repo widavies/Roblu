@@ -490,6 +490,8 @@ public class EventSettings extends AppCompatActivity {
                                         " the event again.")
                                 .setPositiveButtonText("Ok").build(getActivity());
 
+                        ((RUICheckPreference)preference).setChecked(false);
+
                     } else uploadEvent();
                 } else {
                     event.setCloudEnabled(false);

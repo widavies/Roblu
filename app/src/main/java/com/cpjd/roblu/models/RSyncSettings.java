@@ -27,10 +27,6 @@ public class RSyncSettings implements Serializable {
      */
     private boolean purgeRequested;
     /**
-     * Used for authenticating read only events
-     */
-    private int publicTeamNumber;
-    /**
      * Just stores a local copy of the optedIn status to keep the UI correct
      */
     private boolean optedIn;
