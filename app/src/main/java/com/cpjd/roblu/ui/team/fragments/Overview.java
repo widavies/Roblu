@@ -19,6 +19,7 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCalculation;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
@@ -115,7 +116,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
                         pieValues.put(metric.getTitle(), temp);
                     }
                     // Line chart metrics
-                    else if(metric instanceof RCounter || metric instanceof RSlider || metric instanceof RStopwatch) {
+                    else if(metric instanceof RCounter || metric instanceof RSlider || metric instanceof RStopwatch || metric instanceof RCalculation) {
                         LinkedHashMap<String, Double> temp = lineValues.get(metric.getTitle());
                         if(temp == null) temp = new LinkedHashMap<>();
                         temp.put(tab.getTitle(), Double.parseDouble(metric.toString()));
