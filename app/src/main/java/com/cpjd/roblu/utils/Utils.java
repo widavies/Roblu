@@ -98,7 +98,7 @@ public class Utils {
             if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 return activeNetwork != null &&
                         activeNetwork.isConnectedOrConnecting() || (cm.getNetworkInfo(ConnectivityManager.TYPE_VPN).isConnectedOrConnecting());
-            } else return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+            } else return activeNetwork != null && activeNetwork.isConnected();
         } catch(Exception e) {
             return false;
         }

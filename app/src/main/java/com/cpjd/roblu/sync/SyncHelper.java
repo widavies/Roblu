@@ -241,6 +241,8 @@ public class SyncHelper {
         }
         // The team was not found locally, create a new one
         else {
+            Log.d("RBS", "Team was not found, creating a new one.");
+
             team = new RTeam(checkout.getTeam().getName(), checkout.getTeam().getNumber(), checkout.getTeam().getID());
             team.setLastEdit(checkout.getTeam().getLastEdit());
             team.verify(form);
