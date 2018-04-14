@@ -9,6 +9,9 @@
     <item
         android:id="@+id/delete_match"
         android:title="@string/delete_match"/>
+    <item
+        android:id="@+id/add_to_picks"
+        android:title="Add to pick list"/>
 
 
 </menu>

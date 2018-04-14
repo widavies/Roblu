@@ -25,11 +25,13 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RPickLists;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
@@ -272,6 +274,42 @@ public class Utils {
             @Override
             public void onClick(View v) {
                 listener.eventSelected(events[spinner.getSelectedItemPosition()]);
+                d.dismiss();
+            }
+        });
+        if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(context).loadSettings().getRui().getAnimation();
+        d.show();
+        return true;
+    }
+
+    public static boolean launchListPicker(final Context context, final int eventID, final RTeam team) {
+        final Dialog d = new Dialog(context);
+        d.setTitle("Pick event:");
+        d.setContentView(R.layout.add_to_list_dialog);
+        final Spinner spinner = d.findViewById(R.id.type);
+        String[] values;
+
+        final RPickLists lists = new IO(context).loadPickLists(eventID);
+        if(lists == null || lists.getPickLists() == null || lists.getPickLists().size() == 0) {
+            Toast.makeText(context, "No lists found", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        values = new String[lists.getPickLists().size()];
+        for(int i = 0; i < values.length; i++) {
+            values[i] = lists.getPickLists().get(i).getTitle();
+        }
+        ArrayAdapter<String> adp = new ArrayAdapter<>(context, android.R.layout.simple_list_item_1, values);
+        adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adp);
+
+        Button button = d.findViewById(R.id.button7);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                lists.getPickLists().get(spinner.getSelectedItemPosition()).getTeamIDs().add(team.getID());
+                new IO(context).savePickLists(eventID, lists);
+                Toast.makeText(context, team.getName()+" was saved to pick list "+lists.getPickLists().get(spinner.getSelectedItemPosition()).getTitle(), Toast.LENGTH_LONG).show();
                 d.dismiss();
             }
         });

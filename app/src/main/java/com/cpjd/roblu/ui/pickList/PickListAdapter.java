@@ -70,6 +70,8 @@ public class PickListAdapter extends FragmentStatePagerAdapter {
      * @param position the position of the tab to delete
      */
     public void deleteList(int position) {
+        if(fragments.size() == 0 || PickList.pickLists.getPickLists().size() == 0) return;
+
         PickList.pickLists.getPickLists().remove(position);
         fragments.remove(position);
 
