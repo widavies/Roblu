@@ -12,6 +12,8 @@ import com.cpjd.roblu.R;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
 
+import lombok.Setter;
+
 /**
  * This class manages the UI gestures available in the teams view.
  *
@@ -19,7 +21,7 @@ import com.cpjd.roblu.ui.dialogs.FastDialogBuilder;
  * @since 3.0.0
  * @author Will Davies
  */
-class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
+public class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
     /**
      * Stores a reference to the teams adapter that is managing the TeamsView.teams array
      */
@@ -31,7 +33,23 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
     private final Drawable xMark;
     private final int xMarkMargin;
 
-    TeamsRecyclerTouchHelper(TeamsRecyclerAdapter teamsAdapter) {
+    @Setter
+    private boolean disableDialog;
+
+    @Setter
+    private boolean disableSwipe;
+
+    @Setter
+    private boolean enableRearrangement;
+
+    @Setter
+    public SwapListener swapListener;
+
+    public interface SwapListener {
+        void teamsSwapped(int firstPosition, int secondPosition);
+    }
+
+    public TeamsRecyclerTouchHelper(TeamsRecyclerAdapter teamsAdapter) {
         super(ItemTouchHelper.UP | ItemTouchHelper.DOWN, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT);
         this.teamsAdapter = teamsAdapter;
 
@@ -57,31 +75,39 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
         if(direction == ItemTouchHelper.LEFT) {
             final RTeam team = teamsAdapter.getTeams().get(viewHolder.getAdapterPosition());
 
-            new FastDialogBuilder()
-                    .setTitle("Are you sure?")
-                    .setMessage("Are you sure you want to delete team "+team.getName()+"?")
-                    .setPositiveButtonText("Delete")
-                    .setNegativeButtonText("Cancel")
-                    .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
-                        @Override
-                        public void accepted() {
-                            teamsAdapter.remove(viewHolder.getAdapterPosition());
-                            teamsAdapter.notifyDataSetChanged();
-                            /*
-                             * Also, we need to tell TeamsView that the LoadTeamsTask now contains an invalid internal teams array and must
-                             * refresh it from the local disk
-                             */
-                            teamsAdapter.getListener().teamDeleted(team);
-                        }
+            if(!disableDialog) {
+                new FastDialogBuilder()
+                        .setTitle("Are you sure?")
+                        .setMessage("Are you sure you want to delete team "+team.getName()+"?")
+                        .setPositiveButtonText("Delete")
+                        .setNegativeButtonText("Cancel")
+                        .setFastDialogListener(new FastDialogBuilder.FastDialogListener() {
+                            @Override
+                            public void accepted() {
+                                teamsAdapter.remove(viewHolder.getAdapterPosition());
+                                teamsAdapter.notifyDataSetChanged();
+                                /*
+                                 * Also, we need to tell TeamsView that the LoadTeamsTask now contains an invalid internal teams array and must
+                                 * refresh it from the local disk
+                                 */
+                                teamsAdapter.getListener().teamDeleted(team);
+                            }
 
-                        @Override
-                        public void denied() {
-                            teamsAdapter.reAdd(team);
-                        }
+                            @Override
+                            public void denied() {
+                                teamsAdapter.reAdd(team);
+                            }
 
-                        @Override
-                        public void neutral() {}
-                    }).build(teamsAdapter.getContext());
+                            @Override
+                            public void neutral() {}
+                        }).build(teamsAdapter.getContext());
+            } else {
+                teamsAdapter.remove(viewHolder.getAdapterPosition());
+                teamsAdapter.notifyDataSetChanged();
+                teamsAdapter.getListener().teamDeleted(team);
+            }
+        } else if(direction == ItemTouchHelper.RIGHT && enableRearrangement) {
+            teamsAdapter.reAdd(teamsAdapter.getTeams().get(viewHolder.getAdapterPosition()));
         }
     }
 
@@ -90,7 +116,14 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
      */
     @Override
     public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+        if(disableSwipe) return 0;
+
+        if(enableRearrangement) {
+            return super.getMovementFlags(recyclerView, viewHolder);
+        }
+
         int swipeFlags = ItemTouchHelper.LEFT;
+
         return makeMovementFlags(0, swipeFlags);
     }
 
@@ -99,7 +132,7 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
      */
     @Override
     public boolean isLongPressDragEnabled() {
-        return false;
+        return true;
     }
 
     /*
@@ -107,6 +140,12 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
      */
     @Override
     public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+        if(enableRearrangement) {
+            teamsAdapter.swap(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+            swapListener.teamsSwapped(viewHolder.getAdapterPosition(), target.getAdapterPosition());
+            return true;
+        }
+
         return false;
     }
 
@@ -133,3 +172,4 @@ class TeamsRecyclerTouchHelper extends ItemTouchHelper.SimpleCallback {
         super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
     }
 }
+

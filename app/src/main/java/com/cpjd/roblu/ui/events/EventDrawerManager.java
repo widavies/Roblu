@@ -24,6 +24,7 @@ import com.cpjd.roblu.sync.bluetooth.BTServer;
 import com.cpjd.roblu.sync.bluetooth.Bluetooth;
 import com.cpjd.roblu.ui.forms.FormViewer;
 import com.cpjd.roblu.ui.mymatches.MyMatches;
+import com.cpjd.roblu.ui.pickList.PickList;
 import com.cpjd.roblu.ui.settings.AdvSettings;
 import com.cpjd.roblu.ui.tutorials.Tutorial;
 import com.cpjd.roblu.utils.Constants;
@@ -238,6 +239,12 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             activity.startActivity(new Intent(activity, Tutorial.class));
             eventDrawer.setSelectionAtPosition(-1);
         }
+        else if(identifier == Constants.PICKS) {
+            Intent intent = new Intent(activity, PickList.class);
+            intent.putExtra("eventID", ((Integer)drawerItem.getTag()).intValue());
+            activity.startActivity(intent);
+            eventDrawer.setSelectionAtPosition(-1);
+        }
         else if(identifier == Constants.EVENT_SETTINGS) {
             for(int i = 0; i < events.size(); i++) {
                 if(events.get(i).getID() == (Integer) drawerItem.getTag()) {
@@ -341,6 +348,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
             items.add(new ExpandableDrawerItem().withTextColor(rui.getText()).withName(e.getName()).withTag(e.getID()).withArrowColor(rui.getText()).withIcon(folder).withIdentifier(Constants.HEADER).withSelectable(false).withSubItems(
                     new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Scout").withLevel(2).withIcon(scout).withIdentifier(Constants.SCOUT).withTag(e.getID()),
                     new SecondaryDrawerItem().withTextColor(rui.getText()).withName("My matches").withLevel(2).withIcon(pit).withIdentifier(Constants.MY_MATCHES).withTag(e.getID()),
+                    new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Picks").withLevel(2).withIcon(scout).withIdentifier(Constants.PICKS).withTag(e.getID()),
                     new SecondaryDrawerItem().withTextColor(rui.getText()).withName("Settings").withLevel(2).withIcon(options).withIdentifier(Constants.EVENT_SETTINGS).withTag(e.getID()))
             );
         }
@@ -348,7 +356,7 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
         // Clear old events from the drawer
         for(int i = 0; i < eventDrawer.getDrawerItems().size(); i++) {
             long identifier = eventDrawer.getDrawerItems().get(i).getIdentifier();
-            if(identifier == Constants.HEADER || identifier == Constants.SCOUT || identifier == Constants.EVENT_SETTINGS || identifier == Constants.MY_MATCHES) {
+            if(identifier == Constants.HEADER || identifier == Constants.SCOUT || identifier == Constants.EVENT_SETTINGS || identifier == Constants.MY_MATCHES || identifier == Constants.PICKS) {
                 eventDrawer.removeItemByPosition(i);
                 i = 0;
             }
@@ -416,7 +424,6 @@ public class EventDrawerManager implements Drawer.OnDrawerItemClickListener {
                 this.divider = view.findViewById(R.id.material_drawer_divider);
             }
         }
-
     }
 
 }

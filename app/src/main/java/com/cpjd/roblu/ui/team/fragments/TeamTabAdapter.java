@@ -157,14 +157,14 @@ public class TeamTabAdapter extends FragmentStatePagerAdapter {
             new IO(context).savePendingCheckout(checkout);
         }
 
-        Bundle bundle = new Bundle();
+       /* Bundle bundle = new Bundle();
         bundle.putSerializable("event", event);
         bundle.putSerializable("form", form);
         bundle.putBoolean("readOnly", false);
         bundle.putInt("position", position);
 
-        Match match = new Match();
-        match.setArguments(bundle);
+//        Match match = new Match();
+      // match.setArguments(bundle);*/
         notifyDataSetChanged();
         return position + 1;
     }

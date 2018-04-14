@@ -85,7 +85,7 @@ public class LoadTeamsTask extends Thread {
      * @param io IO object so that this class can interact with the file system
      *
      */
-    LoadTeamsTask(IO io, LoadTeamsTaskListener listener) {
+    public LoadTeamsTask(IO io, LoadTeamsTaskListener listener) {
         this.ioWeakReference = new WeakReference<>(io);
         this.listener = listener;
         this.query = "";
@@ -104,7 +104,7 @@ public class LoadTeamsTask extends Thread {
      * @param query search query string
      * @param customSortToken custom sort token string in format [TeamMetricProcessor.PROCESS_METHOD:ID], example: 2:2
      */
-    void setTaskParameters(int eventID, int filter, String query, String customSortToken) {
+    public void setTaskParameters(int eventID, int filter, String query, String customSortToken) {
         this.eventID = eventID;
         this.filter = filter;
         this.query = query;
@@ -319,7 +319,7 @@ public class LoadTeamsTask extends Thread {
         team.setCustomRelevance(team.getCustomRelevance() + relevance);
     }
 
-    void quit() {
+    public void quit() {
         interrupt();
     }
 }

@@ -129,6 +129,8 @@
         <activity android:name=".ui.images.Drawing"/>
         <activity android:name=".csv.CSVActivity"/>
         <activity android:name=".sync.qr.QrReader"/>
+        <activity android:name=".ui.pickList.PickList"/>
+        <activity android:name=".ui.teamSearch.TeamSearch"/>
     </application>
 
 </manifest>

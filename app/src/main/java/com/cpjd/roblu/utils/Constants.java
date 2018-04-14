@@ -13,7 +13,7 @@ public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
 
-    public static final String UPDATE_MESSAGE = "-Bug fixes";
+    public static final String UPDATE_MESSAGE = "-Added team picks functionality";
 
     public static final int VERSION = 12; // used for updating the changelist
 
@@ -75,6 +75,7 @@ public abstract class Constants {
     public static final int BLUETOOTH_SERVER = getNum();
     public static final int MY_MATCHES = getNum();
     public static final int SERVER_HEALTH = getNum();
+    public static final int PICKS = getNum();
 
     // Intent request and result codes
     public static final int GENERAL = getNum(); // when the request code doesn't matter
@@ -87,6 +88,8 @@ public abstract class Constants {
     public static final int EVENT_INFO_EDITED = getNum();
     public static final int EVENT_SETTINGS_CHANGED = getNum();
     public static final int SETTINGS_CHANGED = getNum();
+    public static final int TEAM_SEARCH = getNum();
+    public static final int TEAM_SEARCHED = getNum();
 
     private static int count = 0;
     private static int getNum() {

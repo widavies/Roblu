@@ -398,9 +398,9 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     @Override
     public int compareTo(@NonNull RTeam team) {
         if(filter == TeamsView.SORT_TYPE.ALPHABETICAL) return name.compareTo(team.getName());
-        else if(filter == TeamsView.SORT_TYPE.NUMERICAL) return ((Integer)number).compareTo(team.getNumber());
-        else if(filter == TeamsView.SORT_TYPE.LAST_EDIT) return ((Long)lastEdit).compareTo(team.getLastEdit());
-        else if(filter == TeamsView.SORT_TYPE.SEARCH || filter == TeamsView.SORT_TYPE.CUSTOM_SORT) return ((Double)customRelevance).compareTo(team.getCustomRelevance());
+        else if(filter == TeamsView.SORT_TYPE.NUMERICAL) return Integer.compare(number, team.getNumber());
+        else if(filter == TeamsView.SORT_TYPE.LAST_EDIT) return Long.compare(lastEdit, team.getLastEdit());
+        else if(filter == TeamsView.SORT_TYPE.SEARCH || filter == TeamsView.SORT_TYPE.CUSTOM_SORT) return Double.compare(customRelevance, team.getCustomRelevance());
         else return 0;
     }
 }

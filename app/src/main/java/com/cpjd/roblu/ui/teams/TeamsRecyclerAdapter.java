@@ -14,6 +14,7 @@ import com.cpjd.roblu.models.RUI;
 import com.cpjd.roblu.utils.Utils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -44,7 +45,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Getter
     private final Context context;
 
-    interface TeamSelectedListener {
+    public interface TeamSelectedListener {
         void teamSelected(View v);
         /**
          * -TeamsView should use IO to delete this team from the disk
@@ -64,7 +65,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
     @Getter
     private RUI rui;
 
-    TeamsRecyclerAdapter(Context context, TeamSelectedListener listener){
+    public TeamsRecyclerAdapter(Context context, TeamSelectedListener listener){
         this.context = context;
         this.listener = listener;
 
@@ -86,7 +87,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
      *
      * @param team the team to re-add to the array
      */
-    void reAdd(RTeam team) {
+    public void reAdd(RTeam team) {
         for(int i = 0; i < teams.size(); i++) {
             if(teams.get(i).getID() == team.getID()) {
                 teams.set(i, team);
@@ -100,7 +101,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
      * @param teams teams to pass control of to this adapter
      * @param hideZeroRelevanceTeams if teams with 0 relevance should be visible
      */
-    void setTeams(ArrayList<RTeam> teams, boolean hideZeroRelevanceTeams) {
+    public void setTeams(ArrayList<RTeam> teams, boolean hideZeroRelevanceTeams) {
         if(hideZeroRelevanceTeams) {
             this.teams = new ArrayList<>(teams); // clones the array
             for(int i = 0; i < this.teams.size(); i++) {
@@ -152,6 +153,11 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
     public void remove(int position) {
         teams.remove(position);
         notifyItemRemoved(position);
+    }
+
+    public void swap(int firstPosition, int secondPosition){
+        Collections.swap(teams, firstPosition, secondPosition);
+        notifyItemMoved(firstPosition, secondPosition);
     }
 
     /**
