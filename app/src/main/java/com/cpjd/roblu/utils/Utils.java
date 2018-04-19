@@ -44,6 +44,7 @@ import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
 import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
+import com.cpjd.roblu.ui.pickList.PickList;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -282,14 +283,14 @@ public class Utils {
         return true;
     }
 
-    public static boolean launchListPicker(final Context context, final int eventID, final RTeam team) {
+    public static boolean launchListPicker(final Context context, final int eventID, final RTeam team, final int originalListPosition) {
         final Dialog d = new Dialog(context);
         d.setTitle("Pick event:");
         d.setContentView(R.layout.add_to_list_dialog);
         final Spinner spinner = d.findViewById(R.id.type);
         String[] values;
 
-        final RPickLists lists = new IO(context).loadPickLists(eventID);
+        final RPickLists lists = PickList.pickLists;
         if(lists == null || lists.getPickLists() == null || lists.getPickLists().size() == 0) {
             Toast.makeText(context, "No lists found", Toast.LENGTH_LONG).show();
             return false;
@@ -307,6 +308,18 @@ public class Utils {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /*
+                 * Remove the team from the list it was originally on
+                 */
+                if(originalListPosition != -1) {
+                    for(int i = 0; i < PickList.pickLists.getPickLists().get(originalListPosition).getTeamIDs().size(); i++) {
+                        if(PickList.pickLists.getPickLists().get(originalListPosition).getTeamIDs().get(i) == team.getID()) {
+                            PickList.pickLists.getPickLists().get(originalListPosition).getTeamIDs().remove(i);
+                            break;
+                        }
+                    }
+                }
+
                 lists.getPickLists().get(spinner.getSelectedItemPosition()).getTeamIDs().add(team.getID());
                 new IO(context).savePickLists(eventID, lists);
                 Toast.makeText(context, team.getName()+" was saved to pick list "+lists.getPickLists().get(spinner.getSelectedItemPosition()).getTitle(), Toast.LENGTH_LONG).show();

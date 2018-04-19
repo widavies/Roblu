@@ -393,7 +393,7 @@ public class TeamViewer extends AppCompatActivity implements ViewPager.OnPageCha
                 }
                 if(item.getItemId() == R.id.add_to_picks) {
                     // Show dialog
-                    Utils.launchListPicker(TeamViewer.this, event.getID(), team);
+                    Utils.launchListPicker(TeamViewer.this, event.getID(), team, getIntent().getIntExtra("originalList", -1));
                 }
                 return true;
             }

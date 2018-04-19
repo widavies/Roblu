@@ -123,6 +123,7 @@ public class PickListFragment extends Fragment implements TeamsRecyclerAdapter.T
         startView.putExtra("teamID", team.getID());
         startView.putExtra("eventID", event.getID());
         startView.putExtra("editable", true);
+        startView.putExtra("originalList", position);
         startActivityForResult(startView, Constants.GENERAL);
     }
 
