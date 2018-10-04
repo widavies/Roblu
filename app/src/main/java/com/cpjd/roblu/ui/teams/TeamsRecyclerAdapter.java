@@ -105,7 +105,7 @@ public class TeamsRecyclerAdapter extends RecyclerView.Adapter<RecyclerView.View
         if(hideZeroRelevanceTeams) {
             this.teams = new ArrayList<>(teams); // clones the array
             for(int i = 0; i < this.teams.size(); i++) {
-                if(this.teams.get(i).getCustomRelevance() == 0) {
+                if(this.teams.get(i).getCustomRelevance() <= 0) {
                     this.teams.remove(i);
                     i--;
                 }

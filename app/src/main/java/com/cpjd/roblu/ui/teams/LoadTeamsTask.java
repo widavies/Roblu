@@ -4,9 +4,12 @@ import android.util.Log;
 
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
+import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.teamsSorting.TeamMetricProcessor;
 import com.cpjd.roblu.utils.Utils;
+import com.cpjd.roblu.utils.searchCommands.CommandMetric;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -187,9 +190,63 @@ public class LoadTeamsTask extends Thread {
             for(RTeam team : teams) {
                 team.setCustomRelevance(0);
                 team.setFilterTag("");
+            }
 
+            boolean metricFiltered = false;
+
+            try {
+                String[] tokens = query.split("\\s+");
+                if(tokens.length == 0)
+                    tokens = new String[]{query};
+                for(String s : tokens) {
+                    if(s.startsWith("-metric")) {
+                        query = query.replace(s, "");
+                        String[] metricTokens = s.split(",");
+                        CommandMetric metric = new CommandMetric(metricTokens[1], metricTokens[2]);
+
+                        String matchFilter = null;
+                        try {
+                            matchFilter = metricTokens[3];
+                            if(matchFilter.replaceAll(" ", "").equals("")) matchFilter = null;
+                        } catch(Exception e) {
+                            Log.d("RBS", "METRIC FILTER NULL.");
+                            e.printStackTrace();
+                        }
+
+                        for(RTeam team : teams) {
+                            boolean passesFilter = false;
+                            boolean passesMatch = matchFilter == null;
+                            StringBuilder matches = new StringBuilder();
+                            for(RTab tab : team.getTabs()) {
+                                if(matchFilter != null && tab.getSimpleMatchString(matchFilter)) {
+                                    passesMatch = true;
+                                }
+
+                                for(RMetric m : tab.getMetrics()) {
+                                    if(metric.metricPassesCriteria(m)) {
+                                        passesFilter = true;
+                                        matches.append(tab.getTitle()).append((", "));
+                                    }
+                                }
+                            }
+                            if(passesFilter && passesMatch) {
+                                team.setFilterTag(team.getFilterTag()+"\nPasses "+metric.getMetricName()+" filter in match(es) "+matches.toString()+"\n");
+                                team.setCustomRelevance(1);
+                                metricFiltered = true;
+                            }
+                        }
+                    }
+                }
+            } catch(Exception e) {
+                Log.d("RBS", "Failed: "+e.getMessage());
+                e.printStackTrace();
+            }
+
+            Log.d("RBS", "Proceeding with query: "+query);
+
+            for(RTeam team : teams) {
                 // assign search relevance to the team
-                processTeamForSearch(team);
+                processTeamForSearch(team, metricFiltered);
             }
 
             try {
@@ -257,7 +314,7 @@ public class LoadTeamsTask extends Thread {
             /*
              * Finally, check to see if the user also wants to sort through the array
              */
-            for(RTeam team : teams) processTeamForSearch(team);
+            for(RTeam team : teams) processTeamForSearch(team, false);
 
             try {
                 Collections.sort(teams);
@@ -279,7 +336,7 @@ public class LoadTeamsTask extends Thread {
      * This method will return automatically if the query is null
      * @param team the team to set relevance to based on query
      */
-    private void processTeamForSearch(RTeam team) {
+    private void processTeamForSearch(RTeam team, boolean searchingAfterMetricFilter) {
         if(query == null || query.equals("")) return;
 
         int relevance = 0;
@@ -316,11 +373,14 @@ public class LoadTeamsTask extends Thread {
             }
         }
 
-        team.setCustomRelevance(team.getCustomRelevance() + relevance);
+        if(!searchingAfterMetricFilter || team.getCustomRelevance() != 0) team.setCustomRelevance(team.getCustomRelevance() + relevance);
     }
 
     public void quit() {
         interrupt();
+        try {
+            super.join();
+        } catch(Exception e) {}
     }
 }
 

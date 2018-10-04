@@ -35,10 +35,12 @@ import com.cpjd.roblu.models.RPickLists;
 import com.cpjd.roblu.models.RTab;
 import com.cpjd.roblu.models.RTeam;
 import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCalculation;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
 import com.cpjd.roblu.models.metrics.RFieldData;
+import com.cpjd.roblu.models.metrics.RGallery;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
@@ -217,7 +219,7 @@ public class Utils {
 
     /**
      * We can almost always determine the match key of a match based off
-     * it's name.
+     * its name.
      * @param matchName the name of the match
      * @return the guessed TBA key for this match
      */
@@ -646,6 +648,20 @@ public class Utils {
         String saltStr = salt.toString();
         return saltStr;
 
+    }
+
+    public static String getMetricType(RMetric metric) {
+        if(metric instanceof RCounter) return "[Counter]";
+        else if(metric instanceof RSlider) return "[Slider]";
+        else if(metric instanceof RStopwatch) return "[Stopwatch]";
+        else if(metric instanceof RCalculation) return "[Calculation]";
+        else if(metric instanceof RBoolean) return "[Boolean]";
+        else if(metric instanceof RCheckbox) return "[Checkbox]";
+        else if(metric instanceof RChooser) return "[Chooser]";
+        else if(metric instanceof RTextfield) return "[Textfield]";
+        else if(metric instanceof RFieldData) return "[FieldDiagram]";
+        else if(metric instanceof RGallery) return "[Gallery]";
+        return "";
     }
 }
 

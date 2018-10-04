@@ -8,6 +8,7 @@ import com.cpjd.roblu.utils.MatchType;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.regex.Pattern;
 
 import lombok.Data;
 
@@ -131,5 +132,39 @@ public class RTab implements Serializable, Comparable<RTab> {
         return (other instanceof RTab) &&
                 (((RTab) other).getMatchType() == this.matchType) &&
                 (((RTab) other).getMatchOrder() == this.matchOrder);
+    }
+
+    public boolean getSimpleMatchString(String match) {
+        try {
+            String adj = (title.toLowerCase().replaceAll("\\s+", "").replaceAll("Quals", "q").replaceAll("Quarters", "qu")
+                    .replaceAll("Semis", "s").replaceAll("Finals", "f").replaceAll("Match", "m")).replace("predictions", "p");
+
+            if(match.equals("pit") && adj.equals("pit")) return true;
+            if(match.equals("p") && adj.equals("p")) return true;
+
+            Pattern category = Pattern.compile("[a-zA-Z]+");
+            Pattern specific = Pattern.compile("[a-zA-Z]+\\d+");
+            Pattern specific2 = Pattern.compile("[a-zA-Z]+\\d+[a-zA-Z]+\\d+");
+
+            if(category.matcher(match).matches()) {
+                if(match.equals("qu") | match.equals("s")) match += "m";
+                return adj.replaceAll("\\d+", "").equalsIgnoreCase(match);
+            }
+            else if(specific.matcher(match).matches() || specific2.matcher(match).matches())
+                return adj.equalsIgnoreCase(match);
+            else { // range
+                int low = Integer.parseInt(match.substring(match.indexOf("(") + 1, match.indexOf("-")));
+                int high = Integer.parseInt(match.substring(match.indexOf("-") + 1, match.indexOf(")")));
+
+                if(low > high || (low < 0 || high < 0)) return false;
+
+                for(int i = low; i <= high; i++) {
+                    if(match.replaceAll("\\(\\d+-\\d+\\)", String.valueOf(i)).equalsIgnoreCase(adj)) return true;
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

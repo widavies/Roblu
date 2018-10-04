@@ -26,9 +26,13 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cpjd.main.TBA;
@@ -39,10 +43,18 @@ import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RSettings;
 import com.cpjd.roblu.models.RTeam;
+import com.cpjd.roblu.models.metrics.RBoolean;
+import com.cpjd.roblu.models.metrics.RCalculation;
+import com.cpjd.roblu.models.metrics.RCheckbox;
+import com.cpjd.roblu.models.metrics.RChooser;
+import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RMetric;
+import com.cpjd.roblu.models.metrics.RSlider;
+import com.cpjd.roblu.models.metrics.RStopwatch;
+import com.cpjd.roblu.models.metrics.RTextfield;
 import com.cpjd.roblu.sync.cloud.Service;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.ui.events.EventDrawerManager;
-import com.cpjd.roblu.ui.mymatches.MyMatches;
 import com.cpjd.roblu.ui.setup.SetupActivity;
 import com.cpjd.roblu.ui.team.TeamViewer;
 import com.cpjd.roblu.ui.teamsSorting.CustomSort;
@@ -248,7 +260,8 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
         // If the user closes the search bar, refresh the teams view with all the original items
         searchView.setOnSearchViewListener(new MaterialSearchView.SearchViewListener() {
             @Override
-            public void onSearchViewShown() {}
+            public void onSearchViewShown() {
+            }
             @Override
             public void onSearchViewClosed() {
                 executeLoadTeamsTask(lastFilter, false);
@@ -272,7 +285,6 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
                 return true;
             }
         });
-
         // Make general changes to UI, keep it synced with RUI
         new UIHandler(this, toolbar, searchButton, true).update();
 
@@ -304,7 +316,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 4.5.7")
+                    .setTitle("Changelist for Version 4.5.8")
                     .setMessage(Constants.UPDATE_MESSAGE)
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override
@@ -593,10 +605,59 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
     @Override
     public boolean onLongClick(View v) {
         if(v.getId() == R.id.fab) {
-            if(eventDrawerManager.getEvent() == null) return false;
-            Intent intent = new Intent(this, MyMatches.class);
-            intent.putExtra("eventID", eventDrawerManager.getEvent().getID());
-            startActivity(intent);
+            final Dialog d = new Dialog(this);
+            d.setTitle("Add metric filter:");
+            d.setContentView(R.layout.metric_chooser_filter);
+            final Spinner spinner = d.findViewById(R.id.type);
+            String[] values;
+            RForm form = io.loadForm(eventDrawerManager.getEvent().getID());
+            final ArrayList<RMetric> metrics = new ArrayList<>(form.getPit());
+            metrics.addAll(form.getMatch());
+
+            // Remove all but counters, stopwatches, and sliders
+            for(int i = 0; i < metrics.size(); i++) {
+                if(!(metrics.get(i) instanceof RCounter) && !(metrics.get(i) instanceof RStopwatch && !(metrics.get(i) instanceof RSlider)) && !(metrics.get(i) instanceof RCalculation)
+                        && !(metrics.get(i) instanceof RBoolean) && !(metrics.get(i) instanceof RChooser) && !(metrics.get(i) instanceof RCheckbox)
+                        && !(metrics.get(i) instanceof RTextfield)) {
+                    metrics.remove(i);
+                    i--;
+                }
+            }
+
+            values = new String[metrics.size()];
+            for(int i = 0; i < metrics.size(); i++) {
+                values[i] = Utils.getMetricType(metrics.get(i)) +" "+metrics.get(i).getTitle();
+            }
+            ArrayAdapter<String> adp = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_list_item_1, values);
+            adp.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spinner.setAdapter(adp);
+
+            final EditText editText = d.findViewById(R.id.constraint);
+            final EditText matchConstraint = d.findViewById(R.id.matchConstraint);
+
+            Button button = d.findViewById(R.id.button7);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        if(loadTeamsTask != null) loadTeamsTask.quit();
+                        RMetric m = new ArrayList<>(metrics).get(spinner.getSelectedItemPosition());
+                        String yeet = (lastQuery == null ? "" : lastQuery)  + " -metric,"+m.getTitle().replaceAll(" ", "")+","+editText.getText().toString() +
+                        (matchConstraint.getText().toString() != null && !matchConstraint.getText().toString().equals("") ? ","+matchConstraint.getText().toString() : "");
+                        searchView.showSearch(false);
+                        searchView.setQuery(yeet, false);
+                        lastQuery = yeet;
+                    } catch(Exception e) {
+                        Log.d("RBS", "Failed to select metric");
+                    } finally {
+                        d.dismiss();
+                    }
+
+                }
+            });
+            if(d.getWindow() != null) d.getWindow().getAttributes().windowAnimations = new IO(getApplicationContext()).loadSettings().getRui().getAnimation();
+            d.show();
+
             return true;
         }
         return false;

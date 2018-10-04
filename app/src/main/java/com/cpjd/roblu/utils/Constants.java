@@ -13,9 +13,9 @@ public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
 
-    public static final String UPDATE_MESSAGE = "-Added team picks functionality";
+    public static final String UPDATE_MESSAGE = "-Added multi-filter option (long press search button)\n-IOS edition of Roblu Scouter coming soon!\n-Bug fixes";
 
-    public static final int VERSION = 12; // used for updating the changelist
+    public static final int VERSION = 13; // used for updating the changelist
 
     /*
      * v4.0.0 cross activity codes
