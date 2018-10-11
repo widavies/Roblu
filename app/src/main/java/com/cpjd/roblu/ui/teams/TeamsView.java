@@ -35,7 +35,6 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.cpjd.main.TBA;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RCheckout;
@@ -198,7 +197,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             finish();
             return;
         }
-        TBA.setID("Roblu", "Scouting-App", "v3"); //setup TBA api vars
+        // This is a public account. There isn't anything valuable on here, and this is only a read-only token. So have fun!
         settings = io.loadSettings();
 
         /*
@@ -604,13 +603,14 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
 
     @Override
     public boolean onLongClick(View v) {
-        if(v.getId() == R.id.fab) {
+        if(v.getId() == R.id.fab && eventDrawerManager.getEvent() != null) {
             final Dialog d = new Dialog(this);
             d.setTitle("Add metric filter:");
             d.setContentView(R.layout.metric_chooser_filter);
             final Spinner spinner = d.findViewById(R.id.type);
             String[] values;
             RForm form = io.loadForm(eventDrawerManager.getEvent().getID());
+            if(form == null || form.getMatch() == null || form.getPit() == null) return false;
             final ArrayList<RMetric> metrics = new ArrayList<>(form.getPit());
             metrics.addAll(form.getMatch());
 

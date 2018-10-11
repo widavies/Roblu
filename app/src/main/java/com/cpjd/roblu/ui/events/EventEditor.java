@@ -16,7 +16,9 @@ import android.widget.Spinner;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import com.cpjd.models.Event;
+import com.cpjd.models.standard.Event;
+import com.cpjd.models.standard.Match;
+import com.cpjd.models.standard.Team;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
@@ -117,7 +119,7 @@ public class EventEditor extends AppCompatActivity {
                  * all the data within this Event model should be included when creating the REvent
                  */
                 Event event = (Event) getIntent().getSerializableExtra("tbaEvent");
-                eventName.setText(event.name);
+                eventName.setText(event.getName());
                 findViewById(R.id.switch1).setVisibility(View.VISIBLE);
             }
         } else {
@@ -270,9 +272,12 @@ public class EventEditor extends AppCompatActivity {
         if(!editing && getIntent().getSerializableExtra("tbaEvent") != null) {
             ProgressDialog d = ProgressDialog.show(this, "Hold on tight!", "Generating team profiles from event...", true);
             d.setCancelable(false);
-            event.setKey(((Event)getIntent().getSerializableExtra("tbaEvent")).key);
+            event.setKey(((Event)getIntent().getSerializableExtra("tbaEvent")).getKey());
             io.saveEvent(event);
-            UnpackTBAEvent unpackTBAEvent = new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"), event.getID(), this, d);
+            UnpackTBAEvent unpackTBAEvent
+                    = new UnpackTBAEvent((Event)getIntent().getSerializableExtra("tbaEvent"),
+                    (Team[])getIntent().getSerializableExtra("tbaTeams"),
+                    (Match[])getIntent().getSerializableExtra("tbaMatches"), event.getID(), this, d);
             if(((Switch)findViewById(R.id.switch1)).isChecked()) unpackTBAEvent.setRandomize(true);
             unpackTBAEvent.execute();
         }

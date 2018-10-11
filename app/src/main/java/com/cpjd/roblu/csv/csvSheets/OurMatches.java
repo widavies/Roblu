@@ -3,10 +3,8 @@ package com.cpjd.roblu.csv.csvSheets;
 
 import android.os.StrictMode;
 
-import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
-import com.cpjd.models.Event;
-import com.cpjd.models.Match;
+import com.cpjd.models.standard.Match;
 import com.cpjd.roblu.models.RCheckout;
 import com.cpjd.roblu.models.REvent;
 import com.cpjd.roblu.models.RForm;
@@ -58,23 +56,23 @@ public class OurMatches extends CSVSheet {
         createCell(one, 6, "Team6");
 
         // Determine event year
-        Settings.disableAll();
-        Settings.GET_EVENT_MATCHES = true;
+        //Settings.disableAll();
+        //Settings.GET_EVENT_MATCHES = true;
         try {
-            Event tbaEvent = new TBA().getEvent(event.getKey());
-            for(Match m : tbaEvent.matches) {
-                if(m.doesMatchContainTeam(teamNumber) > 0) {
+            Match[] matches = new TBA().getMatches(event.getKey());
+            for(Match m : matches) {
+                if(doesMatchContainTeam(m, teamNumber)) {
                     Row row = createRow(sheet);
                     setCellStyle(BorderStyle.THIN, IndexedColors.WHITE, IndexedColors.BLACK, true);
-                    createCell(row, 0, String.valueOf(m.match_number));
+                    createCell(row, 0, String.valueOf(m.getMatchNumber()));
                     setStyle(blue);
-                    createCell(row, 1, m.blueTeams[0].replace("frc", ""));
-                    createCell(row, 2, m.blueTeams[1].replace("frc", ""));
-                    createCell(row, 3, m.blueTeams[2].replace("frc", ""));
+                    createCell(row, 1, m.getBlue().getTeamKeys()[0].replace("frc", ""));
+                    createCell(row, 2, m.getBlue().getTeamKeys()[0].replace("frc", ""));
+                    createCell(row, 3, m.getBlue().getTeamKeys()[0].replace("frc", ""));
                     setStyle(red);
-                    createCell(row, 4, m.redTeams[0].replace("frc", ""));
-                    createCell(row, 5, m.redTeams[1].replace("frc", ""));
-                    createCell(row, 6, m.redTeams[2].replace("frc", ""));
+                    createCell(row, 4, m.getRed().getTeamKeys()[0].replace("frc", ""));
+                    createCell(row, 5, m.getRed().getTeamKeys()[0].replace("frc", ""));
+                    createCell(row, 6, m.getRed().getTeamKeys()[0].replace("frc", ""));
                 }
             }
         } catch(Exception e) {
@@ -92,4 +90,24 @@ public class OurMatches extends CSVSheet {
     public int getColumnWidth() {
         return 2000;
     }
+    private int getAlliancePosition(Match m, int teamNumber) {
+        for(int i = 0; i < m.getBlue().getTeamKeys().length; i++) {
+            if(m.getBlue().getTeamKeys()[i].equals("frc"+teamNumber)) return i + 4;
+        }
+        for(int i = 0; i < m.getRed().getTeamKeys().length; i++) {
+            if(m.getRed().getTeamKeys()[i].equals("frc"+teamNumber)) return i + 1;
+        }
+
+        return -1;
+    }
+
+    private boolean isOnWinningAlliance(Match m, int teamNumber) {
+        boolean redWinner = m.getWinningAlliance().toLowerCase().contains("red");
+        return (redWinner && getAlliancePosition(m, teamNumber) <= 3) || (!redWinner && getAlliancePosition(m, teamNumber) >= 4);
+    }
+
+    private boolean doesMatchContainTeam(Match m, int teamNumber) {
+        return getAlliancePosition(m, teamNumber) != -1;
+    }
+
 }

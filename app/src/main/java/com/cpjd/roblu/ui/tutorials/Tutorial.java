@@ -49,7 +49,8 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
 
         // List of tutorials
         tutorials = new ArrayList<>();
-        tutorials.add(new RTutorial("Text based", "View the Roblu text based tutorial", "https://docs.google.com/document/d/1DqpgKPdtfZDUc7Zu3MqdJHL59aB-ht8H1ZwllYlzMuc/edit?usp=sharing"));
+        tutorials.add(new RTutorial("Roblu - Text based", "View the Roblu text based tutorial", "https://docs.google.com/document/d/1DqpgKPdtfZDUc7Zu3MqdJHL59aB-ht8H1ZwllYlzMuc/edit?usp=sharing"));
+        tutorials.add(new RTutorial("Roblu Scouter - Text based", "View the Roblu Scouter text based tutorial", "https://docs.google.com/document/d/191km1s6HqZF8Ag6bCwn_XWA54MepjL5gU8-N05ean3w/edit?usp=sharing"));
         tutorials.add(new RTutorial("The basics", "Roblu's mission, description of platforms, terms, etc.", "9j6ysvJJyQg"));
         tutorials.add(new RTutorial("Events", "Learn how to create, manage, backup, organize, and export events", "6BLlLxltppk"));
         tutorials.add(new RTutorial("Forms", "Learn how to create, manage, edit, organize, master form", "xLLbPyhW9fg"));
@@ -119,18 +120,18 @@ public class Tutorial extends AppCompatActivity implements TutorialsRecyclerAdap
     @Override
     public void tutorialSelected(View v) {
         int position = rv.getChildLayoutPosition(v);
-        if(position == tutorials.size() - 1) {
+        if(position == tutorials.size() - 1) { // devlogs
             String url = "https://www.youtube.com/playlist?list=PLjv2hkWcHVGZAlplguiS4rR_45-KLS28a";
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(url));
             startActivity(i);
         }
-        else if(position == 0 || position == 7) {
+        else if(position == 0 || position == 1 || position == 8) { // links or anything non-youtube, add their positions here
             Intent i = new Intent(Intent.ACTION_VIEW);
             i.setData(Uri.parse(tutorials.get(position).getYoutubeID()));
             startActivity(i);
         }
-        else {
+        else { // youtube videos
             watchYoutubeVideo(tutorials.get(position).getYoutubeID());
         }
     }

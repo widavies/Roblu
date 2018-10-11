@@ -3,18 +3,22 @@ package com.cpjd.roblu.tba;
 import android.os.AsyncTask;
 import android.os.StrictMode;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 
-import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
-import com.cpjd.models.Event;
+import com.cpjd.models.standard.Event;
+import com.cpjd.models.standard.Match;
+import com.cpjd.models.standard.Team;
 import com.cpjd.roblu.ui.tba.TBAEventAdapter;
+import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -64,6 +68,9 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
      */
     private WeakReference<RecyclerView> recyclerViewWeakReference;
 
+    // A cloned version of the events array that events can be removed from with no big issue
+    private ArrayList<Event> cloned;
+
     public interface LoadTBAEventsListener {
         /**
          * Called when a general error happens while attempting to pull events
@@ -74,7 +81,7 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
          * Called when a specific event is downloaded, with sub-teams, sub-matches, and scores, etc.
          * @param event the downloaded event
          */
-        void eventDownloaded(Event event);
+        void eventDownloaded(Event event, Team[] teams, Match[] matches);
         /**
          * Called when this thread downloads a list of events, this interface method will tell TBAEventSelector to hold onto these
          * events for us until later
@@ -113,11 +120,15 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
          */
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
+
+        // Set auth token
+        TBA.setAuthToken(Constants.PUBLIC_TBA_READ_KEY);
+
         /*
          * This disables any sub-data returned with the events, we only want the event data!
          * Downloading sub-teams for each event would take a while.
          */
-        Settings.disableAll();
+        //Settings.disableAll();
         /*
          * Now let's use the AMAZING TBA-API features to download the events, you
          * should check out the TBA-API developer, he's great.
@@ -125,68 +136,77 @@ public class TBALoadEventsTask extends AsyncTask<Void, Void, Void> {
         if(events == null || events.size() == 0) {
             try {
                 Event[] events;
-                if(onlyShowMyEvents) events = new TBA().getTeamEvents(teamNumber, year, false);
-                else events = new TBA().getEvents(year, false);
+                if(onlyShowMyEvents) events = new TBA().getEvents(teamNumber, year);
+                else events = new TBA().getEvents(year);
                 /*
                  * Clean up the downloaded data a bit
                  */
                 for(Event e : events) {
-                    while(e.name.startsWith(" ")) e.name = e.name.substring(1);
-                    e.start_date = Integer.parseInt(e.start_date.split("-")[1])+"/"+Integer.parseInt(e.start_date.split("-")[2])+"/"+e.start_date.split("-")[0];
+                    while(e.getName().startsWith(" ")) e.setName(e.getName().substring(1));
                 }
                 this.events = new ArrayList<>();
                 Collections.addAll(this.events, events);
                 listener.eventListDownloaded(this.events);
             } catch(Exception e) {
-                e.printStackTrace();
+                Log.d("RBS", "Error: "+e.getMessage());
                 if(onlyShowMyEvents && teamNumber == 0) listener.errorOccurred("Error occurred downloading events list. Is your team number properly defined in Roblu settings?");
                 else listener.errorOccurred("An error occurred while accessing TheBlueAlliance.com");
             }
         }
 
+        cloned = new ArrayList<>(this.events);
+
         /*
          * Now, perform searching if necessary
          */
         if(!query.equals("")) {
-            for(Event e : this.events) {
-                /*
-                 * Because of the janky API sort method, relevance can NEVER be zero (otherwise the event will get sorted by date),
-                 * so make sure that zero is not possible!
-                 */
-                e.relevance = -1;
-                /*
-                 * It's tempting to use if statements here, don't! They are INDIVIDUAL search criteria scores
-                 */
-                if(e.name.toLowerCase().equals(query)) e.relevance += 5;
-                if(e.name.toLowerCase().contains(query)) e.relevance += 2;
-                if(Utils.contains(e.name.toLowerCase(), query)) e.relevance += 4;
-                if(e.start_date.toLowerCase().contains(query)) e.relevance += 2;
-                if(e.start_date.toLowerCase().equals(query)) e.relevance += 5;
-                if(Utils.contains(e.start_date.toLowerCase(), query)) e.relevance += 4;
-                if(e.location.toLowerCase().equals(query)) e.relevance += 5;
-                if(e.location.toLowerCase().contains(query)) e.relevance += 2;
-                if(Utils.contains(e.location.toLowerCase(), query)) e.relevance += 4;
+            // Remove teams with no relevance
+            for(int i = 0; i < cloned.size(); i++) {
+                if(calculateRelevance(cloned.get(i)) == -1) {
+                    cloned.remove(i);
+                    i--;
+                }
             }
 
-            Collections.sort(this.events);
-            Collections.reverse(this.events);
+            Collections.sort(cloned, new Comparator<Event>() {
+                @Override
+                public int compare(Event o1, Event o2) {
+                    return Integer.compare(calculateRelevance(o1), calculateRelevance(o2));
+                }
+            });
+            Collections.reverse(cloned);
         }
         /*
          * Sort by date!
          */
         else {
-            // make sure to reset old relevance (from past searches)
-            for(Event e : this.events) e.relevance = 0;
-
-            Collections.sort(this.events);
+            Collections.sort(cloned);
         }
 
         return null;
     }
 
+    private int calculateRelevance(Event e) {
+        int relevance = -1;
+        
+        if(e.getName().toLowerCase().equals(query)) relevance += 5;
+        if(e.getName().toLowerCase().contains(query)) relevance += 2;
+        if(Utils.contains(e.getName().toLowerCase(), query)) relevance += 4;
+        if(e.getStartDate().toLowerCase().contains(query)) relevance += 2;
+        if(e.getStartDate().toLowerCase().equals(query)) relevance += 5;
+        if(Utils.contains(e.getName().toLowerCase(), query)) relevance += 4;
+        if(e.getLocationName() != null) {
+            if(e.getLocationName().toLowerCase().equals(query)) relevance += 5;
+            if(e.getLocationName().toLowerCase().contains(query)) relevance += 2;
+            if(Utils.contains(e.getLocationName().toLowerCase(), query)) relevance += 4;
+        }
+
+        return relevance;
+    }
+    
     @Override
     protected void onPostExecute(Void params) {
-        tbaEventAdapterWeakReference.get().setEvents(this.events, !query.equals(""));
+        tbaEventAdapterWeakReference.get().setEvents(cloned);
         progressBarWeakReference.get().setVisibility(View.INVISIBLE);
         recyclerViewWeakReference.get().setVisibility(View.VISIBLE);
     }

@@ -12,7 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.cpjd.models.Team;
+import com.cpjd.models.standard.Team;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.REvent;
@@ -243,15 +243,14 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
      */
     @Override
     public void teamRetrieved(Team tbaTeam) {
-        Log.d("RBS", "Downloaded TBA information for "+ tbaTeam.nickname);
-        String tbaInfo = "Locality: " + tbaTeam.locality +
-                "\nRegion: " + tbaTeam.region +
-                "\nCountry name: " + tbaTeam.country_name +
-                "\nLocation: " + tbaTeam.location +
-                "\nRookie year: " + tbaTeam.rookie_year +
-                "\nMotto: " + tbaTeam.motto;
+        Log.d("RBS", "Downloaded TBA information for "+ tbaTeam.getNickname());
+        String tbaInfo =
+                "Country name: " + tbaTeam.getCountry() +
+                "\nLocation: " + tbaTeam.getLocationName() +
+                "\nRookie year: " + tbaTeam.getRookieYear() +
+                "\nMotto: " + tbaTeam.getMotto();
         TeamViewer.team.setTbaInfo(tbaInfo);
-        TeamViewer.team.setWebsite(tbaTeam.website);
+        TeamViewer.team.setWebsite(tbaTeam.getWebsite());
 
         try {
             new IO(getView().getContext()).saveTeam(getArguments().getInt("eventID"), TeamViewer.team);

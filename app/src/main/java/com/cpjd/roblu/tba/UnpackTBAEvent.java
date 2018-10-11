@@ -4,9 +4,11 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
-import android.util.Log;
 
-import com.cpjd.models.Event;
+import com.cpjd.models.ScoreBreakdown;
+import com.cpjd.models.standard.Event;
+import com.cpjd.models.standard.Match;
+import com.cpjd.models.standard.Team;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RForm;
 import com.cpjd.roblu.models.RTab;
@@ -36,6 +38,8 @@ import lombok.Setter;
 public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
 
     private Event event;
+    private Match[] matches;
+    private Team[] teams;
     private int eventID;
 
     private WeakReference<Activity> activityWeakReference;
@@ -44,33 +48,36 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
     @Setter
     private boolean randomize;
 
-    public UnpackTBAEvent(Event e, int eventID, Activity activity, ProgressDialog d) {
+    public UnpackTBAEvent(Event e, Team[] teams, Match[] matches, int eventID, Activity activity, ProgressDialog d) {
         this.eventID = eventID;
         this.event = e;
+        this.teams = teams;
+        this.matches = matches;
         this.activityWeakReference = new WeakReference<>(activity);
         this.progressDialogWeakReference = new WeakReference<>(d);
     }
 
     protected Void doInBackground(Void... params) {
+
         /*
          * No teams were contained within the event, so exit, nothing here is relevant
          * to a TBA event that doesn't contain any team models
          */
-        if(event.teams == null || event.teams.length == 0) return null;
+        if(teams == null || teams.length == 0) return null;
 
         /*
          * Create an array of team models from the ones contained in the event
          */
         ArrayList<RTeam> teams = new ArrayList<>();
-        for(int i = 0; i < event.teams.length; i++) {
+        for(int i = 0; i < this.teams.length; i++) {
             // i can be used as the ID because we are creating a fresh event, io.getNewTeamID is irrelevant
-            teams.add(new RTeam(event.teams[i].nickname, (int) event.teams[i].team_number, i));
+            teams.add(new RTeam(this.teams[i].getNickname(), (int) this.teams[i].getTeamNumber(), i));
         }
 
         /*
          * Sort the matches in the event
          */
-        Collections.sort(Arrays.asList(event.matches));
+        Collections.sort(Arrays.asList(this.matches));
 
         /*
          * Add the matches to the respective team models
@@ -78,32 +85,30 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
         IO io = new IO(activityWeakReference.get());
         RForm form = io.loadForm(eventID);
 
-        int result;
         for(RTeam t : teams) {
             t.verify(form);
-            for(int j = 0; j < event.matches.length; j++) {
-                result = event.matches[j].doesMatchContainTeam(t.getNumber());
-                if(result > 0) {
+            for(int j = 0; j < matches.length; j++) {
+                if(doesMatchContainTeam(matches[j], t.getNumber())) {
                     String name = "Match";
                     // process the correct match name
-                    switch(event.matches[j].comp_level) {
+                    switch(matches[j].getCompLevel()) {
                         case "qm":
-                            name = "Quals " + event.matches[j].match_number;
+                            name = "Quals " + matches[j].getMatchNumber();
                             break;
                         case "qf":
-                            name = "Quarters " + event.matches[j].set_number + " Match " + event.matches[j].match_number;
+                            name = "Quarters " + matches[j].getSetNumber() + " Match " + matches[j].getMatchNumber();
                             break;
                         case "sf":
-                            name = "Semis " + event.matches[j].set_number + " Match " + event.matches[j].match_number;
+                            name = "Semis " + matches[j].getSetNumber() + " Match " + matches[j].getMatchNumber();
                             break;
                         case "f":
-                            name = "Finals " + event.matches[j].match_number;
+                            name = "Finals " + matches[j].getMatchNumber();
                     }
-                    boolean isRed = result == com.cpjd.main.Constants.CONTAINS_TEAM_RED;
+                    boolean isRed = getAlliancePosition(matches[j], t.getNumber()) <= 3;
                     // add the match to the team, make sure to multiple the Event model's matches times by 1000 (seconds to milliseconds, Roblu works with milliseconds!)
-                    RTab tab = new RTab(t.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, event.matches[j].isOnWinningAlliance(t.getNumber()), event.matches[j].time * 1000);
+                    RTab tab = new RTab(t.getNumber(), name, Utils.duplicateRMetricArray(form.getMatch()), isRed, isOnWinningAlliance(matches[j], t.getNumber()), matches[j].getTime() * 1000);
                     // set the match position, if possible
-                    tab.setAlliancePosition(event.matches[j].getTeamPosition(t.getNumber()));
+                    tab.setAlliancePosition(getAlliancePosition(matches[j], t.getNumber()));
 
                     // Check for FieldData metrics
                     if(tab.getMetrics() != null) {
@@ -111,23 +116,37 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
                             if(metric instanceof RFieldData) {
                                 if(((RFieldData) metric).getData() == null) ((RFieldData) metric).setData(new LinkedHashMap<String, ArrayList<RMetric>>());
 
-                                for(int i = 0; i < event.matches[j].scorableItems.length; i++) {
+                                ScoreBreakdown redScore = matches[j].getRedScoreBreakdown();
+                                ScoreBreakdown blueScore = matches[j].getBlueScoreBreakdown();
 
-                                    Log.d("RBS", "Metric name: "+event.matches[j].scorableItems[i]+", "+"Red value: "+event.matches[j].redValues[i]+", Blue value: "+event.matches[j].blueValues[i]);
+                                String[] keyValues = new String[redScore.getValues().size()];
+                                keyValues = redScore.getValues().keySet().toArray(keyValues);
 
+                                for(String keyValue : keyValues) {
                                     ArrayList<RMetric> metrics = new ArrayList<>();
                                     try {
-                                        metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[j].redValues[i])));
+                                        metrics.add(new RCounter(0, "", 0, Double.parseDouble(String.valueOf(redScore.getValues().get(keyValue)))));
                                     } catch(Exception e) {
-                                        metrics.add(new RTextfield(0, "", (event.matches[j].redValues[i])));
+                                        metrics.add(new RTextfield(0, "", (String.valueOf(redScore.getValues().get(keyValue)))));
                                     }
                                     try {
-                                        metrics.add(new RCounter(0, "", 0, Double.parseDouble(event.matches[j].blueValues[i])));
+                                        metrics.add(new RCounter(0, "", 0, Double.parseDouble(String.valueOf(blueScore.getValues().get(keyValue)))));
                                     } catch(Exception e) {
-                                        metrics.add(new RTextfield(0, "", (event.matches[j].blueValues[i])));
+                                        metrics.add(new RTextfield(0, "", (String.valueOf(blueScore.getValues().get(keyValue)))));
                                     }
 
-                                    if(event.matches[j].scorableItems[i] != null && metrics.size() > 0) ((RFieldData) metric).getData().put(event.matches[j].scorableItems[i], metrics);
+                                    if(keyValues != null && metrics.size() > 0) ((RFieldData) metric).getData().put(keyValue, metrics);
+                                }
+
+                                // Sort it
+                                if(((RFieldData) metric).getData() != null) {
+                                    ArrayList<String> keys = new ArrayList<>(((RFieldData) metric).getData().keySet());
+                                    Collections.sort(keys);
+                                    LinkedHashMap<String, ArrayList<RMetric>> sorted = new LinkedHashMap<>();
+                                    for(String s : keys) {
+                                        sorted.put(s, ((RFieldData) metric).getData().get(s));
+                                    }
+                                    ((RFieldData) metric).setData(sorted);
                                 }
                             }
                         }
@@ -158,6 +177,26 @@ public class UnpackTBAEvent extends AsyncTask<Void, Void, Void> {
     private boolean doesExist(RTeam team, String name) {
         for(int i = 0 ; i < team.getTabs().size(); i++) if(team.getTabs().get(i).getTitle().equalsIgnoreCase(name)) return true;
         return false;
+    }
+
+    private int getAlliancePosition(Match m, int teamNumber) {
+        for(int i = 0; i < m.getBlue().getTeamKeys().length; i++) {
+            if(m.getBlue().getTeamKeys()[i].equals("frc"+teamNumber)) return i + 4;
+        }
+        for(int i = 0; i < m.getRed().getTeamKeys().length; i++) {
+            if(m.getRed().getTeamKeys()[i].equals("frc"+teamNumber)) return i + 1;
+        }
+
+        return -1;
+    }
+
+    private boolean isOnWinningAlliance(Match m, int teamNumber) {
+        boolean redWinner = m.getWinningAlliance().toLowerCase().contains("red");
+        return (redWinner && getAlliancePosition(m, teamNumber) <= 3) || (!redWinner && getAlliancePosition(m, teamNumber) >= 4);
+    }
+
+    private boolean doesMatchContainTeam(Match m, int teamNumber) {
+        return getAlliancePosition(m, teamNumber) != -1;
     }
 
     @Override

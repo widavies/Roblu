@@ -26,7 +26,9 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 
-import com.cpjd.models.Event;
+import com.cpjd.models.standard.Event;
+import com.cpjd.models.standard.Match;
+import com.cpjd.models.standard.Team;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.tba.ImportEvent;
@@ -236,13 +238,13 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
 
         Utils.showSnackbar(findViewById(R.id.activity_apievent_select), getApplicationContext(), "Downloading event...", false, new IO(getApplicationContext()).loadSettings().getRui().getPrimaryColor());
 
-        Log.d("RBS", "Importing event with key: "+event.key);
+        Log.d("RBS", "Importing event with key: "+event.getKey());
 
         /*
          * Import the event specifically, eventDownloaded(Event event) will receive the result of this
          * task execution
          */
-        new ImportEvent(this, event.key).start();
+        new ImportEvent(this, event.getKey()).start();
     }
 
     /**
@@ -260,13 +262,15 @@ public class TBAEventSelector extends AppCompatActivity implements TBAEventAdapt
      * @param event the downloaded event
      */
     @Override
-    public void eventDownloaded(Event event) {
-        Log.d("RBS", "Event: "+event.name+" was downloaded.");
+    public void eventDownloaded(Event event, Team[] teams, Match[] matches) {
+        Log.d("RBS", "Event: "+event.getName()+" was downloaded.");
         Intent intent = new Intent(this, EventEditor.class);
         intent.putExtra("editing", false);
-        intent.putExtra("key", event.key);
-        intent.putExtra("name", event.name);
+        intent.putExtra("key", event.getKey());
+        intent.putExtra("name", event.getName());
         intent.putExtra("tbaEvent", event);
+        intent.putExtra("tbaTeams", teams);
+        intent.putExtra("tbaMatches", matches);
         startActivityForResult(intent, Constants.GENERAL);
     }
     /**

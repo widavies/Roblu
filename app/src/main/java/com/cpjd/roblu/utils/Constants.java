@@ -13,9 +13,19 @@ public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
 
-    public static final String UPDATE_MESSAGE = "-Added multi-filter option (long press search button)\n-IOS edition of Roblu Scouter coming soon!\n-Bug fixes";
+    public static final String UPDATE_MESSAGE = "What's new in 4.5.9?\n\n-Updated TBA-API to V3\n-IOS edition of Roblu Scouter coming soon!\n-Bug fixes";
 
-    public static final int VERSION = 13; // used for updating the changelist
+    /**
+     * This isn't really that secure, but the point here is, it's a read-only key, it's a throwaway account,
+     * there's not even any data stored on the account, the account isn't even used. This really helps
+     * because it means that people don't have to hassle around with api keys. Also, I'll probably get kicked
+     * off this API and some point, and when that day happens, I'll add in a "sign into TBA" so everyone can
+     * have their personal read-API and everything can be square with the world, until then, we'll pretend that
+     * I never noticed.
+     */
+    public static final String PUBLIC_TBA_READ_KEY = SecretConstants.PUBLIC_TBA_READ_KEY;
+
+    public static final int VERSION = 14; // used for updating the changelist
 
     /*
      * v4.0.0 cross activity codes

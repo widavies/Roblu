@@ -7,7 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.cpjd.models.Event;
+import com.cpjd.models.standard.Event;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
@@ -72,18 +72,9 @@ public class TBAEventAdapter extends RecyclerView.Adapter<TBAEventAdapter.ViewHo
     /**
      * Sets the events to the adapter
      * @param events events to pass control of to this adapter
-     * @param hideZeroRelevanceEvents if events with 0 relevance should be visible
      */
-    public void setEvents(ArrayList<Event> events, boolean hideZeroRelevanceEvents) {
-        if(hideZeroRelevanceEvents) {
-            this.events = new ArrayList<>(events); // clones the array
-            for(int i = 0; i < this.events.size(); i++) {
-                if(this.events.get(i).relevance == -1) {
-                    this.events.remove(i);
-                    i--;
-                }
-            }
-        } else this.events = events;
+    public void setEvents(ArrayList<Event> events) {
+        this.events = events;
         notifyDataSetChanged();
     }
 
@@ -138,8 +129,9 @@ public class TBAEventAdapter extends RecyclerView.Adapter<TBAEventAdapter.ViewHo
 
         void bindEvent(Event e) {
             if(e == null) return;
-            this.title.setText(e.name);
-            this.subtitle.setText(e.location+"\n"+e.start_date);
+            this.title.setText(e.getName());
+            String[] tokens = e.getStartDate().split("-");
+            this.subtitle.setText(e.getLocationName()+"\n"+tokens[1]+"/"+tokens[2]+"/"+tokens[0]);
             this.number.setText("");
             if(rui != null) {
                 this.title.setTextColor(rui.getText());

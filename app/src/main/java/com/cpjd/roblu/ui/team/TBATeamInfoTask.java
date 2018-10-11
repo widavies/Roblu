@@ -5,9 +5,11 @@ import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.cpjd.main.TBA;
-import com.cpjd.models.Media;
-import com.cpjd.models.Team;
+import com.cpjd.models.other.Media;
+import com.cpjd.models.standard.Team;
 import com.squareup.picasso.Picasso;
+
+import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 
@@ -46,9 +48,10 @@ public class TBATeamInfoTask implements Runnable {
         listener.teamRetrieved(new TBA().getTeam(teamNumber));
 
         try {
-            Media[] medias = new TBA().getMedia(teamNumber, Integer.parseInt(year));
+            Media[] medias = new TBA().getTeamMedia(teamNumber, Integer.parseInt(year));
             for(Media media : medias) {
-                String url = (String)media.details.get("thumbnail_url");
+                JSONObject details = new JSONObject(media.getDetails());
+                String url = details.getString("thumbnail_url");
                 if(url == null || url.equals("")) continue;
                 Log.d("RBS", "Attempting to download image at URL: "+url);
                 Bitmap b = Picasso.with(context).load(url).get();

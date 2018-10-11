@@ -3,9 +3,11 @@ package com.cpjd.roblu.tba;
 import android.os.StrictMode;
 import android.util.Log;
 
-import com.cpjd.main.Settings;
 import com.cpjd.main.TBA;
-import com.cpjd.models.Event;
+import com.cpjd.models.standard.Event;
+import com.cpjd.models.standard.Match;
+import com.cpjd.models.standard.Team;
+import com.cpjd.roblu.utils.Constants;
 
 /**
  * ImportEvent is used when the user has tapped a specific Event and more specific info
@@ -34,13 +36,18 @@ public class ImportEvent extends Thread {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitNetwork().build();
         StrictMode.setThreadPolicy(policy);
 
+        // Set auth token
+        TBA.setAuthToken(Constants.PUBLIC_TBA_READ_KEY);
+
         // set what should be included in the event download
-        Settings.defaults();
+        //Settings.defaults();
 
         // notify the listener of the downloaded event
         Event e = new TBA().getEvent(this.key);
+        Team[] teams = new TBA().getEventTeams(e.getKey());
+        Match[] matches = new TBA().getMatches(e.getKey());
 
-        if(e != null) listener.eventDownloaded(e);
+        if(e != null) listener.eventDownloaded(e, teams, matches);
         else listener.errorOccurred("No event found with key: "+this.key+".");
 
         try {

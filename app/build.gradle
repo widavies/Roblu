@@ -27,8 +27,8 @@ android {
         applicationId "com.cpjd.roblu"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 66
-        versionName "4.5.8"
+        versionCode 67
+        versionName "4.5.9"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {
@@ -80,7 +80,7 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs') // since lombok is already used in this library, we don't need to add it again
     androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -89,12 +89,12 @@ dependencies {
     implementation('com.mikepenz:materialdrawer:5.9.0@aar') {
         transitive = true
     }
-    implementation "com.googlecode.json-simple:json-simple:1.1"
     implementation 'com.dlazaro66.qrcodereaderview:qrcodereaderview:2.0.3'
     implementation 'com.roughike:bottom-bar:2.1.1'
     implementation 'com.miguelcatalan:materialsearchview:1.4.0'
     implementation 'pub.devrel:easypermissions:0.2.1'
-    implementation 'com.google.guava:guava:24.1-android' // ignore this warning
+    implementation 'com.google.guava:guava:24.1-android'
+    // ignore this warning
     implementation 'com.jrummyapps:colorpicker:2.1.6'
     implementation 'com.github.infotech-group:CanvasView:release'
     implementation 'com.android.support:appcompat-v7:28.0.0'
@@ -107,7 +107,9 @@ dependencies {
     implementation('com.mikepenz:aboutlibraries:5.9.5@aar') { transitive = true }
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
-    implementation "org.projectlombok:lombok:1.18.0"
+    //implementation 'org.projectlombok:lombok:1.18.0'
+    //implementation 'javax.annotation:jsr250-api:1.0'
+    //implementation 'com.googlecode.json-simple:json-simple:1.1'
     annotationProcessor 'org.projectlombok:lombok:1.18.0'
-    implementation 'javax.annotation:jsr250-api:1.0'
+    implementation files('libs/TBA-API-V3.jar')
 }

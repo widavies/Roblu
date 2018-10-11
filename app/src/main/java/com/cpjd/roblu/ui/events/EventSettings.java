@@ -29,7 +29,9 @@ import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.cpjd.http.Request;
-import com.cpjd.models.Event;
+import com.cpjd.models.standard.Event;
+import com.cpjd.models.standard.Match;
+import com.cpjd.models.standard.Team;
 import com.cpjd.requests.CloudTeamRequest;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.csv.CSVActivity;
@@ -300,12 +302,13 @@ public class EventSettings extends AppCompatActivity {
                     }
 
                     @Override
-                    public void eventDownloaded(Event e) {
+                    public void eventDownloaded(Event e, Team[] teams, Match[] matches) {
                         // Start the merge!
-                        new SyncTBAEvent(e, event.getID(), new IO(getActivity()), new SyncTBAEvent.SyncTBAEventListener() {
+                        new SyncTBAEvent(teams, matches, event.getID(), new IO(getActivity()), new SyncTBAEvent.SyncTBAEventListener() {
                             @Override
                             public void done() {
                                 tbaSyncDialog.dismiss();
+                                Utils.showSnackbar(getActivity().findViewById(R.id.event_settings), getActivity(), "Event synced with TBA successfully.", false, rui.getPrimaryColor());
                             }
                         }).start();
                     }
