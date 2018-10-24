@@ -7,6 +7,7 @@ import android.util.Log;
 import com.cpjd.main.TBA;
 import com.cpjd.models.other.Media;
 import com.cpjd.models.standard.Team;
+import com.cpjd.roblu.utils.Constants;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONObject;
@@ -45,6 +46,9 @@ public class TBATeamInfoTask implements Runnable {
     }
 
     public void run() {
+        // Set auth token
+        TBA.setAuthToken(Constants.PUBLIC_TBA_READ_KEY);
+
         listener.teamRetrieved(new TBA().getTeam(teamNumber));
 
         try {
