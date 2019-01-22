@@ -733,7 +733,19 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         imageView.setAdjustViewBounds(true);
 
         // Get field diagram
-        final Bitmap field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2018);
+        final Bitmap field;
+
+        // Add new years here
+        switch(fieldDiagram.getPictureID()) {
+            case 2019:
+                field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2019);
+                break;
+            case 2018:
+                field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2018);
+                break;
+            default:
+                field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2018);
+        }
 
         // Get drawings
         if(fieldDiagram.getDrawings() != null) {

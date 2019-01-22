@@ -49,7 +49,11 @@ public class TBATeamInfoTask implements Runnable {
         // Set auth token
         TBA.setAuthToken(Constants.PUBLIC_TBA_READ_KEY);
 
-        listener.teamRetrieved(new TBA().getTeam(teamNumber));
+        try {
+            listener.teamRetrieved(new TBA().getTeam(teamNumber));
+        } catch(Exception e) {
+            // ignore
+        }
 
         try {
             Media[] medias = new TBA().getTeamMedia(teamNumber, Integer.parseInt(year));

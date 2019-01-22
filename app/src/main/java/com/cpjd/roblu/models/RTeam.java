@@ -7,6 +7,7 @@ import com.cpjd.roblu.models.metrics.RCalculation;
 import com.cpjd.roblu.models.metrics.RCheckbox;
 import com.cpjd.roblu.models.metrics.RChooser;
 import com.cpjd.roblu.models.metrics.RCounter;
+import com.cpjd.roblu.models.metrics.RFieldDiagram;
 import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.models.metrics.RSlider;
 import com.cpjd.roblu.models.metrics.RStopwatch;
@@ -237,6 +238,7 @@ public class RTeam implements Serializable, Comparable<RTeam> {
                 }
             }
         }
+
         // Update default values for non-modified values, also check for some weird scenario
         temp = form.getPit();
         for(int i = 0; i < tabs.size(); i++) {
@@ -249,7 +251,11 @@ public class RTeam implements Serializable, Comparable<RTeam> {
 
                         if(e instanceof RBoolean && !s.isModified() && s instanceof RBoolean)
                             ((RBoolean) s).setValue(((RBoolean) e).isValue());
-                        else if(e instanceof RCounter && !s.isModified() && s instanceof RCounter) {
+                        else if(e instanceof RFieldDiagram && s instanceof RFieldDiagram && (((RFieldDiagram) e).getPictureID() != ((RFieldDiagram) s).getPictureID())) {
+                            // Remove old picture drawings
+                            ((RFieldDiagram) s).setDrawings(null);
+                            ((RFieldDiagram) s).setPictureID(((RFieldDiagram) e).getPictureID());
+                        } else if(e instanceof RCounter && !s.isModified() && s instanceof RCounter) {
                             ((RCounter)s).setValue(((RCounter)e).getValue());
                         }
                         else if(e instanceof RCalculation && s instanceof RCalculation) {

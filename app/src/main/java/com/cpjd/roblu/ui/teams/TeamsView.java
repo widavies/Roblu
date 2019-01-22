@@ -315,7 +315,7 @@ public class TeamsView extends AppCompatActivity implements View.OnClickListener
             settings.setUpdateLevel(Constants.VERSION);
 
             AlertDialog.Builder builder = new AlertDialog.Builder(TeamsView.this)
-                    .setTitle("Changelist for Version 4.5.8")
+                    .setTitle("Changelist for Version 4.5.10")
                     .setMessage(Constants.UPDATE_MESSAGE)
                     .setPositiveButton("Rock on", new DialogInterface.OnClickListener() {
                         @Override

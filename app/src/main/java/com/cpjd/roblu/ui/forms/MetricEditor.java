@@ -101,6 +101,12 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
      */
     private int tab;
 
+    /*
+     * To add a new year, add a new year at the beginning of this array &
+     * add a corresponding drawable ID in RMetricToUI
+     */
+    private String[] fieldDiagramYears = {"2019", "2018"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -137,6 +143,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         if(getIntent().getSerializableExtra("metric") != null) {
             metric = (RMetric) getIntent().getSerializableExtra("metric");
             if(getSupportActionBar() != null) getSupportActionBar().setTitle("Edit metric");
+
             /*
              * The modified variable DOES NOT matter in the form, so always, always make sure it's true
              * so N.O. tags don't show up
@@ -309,6 +316,52 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
                     d.show();
                 }
             });
+        } else if(metric instanceof RFieldDiagram) {
+            TextView yearText = new TextView(this);
+            yearText.setText("Year: ");
+
+            Spinner yearsSpinner = new Spinner(this);
+            int selectedYear = ((RFieldDiagram) metric).getPictureID();
+
+            final ArrayAdapter<String> adapter =
+                    new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, fieldDiagramYears);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            yearsSpinner.setAdapter(adapter);
+            yearsSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                    int selectedYear = Integer.parseInt(adapterView.getItemAtPosition(i).toString());
+                    ((RFieldDiagram) metric).setPictureID(selectedYear);
+                    // Also, re-update the picture preview to the latest year
+                    addMetricPreviewToToolbar();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> adapterView) {}
+            });
+
+            // Verify the spinner & preview are in sync
+            for(int i = 0; i < fieldDiagramYears.length; i++) {
+                if(fieldDiagramYears[i].equalsIgnoreCase(String.valueOf(selectedYear))) {
+                    yearsSpinner.setSelection(i);
+                    break;
+                }
+
+                /*
+                 * This is a compatibility fix because in 2018 the RFieldDiagram pictureID
+                 * value was set to a value that couldn't really be recovered
+                 */
+                if(i == fieldDiagramYears.length - 1) {
+                    yearsSpinner.setSelection(fieldDiagramYears.length - 1);
+                }
+            }
+
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            params.addRule(RelativeLayout.BELOW, layout.getChildAt(layout.getChildCount() - 1).getId());
+            params.addRule(RelativeLayout.RIGHT_OF, yearText.getId());
+            yearsSpinner.setLayoutParams(params);
+            layout.addView(yearsSpinner);
+            yearsSpinner.requestFocus();
         }
 
         this.layout.addView(getCardView(layout));
@@ -516,7 +569,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         } else if(stringOfSelected.equalsIgnoreCase(METRIC_TYPES[8])) {
             metric = new RDivider(0, "Divider");
         } else if(stringOfSelected.equals(METRIC_TYPES[9])) {
-            metric = new RFieldDiagram(0, R.drawable.field2018, null);
+            metric = new RFieldDiagram(0, Integer.parseInt(fieldDiagramYears[0]), null);
         } else if(stringOfSelected.equals(METRIC_TYPES[10])) {
             metric = new RCalculation(0, "Custom calculation");
         } else if(stringOfSelected.equals(METRIC_TYPES[11])) {

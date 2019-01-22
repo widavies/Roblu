@@ -80,7 +80,7 @@ public class Overview extends Fragment implements TBATeamInfoTask.TBAInfoListene
 
             for(RTab tab : team.getTabs()) {
                 // Rule out disallowed tabs
-                if(tab.getTitle().equalsIgnoreCase("PIT")) continue;
+                if(tab.getTitle().equalsIgnoreCase("PIT") || tab.getTitle().equalsIgnoreCase("Predictions")) continue;
 
                 // Start processing metrics
                 for(RMetric metric : tab.getMetrics()) {

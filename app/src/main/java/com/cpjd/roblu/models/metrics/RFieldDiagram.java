@@ -19,7 +19,7 @@ public class RFieldDiagram extends RMetric {
      */
     public static final long serialVersionUID = 1L;
 
-    private int pictureID;
+    private int pictureID; // just the year that the picture is from
 
     /**
      * To save memory, this metric will store the field diagram separately from the drawings, the drawings

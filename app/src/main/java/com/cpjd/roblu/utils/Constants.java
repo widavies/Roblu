@@ -13,7 +13,7 @@ public abstract class Constants {
 
     public static final String SERVICE_ID = "com.cpjd.roblu.service";
 
-    public static final String UPDATE_MESSAGE = "What's new in 4.5.9?\n\n-Updated TBA-API to V3\n-IOS edition of Roblu Scouter coming soon!\n-Bug fixes";
+    public static final String UPDATE_MESSAGE = "What's new in 4.5.10?\n\n-Added 2019 field diagram\n-Bug fixes";
 
     /**
      * This isn't really that secure, but the point here is, it's a read-only key, it's a throwaway account,
@@ -25,7 +25,7 @@ public abstract class Constants {
      */
     public static final String PUBLIC_TBA_READ_KEY = SecretConstants.PUBLIC_TBA_READ_KEY;
 
-    public static final int VERSION = 14; // used for updating the changelist
+    public static final int VERSION = 15; // used for updating the changelist
 
     /*
      * v4.0.0 cross activity codes

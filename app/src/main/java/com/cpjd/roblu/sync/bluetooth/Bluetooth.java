@@ -124,6 +124,8 @@ public class Bluetooth {
      * @return true if Bluetooth is enabled on the local device
      */
     public boolean isEnabled() {
+        if(bluetoothAdapter == null) return false;
+
         return bluetoothAdapter.isEnabled();
     }
 
@@ -132,6 +134,8 @@ public class Bluetooth {
      * a confirmation dialog
      */
     public void enable() {
+        if(bluetoothAdapter == null) return;
+
         if(!isEnabled()) bluetoothAdapter.enable();
     }
 
@@ -139,6 +143,8 @@ public class Bluetooth {
      * Force disables Bluetooth on the device
      */
     public void disable() {
+        if(bluetoothAdapter == null) return;
+
         bluetoothAdapter.disable();
     }
 
@@ -205,6 +211,8 @@ public class Bluetooth {
      * the if(listener != null) listener will be updated when new devices are found
      */
     public void startScanning() {
+        if(bluetoothAdapter == null) return;
+
         if(bluetoothAdapter.isDiscovering()) {
             bluetoothAdapter.cancelDiscovery();
         }
@@ -215,6 +223,8 @@ public class Bluetooth {
      * Stops searching for other devices
      */
     public void stopScanning() {
+        if(bluetoothAdapter == null) return;
+
         bluetoothAdapter.cancelDiscovery();
     }
 
