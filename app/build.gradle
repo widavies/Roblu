@@ -27,8 +27,8 @@ android {
         applicationId "com.cpjd.roblu"
         minSdkVersion 19
         targetSdkVersion 28
-        versionCode 70
-        versionName "4.5.11"
+        versionCode 71
+        versionName "4.5.12"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
         javaCompileOptions {

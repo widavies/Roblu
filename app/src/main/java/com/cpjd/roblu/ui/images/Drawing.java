@@ -88,7 +88,16 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
             }
 
             LinearLayout layout = findViewById(R.id.drawing_layout);
-            layout.setBackgroundResource(getIntent().getIntExtra("fieldDiagramID", R.drawable.field2018));
+            switch(getIntent().getIntExtra("fieldDiagramID", 0)) {
+                case 2019:
+                    layout.setBackgroundResource(R.drawable.field2019);
+                    break;
+                case 2018:
+                    layout.setBackgroundResource(R.drawable.field2018);
+                    break;
+                default:
+                    layout.setBackgroundResource(R.drawable.field2018);
+            }
 
             this.canvas.setBaseColor(rui.getBackground());
             this.canvas.setPaintStrokeWidth(7F);
