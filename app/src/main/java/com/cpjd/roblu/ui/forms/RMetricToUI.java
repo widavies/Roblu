@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -719,11 +720,11 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         return getCard(layout);
     }
 
-    public CardView getFieldDiagram(final int position, final RFieldDiagram fieldDiagram) {
+    public CardView getFieldDiagram(final int position, final int eventId, final int teamId, final RFieldDiagram fieldDiagram) {
         RelativeLayout layout = new RelativeLayout(activity);
         TextView textView = new TextView(activity);
         textView.setText(fieldDiagram.getTitle());
-        textView.setPadding(textView.getPaddingLeft(), textView.getPaddingTop(), textView.getPaddingRight(), Utils.DPToPX(activity, 10));;
+        textView.setPadding(textView.getPaddingLeft(), textView.getPaddingTop(), textView.getPaddingRight(), Utils.DPToPX(activity, 10));
         textView.setTextColor(rui.getText());
         textView.setId(Utils.generateViewId());
         RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
@@ -737,12 +738,13 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
 
         // Add new years here
         switch(fieldDiagram.getPictureID()) {
+            case 2020:
+                field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2020);
+                break;
             case 2019:
                 field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2019);
                 break;
             case 2018:
-                field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2018);
-                break;
             default:
                 field = BitmapFactory.decodeResource(activity.getResources(), R.drawable.field2018);
         }
@@ -750,13 +752,18 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
         // Get drawings
         if(fieldDiagram.getDrawings() != null) {
             Bitmap drawings = BitmapFactory.decodeByteArray(fieldDiagram.getDrawings(), 0, fieldDiagram.getDrawings().length);
-            Bitmap mutableBitmap = field.copy(Bitmap.Config.ARGB_8888, true);
-            Canvas c = new Canvas(mutableBitmap);
+            Bitmap mutable = field.copy(Bitmap.Config.ARGB_8888, true);
+            Canvas c = new Canvas(mutable);
             Paint p = new Paint(Paint.FILTER_BITMAP_FLAG);
-            c.drawBitmap(drawings, 0, 0, p);
-            layout.setBackground(new BitmapDrawable(activity.getResources(), field));
-            imageView.setImageBitmap(drawings);
-            imageView.setAlpha(0.55f);
+            p.setAlpha(140);
+
+            Rect from = new Rect(0, 0, drawings.getWidth(), drawings.getHeight());
+            RectF to = new RectF(0, 0, field.getWidth(), field.getHeight());
+
+            c.drawBitmap(drawings, from, to, p);
+
+            imageView.setImageBitmap(mutable);
+            imageView.setAlpha(1f);
         } else imageView.setImageBitmap(field);
 
         imageView.setOnClickListener(new View.OnClickListener() {
@@ -765,7 +772,9 @@ public class RMetricToUI implements ImageGalleryAdapter.ImageThumbnailLoader, Fu
                 if(position == -1 || !editable) return;
 
                 Intent intent = new Intent(activity, Drawing.class);
-                intent.putExtra("fieldDrawings", fieldDiagram.getDrawings());
+                //intent.putExtra("fieldDrawings", fieldDiagram.getDrawings());
+                intent.putExtra("eventId", eventId);
+                intent.putExtra("teamId", teamId);
                 intent.putExtra("fieldDiagramID", fieldDiagram.getPictureID());
                 intent.putExtra("fieldDiagram", true);
                 intent.putExtra("position", position);

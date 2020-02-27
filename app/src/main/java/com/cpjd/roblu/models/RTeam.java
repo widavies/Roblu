@@ -349,6 +349,19 @@ public class RTeam implements Serializable, Comparable<RTeam> {
     public ArrayList<RMetric> getMetrics(int page) {
         return tabs.get(page).getMetrics();
     }
+
+    public RMetric getMetric(int page, int id) {
+        ArrayList<RMetric> metrics = getMetrics(page);
+
+        for(RMetric metric : metrics) {
+            if(metric.getID() == id) {
+                return metric;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Removes all the tab except the PIT and PREDICTIONS tabs
      */

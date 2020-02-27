@@ -105,7 +105,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
      * To add a new year, add a new year at the beginning of this array &
      * add a corresponding drawable ID in RMetricToUI
      */
-    private String[] fieldDiagramYears = {"2019", "2018"};
+    private String[] fieldDiagramYears = {"2020", "2019", "2018"};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -151,9 +151,8 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
             metric.setModified(true);
             addMetricPreviewToToolbar();
             buildConfigLayout();
-
         } else {
-            // add a RBoolean type, it's the default loaded type until the user selects a different one
+            // Add a RBoolean type, it's the default loaded type until the user selects a different one
             metric = new RBoolean(0, "Boolean", false);
             /*
              * The modified variable DOES NOT matter in the form, so always, always make sure it's true
@@ -485,7 +484,7 @@ public class MetricEditor extends AppCompatActivity implements AdapterView.OnIte
         else if(metric instanceof RTextfield) toolbar.addView(rMetricToUI.getTextfield((RTextfield) metric));
         else if(metric instanceof RGallery) toolbar.addView(rMetricToUI.getGallery(true, 0, 0, ((RGallery)metric)));
         else if(metric instanceof RDivider) toolbar.addView(rMetricToUI.getDivider((RDivider)metric));
-        else if(metric instanceof RFieldDiagram) toolbar.addView(rMetricToUI.getFieldDiagram(-1, (RFieldDiagram)metric));
+        else if(metric instanceof RFieldDiagram) toolbar.addView(rMetricToUI.getFieldDiagram(-1, -1, -1, (RFieldDiagram)metric));
         else if(metric instanceof RCalculation) toolbar.addView(rMetricToUI.getCalculationMetric(null, ((RCalculation)metric)));
         else if(metric instanceof RFieldData) toolbar.addView(rMetricToUI.getFieldData((RFieldData)metric));
     }

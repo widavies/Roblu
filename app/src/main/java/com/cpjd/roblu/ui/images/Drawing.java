@@ -7,8 +7,11 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.ColorInt;
 import android.support.v7.app.AppCompatActivity;
@@ -30,6 +33,8 @@ import com.android.graphics.CanvasView;
 import com.cpjd.roblu.R;
 import com.cpjd.roblu.io.IO;
 import com.cpjd.roblu.models.RUI;
+import com.cpjd.roblu.models.metrics.RFieldDiagram;
+import com.cpjd.roblu.models.metrics.RMetric;
 import com.cpjd.roblu.ui.UIHandler;
 import com.cpjd.roblu.utils.Constants;
 import com.cpjd.roblu.utils.Utils;
@@ -42,8 +47,8 @@ import java.io.ByteArrayOutputStream;
  * A utility for drawing on Bitmaps!
  * We use a wonderful utility to help us do this.
  *
- * @since 3.5.9
  * @author Will Davies
+ * @since 3.5.9
  */
 public class Drawing extends AppCompatActivity implements ColorPickerDialogListener {
 
@@ -53,6 +58,8 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
     private int position;
 
     public static byte[] DRAWINGS;
+
+    public static boolean CLEAR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,37 +87,57 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
             this.canvas = this.findViewById(R.id.canvas);
 
-            // Load image
-            if(getIntent().getByteArrayExtra("fieldDrawings") != null) {
-                Bitmap b = BitmapFactory.decodeByteArray(getIntent().getByteArrayExtra("fieldDrawings"), 0, getIntent().getByteArrayExtra("fieldDrawings").length);
-                Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
-                if(bitmap != null) this.canvas.drawBitmap(bitmap);
-            }
+            // Get field diagram
+            final Drawable d;
 
-            LinearLayout layout = findViewById(R.id.drawing_layout);
+            // Add new years here
             switch(getIntent().getIntExtra("fieldDiagramID", 0)) {
+                case 2020:
+                    d = getResources().getDrawable(R.drawable.field2020);
+                    break;
                 case 2019:
-                    layout.setBackgroundResource(R.drawable.field2019);
+                    d = getResources().getDrawable(R.drawable.field2019);
                     break;
                 case 2018:
-                    layout.setBackgroundResource(R.drawable.field2018);
-                    break;
                 default:
-                    layout.setBackgroundResource(R.drawable.field2018);
+                    d = getResources().getDrawable(R.drawable.field2018);
             }
 
-            this.canvas.setBaseColor(rui.getBackground());
+            this.canvas.setBaseColor(Color.TRANSPARENT);
             this.canvas.setPaintStrokeWidth(7F);
+            this.canvas.setBackground(d);
+
             canvas.setPaintStrokeColor(Color.YELLOW);
+
+            // Load drawings
+            RFieldDiagram metric = (RFieldDiagram)
+                    new IO(getApplicationContext()).loadTeam(getIntent().getIntExtra("eventId", -1), getIntent().getIntExtra("teamId", -1))
+                            .getMetric(getIntent().getIntExtra("position", -1), getIntent().getIntExtra("ID", -1));
+
+            if(metric.getDrawings() != null && !CLEAR) {
+                Bitmap b = BitmapFactory.decodeByteArray(metric.getDrawings(), 0, metric.getDrawings().length);
+                Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
+                if(bitmap != null) {
+                    Bitmap mutable = Bitmap.createBitmap(displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, Bitmap.Config.ARGB_8888);
+                    Canvas c = new Canvas(mutable);
+                    Paint p = new Paint();
+                    p.setAlpha(140);
+                    c.drawBitmap(b, 0, 0, p);
+
+                    this.canvas.drawBitmap(mutable);
+                }
+            }
         } else {
             // Load image
             Bitmap b = BitmapFactory.decodeByteArray(ImageGalleryActivity.IMAGES.get(position), 0, ImageGalleryActivity.IMAGES.get(position).length);
             Bitmap bitmap = Bitmap.createScaledBitmap(b, displayMetrics.widthPixels, displayMetrics.heightPixels - toolbar.getHeight() - temp, false);
             this.canvas = this.findViewById(R.id.canvas);
-            this.canvas.setBaseColor(rui.getBackground());
+            this.canvas.setBaseColor(Color.TRANSPARENT);
             if(bitmap != null) this.canvas.drawBitmap(bitmap);
             this.canvas.setPaintStrokeWidth(7F);
         }
+
+        if(CLEAR) CLEAR = false;
     }
 
     @Override
@@ -125,14 +152,14 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         if(item.getItemId() == android.R.id.home) {
             finish();
             return true;
-        }
-        else if(item.getItemId() == R.id.undo) {
+        } else if(item.getItemId() == R.id.undo) {
             canvas.undo();
         } else if(item.getItemId() == R.id.mode) {
             showPopup();
             return true;
-        }
-        else if(item.getItemId() == R.id.confirm) {
+        } else if(item.getItemId() == R.id.confirm) {
+            canvas.setBackground(null);
+
             // save bitmap back to file system
             Bitmap bitmap = canvas.getBitmap();
 
@@ -161,7 +188,7 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         return false;
     }
 
-    private void showPopup(){
+    private void showPopup() {
         View menuItemView = findViewById(R.id.mode);
         final PopupMenu popup = new PopupMenu(Drawing.this, menuItemView);
         MenuInflater inflate = popup.getMenuInflater();
@@ -177,11 +204,10 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
                     return true;
                 } else if(item.getItemId() == R.id.eraser) {
                     DRAWINGS = null;
-                    getIntent().putExtra("fieldDrawings", DRAWINGS);
+                    CLEAR = true;
                     recreate();
                     return true;
-                }
-                else if(item.getItemId() == R.id.line) {
+                } else if(item.getItemId() == R.id.line) {
                     canvas.setDrawer(CanvasView.Drawer.LINE);
                     return true;
                 } else if(item.getItemId() == R.id.rectangle) {
@@ -200,8 +226,8 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
                     changeWidth();
                     return true;
                 } else if(item.getItemId() == R.id.color) {
-                    ColorPickerDialog.newBuilder().setAllowPresets(true).setPresets(new int[] {
-                            Color.RED, Color.BLUE, Color.CYAN, Color.YELLOW, Color.MAGENTA, Color.BLACK, Color.WHITE, Color.GRAY, Color.GREEN, Color.DKGRAY, Color.LTGRAY }
+                    ColorPickerDialog.newBuilder().setAllowPresets(true).setPresets(new int[]{
+                            Color.RED, Color.BLUE, Color.CYAN, Color.YELLOW, Color.MAGENTA, Color.BLACK, Color.WHITE, Color.GRAY, Color.GREEN, Color.DKGRAY, Color.LTGRAY}
                     ).setColor(color).setShowColorShades(true).show(Drawing.this);
                     return true;
                 }
@@ -210,7 +236,6 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         };
         popup.setOnMenuItemClickListener(popupListener);
         popup.show();
-
     }
 
     private void changeWidth() {
@@ -239,7 +264,9 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
         });
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
-            public void onClick(DialogInterface dialog, int which) { dialog.cancel(); }
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
         });
         TextView view = new TextView(this);
         view.setTextSize(Utils.DPToPX(getApplicationContext(), 5));
@@ -264,5 +291,6 @@ public class Drawing extends AppCompatActivity implements ColorPickerDialogListe
     }
 
     @Override
-    public void onDialogDismissed(int dialogId) {}
+    public void onDialogDismissed(int dialogId) {
+    }
 }

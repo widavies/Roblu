@@ -79,8 +79,8 @@ public class RSettings implements Serializable {
         rui.setUploadRequired(true);
         this.rui = rui;
     }
-    public void setServerIPToDefault() {
-        this.setServerIP("ec2-13-59-164-241.us-east-2.compute.amazonaws.com");
-    }
 
+    public void setServerIPToDefault() {
+        this.setServerIP("roblucloud-legacy.centralus.cloudapp.azure.com");
+    }
 }

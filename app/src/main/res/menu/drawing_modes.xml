@@ -13,9 +13,6 @@
         android:id="@+id/rectangle"
         android:title="@string/rectangle"/>
     <item
-        android:id="@+id/circle"
-        android:title="@string/circle"/>
-    <item
         android:id="@+id/ellipse"
         android:title="@string/ellipse"/>
     <item

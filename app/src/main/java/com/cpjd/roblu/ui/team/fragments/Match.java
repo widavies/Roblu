@@ -131,7 +131,7 @@ public class Match extends Fragment implements RMetricToUI.MetricListener {
         else if(e instanceof RStopwatch) layout.addView(els.getStopwatch((RStopwatch) e, false));
         else if(e instanceof RTextfield) layout.addView(els.getTextfield((RTextfield) e));
         else if(e instanceof RDivider) layout.addView(els.getDivider((RDivider)e));
-        else if(e instanceof RFieldDiagram) layout.addView(els.getFieldDiagram(position, (RFieldDiagram)e));
+        else if(e instanceof RFieldDiagram) layout.addView(els.getFieldDiagram(position, event.getID(), TeamViewer.team.getID(), (RFieldDiagram)e));
         else if(e instanceof RCalculation) layout.addView(els.getCalculationMetric(TeamViewer.team.getTabs().get(position).getMetrics(), ((RCalculation)e)));
         else if(e instanceof RFieldData && !TeamViewer.team.getTabs().get(position).getTitle().equalsIgnoreCase("PREDICTIONS")) layout.addView(els.getFieldData((RFieldData)e));
         else Log.d("RBS", "Couldn't resolve metric with name: "+e.getTitle());
